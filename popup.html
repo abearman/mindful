@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Mindful</title>
+  <link rel="stylesheet" href="styles/popup.css">
+</head>
+<body>
+  <h1>Mindful</h1>
+
+  <form id="add-bookmark-form">
+    <label for="bookmark-name">Name:</label>
+    <input type="text" id="bookmark-name" name="bookmark-name" required>
+
+    <label for="bookmark-url">URL:</label>
+    <input id="bookmark-url" name="bookmark-url" pattern="^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$" required>
+
+    <label for="category-dropdown">Category:</label>
+    <select id="category-dropdown"></select>
+
+    <label id="new-category-label" for="new-category-input" style="display:none">New Category:</label>
+    <input type="text" id="new-category-input" name="new-category-input" style="display:none">
+
+    <button type="submit">Add Bookmark</button>
+  </form>
+
+  <!-- <div id="category-dropdown">
+    <ul>
+      <li class="category active">Default</li>
+    </ul>
+  </div> -->
+
+  <!-- <div id="bookmark-list">
+    <!-- bookmarks for the default category will be added here by default -->
+  <!-- </div> --> 
+
+  <script src="scripts/popup.js"></script>
+</body>
+</html>
