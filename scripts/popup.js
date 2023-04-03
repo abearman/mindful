@@ -50,7 +50,6 @@ form.addEventListener('submit', function(event) {
   // Get the values from the form fields
   const name = form.elements['bookmark-name'].value;
   const url = constructValidURL(form.elements['bookmark-url'].value);
-  console.log("Proper URL: " + constructValidURL); 
   const newGroupInput = document.getElementById('new-group-input') 
   const group = newGroupInput.value === '' ? form.elements['group-dropdown'].value : newGroupInput.value;
 
