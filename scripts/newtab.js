@@ -24,7 +24,7 @@ function renderSavedBookmarks(bookmarkGroups) {
 
     // set class and content of bookmarkGroupBox element
     bookmarkGroupBox.classList.add('bookmark-group-box');
-    bookmarkGroupBox.innerHTML = `<h2>${bookmarkGroup.groupName}</h2>`;
+    bookmarkGroupBox.innerHTML = `<h2 class=bookmark-group-title>${bookmarkGroup.groupName}</h2>`;
     
     // add box element to bookmarkGroupsContainer element
     bookmarkGroupsContainer.appendChild(bookmarkGroupBox);
