@@ -38,3 +38,25 @@ body {
 .bookmark-group-box a:focus {
   text-decoration: underline;
 }
+
+.add-link-button {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  font-size: 14px;
+  padding: 10px;
+  background-color: #007aff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0,0,0,.1);
+}
+
+.add-link-button:hover {
+  background-color: #0069d9;
+  cursor: pointer;
+}
+
+.add-link-button:active {
+  background-color: #005cbf;
+}

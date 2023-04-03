@@ -22,27 +22,44 @@ function renderSavedBookmarks(bookmarkGroups) {
     const bookmarkGroupBox = document.createElement('div');  
     bookmarkGroupBox.id = createUniqueID();
 
-    // set class and content of bookmarkGroupBox element
+    // Set class and content of bookmarkGroupBox element
     bookmarkGroupBox.classList.add('bookmark-group-box');
-    bookmarkGroupBox.innerHTML = `<h2 class=bookmark-group-title>${bookmarkGroup.groupName}</h2>`;
-    
-    // add box element to bookmarkGroupsContainer element
-    bookmarkGroupsContainer.appendChild(bookmarkGroupBox);
 
+    // Create the header for the bookmarkGroupBox
+    const groupHeader = document.createElement("h2");
+    groupHeader.setAttribute('class', 'bookmark-group-box-title');
+    groupHeader.textContent = bookmarkGroup.groupName;
+    bookmarkGroupBox.appendChild(groupHeader);
+
+    // bookmarkGroupBox.innerHTML = `
+    //   <h2 class=bookmark-group-title>${bookmarkGroup.groupName}</h2>
+    //   <button class="add-link-button">+ New Link</button>
+    // `;
+
+    /* Add the list of bookmark name/URL pairs to each bookmark group */
     bookmarkGroup.bookmarks.forEach(bookmark => {
-      // create link element
+      // Create link element
       const link = document.createElement('a');
       
-      // set attributes and content of link element
+      // Set attributes and content of link element
       link.textContent = bookmark.name;
 
       // Remove the chrome-extension protocol from the URL
       let bookmarkURL = bookmark.url;
       link.setAttribute('href', bookmarkURL);
       
-      // add link element to bookmarkGroupBox element
+      // Add link element to bookmarkGroupBox element
       bookmarkGroupBox.appendChild(link);
     });
+
+    // Create the "Add Link" button for the bookmarkGroupBox
+    const addLinkButton = document.createElement("button");
+    addLinkButton.setAttribute('class', 'add-link-button');
+    addLinkButton.textContent = "+ Add Link";
+    bookmarkGroupBox.appendChild(addLinkButton);
+
+    // Add box element to bookmarkGroupsContainer element
+    bookmarkGroupsContainer.appendChild(bookmarkGroupBox);
   });
 }
 
