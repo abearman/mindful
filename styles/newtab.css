@@ -1,8 +1,19 @@
+.bookmark-groups-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-gap: 5px;
+}
+
 .bookmark-group-box {
-    position: absolute;
-    width: 200px;
-    height: 200px;
     resize: both;
     overflow: auto;
     cursor: move;
-  }
+    background-color: #f2f2f2;
+    border: 1px solid #ccc;
+    padding: 10px;
+}
+
+.bookmark-group-box a {
+  display: block;
+  margin-bottom: 10px;
+}

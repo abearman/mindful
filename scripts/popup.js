@@ -1,5 +1,6 @@
-/* Constants */
-STORAGE_KEY_BOOKMARK_GROUPS = "bookmarkGroups";
+/* Imports */
+import { STORAGE_KEY_BOOKMARK_GROUPS } from './constants.js';
+import { createUniqueID } from './utilities.js';
 
 
 // Get references to the form and list elements in the HTML
@@ -67,7 +68,7 @@ form.addEventListener('submit', function(event) {
 function refreshGroupDropdown() {
   let bookmarkGroups = JSON.parse(localStorage.getItem(STORAGE_KEY_BOOKMARK_GROUPS)) || [];
   bookmarkGroups.forEach(bookmarkGroup => {
-    addGroupToDropdownUI(bookmarkGroup.groupName, getUniqueID());
+    addGroupToDropdownUI(bookmarkGroup.groupName, createUniqueID());
   });
 }
 
@@ -84,10 +85,6 @@ function addGroupToDropdownUI(name, id) {
     newGroupOption.text = name;  
     groupDropdown.add(newGroupOption);
   } 
-}
-
-function getUniqueID() {
-  return Date.now() + Math.random();
 }
 
 

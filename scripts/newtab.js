@@ -1,49 +1,86 @@
-/* Constants */
-STORAGE_KEY_BOOKMARK_GROUPS = "bookmarkGroups";
+/* Imports */
+import { STORAGE_KEY_BOOKMARK_GROUPS } from './constants.js';
+import { createUniqueID } from './utilities.js';
 
-
-/* Render the static list of bookmarks, for debugging */ 
 // Get the bookmarks data from localStorage
-const bookmarkGroups = JSON.parse(localStorage.getItem(STORAGE_KEY_BOOKMARK_GROUPS));
-console.log("Saved bookmark groups: " + JSON.stringify(bookmarkGroups, null, 2));
+if (STORAGE_KEY_BOOKMARK_GROUPS in localStorage) {
+  const bookmarkGroups = JSON.parse(localStorage.getItem(STORAGE_KEY_BOOKMARK_GROUPS));
+  renderSavedBookmarks(bookmarkGroups);
+  makeBookmarkGroupsDraggable(bookmarkGroups);
+} else {
+  // No saved bookmarks
+  // TODO: Decide what to render in this case 
+}
 
-// Loop through the bookmark groups and render them on the page
-bookmarkGroups.forEach(bookmarkGroup => {
-  const groupName = bookmarkGroup.groupName;
-  console.log("bookmarkGroup: " + JSON.stringify(bookmarkGroup, null, 2));
-  // Create a heading for the group
-  const groupHeading = document.createElement('h2');
-  groupHeading.textContent = groupName;
-  document.body.appendChild(groupHeading);
+/* Render the draggable grid of bookmark groups */ 
+function renderSavedBookmarks(bookmarkGroups) {
+  //console.log("Saved bookmark groups: " + JSON.stringify(bookmarkGroups, null, 2));
 
-  // Create an unordered list for the bookmarks in the group 
-  const bookmarkList = document.createElement('ul');
+  const bookmarkGroupsContainer = document.getElementById('bookmark-groups-container');
+  bookmarkGroups.forEach(bookmarkGroup => {
+    // create box element
+    const bookmarkGroupBox = document.createElement('div');  
+    bookmarkGroupBox.id = createUniqueID();
 
-  // Loop through the bookmarks in the group and add them to the list
-  bookmarkGroup.bookmarks.forEach(bookmark => {
-    console.log("Bookmark: " + JSON.stringify(bookmark));
-    const bookmarkItem = document.createElement('li');
-    const bookmarkLink = document.createElement('a');
-    bookmarkLink.href = bookmark.url;
-    bookmarkLink.textContent = bookmark.name;
-    bookmarkItem.appendChild(bookmarkLink);
-    bookmarkList.appendChild(bookmarkItem);
+    // set class and content of bookmarkGroupBox element
+    bookmarkGroupBox.classList.add('bookmark-group-box');
+    bookmarkGroupBox.innerHTML = `<h2>${bookmarkGroup.groupName}</h2>`;
+    
+    // add box element to bookmarkGroupsContainer element
+    bookmarkGroupsContainer.appendChild(bookmarkGroupBox);
+
+    bookmarkGroup.bookmarks.forEach(bookmark => {
+      // create link element
+      const link = document.createElement('a');
+      
+      // set attributes and content of link element
+      link.href = bookmark.url;
+      link.textContent = bookmark.name;
+      
+      // add link element to bookmarkGroupBox element
+      bookmarkGroupBox.appendChild(link);
+    });
+  });
+}
+
+
+function makeBookmarkGroupsDraggable(bookmarkGroups) {
+  const bookmarkGroupsContainer = document.querySelector('#bookmark-groups-container');
+
+  const bookmarkGroupBoxes = document.querySelectorAll('.bookmark-group-box');
+  bookmarkGroupBoxes.forEach(bookmarkGroupBox => {
+    // Implement dragstart and dragover event listeners for each bookmarkGroupBox
+    bookmarkGroupBox.setAttribute('draggable', true);
+    bookmarkGroupBox.addEventListener('dragstart', dragStartHandler);
+    console.log("bookmarkGroupBox ID when listeners are set up: " + bookmarkGroupBox.id);
   });
 
-  document.body.appendChild(bookmarkList);
-});
+  // Implement a dragover and drop event listener for the overall bookmarkGroupContainer
+  bookmarkGroupsContainer.addEventListener('dragover', dragOverHandler);
+  bookmarkGroupsContainer.addEventListener('drop', dropHandler);
+}
 
 
-// const container = document.getElementById('bookmark-groups-container');
+function dragStartHandler(event) {
+  event.dataTransfer.setData('text/plain', event.target.id);
+  console.log("Drag start detected with event: " + JSON.stringify(event));
+  console.log("event.target.id in dragStartHandler: " + event.target.id);
+}
 
-// bookmarkGroups.forEach(bookmarkGroup => {
-//   // create box element
-//   const box = document.createElement('div');
-  
-//   // set class and content of box element
-//   box.classList.add('bookmark-group-box');
-//   box.innerHTML = `<h2>${bookmarkGroup.groupName}</h2>`;
-  
-//   // add box element to container element
-//   container.appendChild(box);
-// });
+
+function dragOverHandler(event) {
+  console.log("Drag over detected with event: " + JSON.stringify(event));
+  event.preventDefault();
+}
+
+
+function dropHandler(event) {
+  console.log("Drop detected with event: " + JSON.stringify(event));
+  event.preventDefault();
+  const draggedBookmarkGroupId = event.dataTransfer.getData('text/plain');
+  const draggedBookmarkGroupBox = document.getElementById(draggedBookmarkGroupId);
+  console.log("draggedBookmarkGroupId in dropHandler: " + draggedBookmarkGroupId);
+  console.log("event.target in dropHandler: " + JSON.stringify(event.target));
+  const dropTarget = getDropTarget(event);
+  bookmarkGroupsContainer.insertBefore(bookmarkGroupBox, dropTarget);
+}
