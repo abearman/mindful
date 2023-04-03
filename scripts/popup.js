@@ -1,37 +1,40 @@
+/* Constants */
+STORAGE_KEY_BOOKMARK_GROUPS = "bookmarkGroups";
+
+
 // Get references to the form and list elements in the HTML
 const form = document.getElementById('add-bookmark-form');
-const categoryList = document.getElementById('category-dropdown');
-//const bookmarkList = document.getElementById('bookmark-list');
 
-// Construct the categories drop-down
+// Construct the groups dropdown
 document.addEventListener('DOMContentLoaded', () => {
   //localStorage.clear(); // TODO: remove
-  let categoryDropdown = document.getElementById('category-dropdown');
-  const bookmarks = JSON.parse(localStorage.getItem('bookmarks')) || [];
-  console.log("bookmarks: " + JSON.stringify(bookmarks, null, 2));
+  let groupDropdown = document.getElementById('group-dropdown');
+  const bookmarkGroups = JSON.parse(localStorage.getItem(STORAGE_KEY_BOOKMARK_GROUPS)) || [];
+  console.log("bookmarkGroups: " + JSON.stringify(bookmarkGroups, null, 2));
 
-  // Add options to the category dropdown
-  refreshCategoryDropdown();
+  // Add options to the group name dropdown
+  refreshGroupDropdown();
 
-  // Add "New Category" option to the category dropdown
-  addCategoryOptionToDropdownUI('New Category', 'new-category-option');
+  // Initialize the bookmark group dropdown with the "New Group" 
+  const NEW_GROUP_OPTION_TEXT = "New Group";
+  addGroupToDropdownUI(NEW_GROUP_OPTION_TEXT, 'new-group-option')
 
-  // Detect if there are no pre-saved categories, so we must show the "New Category" input field
-  const newCategoryLabel = document.getElementById('new-category-label');
-  const newCategoryInput = document.getElementById('new-category-input');
-  if (bookmarks.length === 0) {
-    newCategoryLabel.style.display = 'block';
-    newCategoryInput.style.display = 'block';  
+  // Detect if there are no pre-saved group, so we must show the "New Group" input field
+  const newGroupLabel = document.getElementById('new-group-label');
+  const newGroupInput = document.getElementById('new-group-input');
+  if (bookmarkGroups.length === 0) {
+    newGroupLabel.style.display = 'block';
+    newGroupInput.style.display = 'block';  
   }
 
-  // Detect when the "New Category" dropdown option is selected 
-  categoryDropdown.addEventListener('change', (event) => {
-    if (event.target.value === 'New Category') {
-      newCategoryLabel.style.display = 'block';
-      newCategoryInput.style.display = 'block';
+  // Detect when the "New Group" dropdown option is selected 
+  groupDropdown.addEventListener('change', (event) => {
+    if (event.target.value === NEW_GROUP_OPTION_TEXT) {
+      newGroupLabel.style.display = 'block';
+      newGroupInput.style.display = 'block';
     } else {
-      newCategoryLabel.style.display = 'none';
-      newCategoryInput.style.display = 'none';
+      newGroupLabel.style.display = 'none';
+      newGroupInput.style.display = 'none';
     }
   });
 });
@@ -46,40 +49,40 @@ form.addEventListener('submit', function(event) {
   // Get the values from the form fields
   const name = form.elements['bookmark-name'].value;
   const url = form.elements['bookmark-url'].value;
-  const newCategoryInput = document.getElementById('new-category-input') 
-  const category = newCategoryInput.value === '' ? form.elements['category-dropdown'].value : newCategoryInput.value;
+  const newGroupInput = document.getElementById('new-group-input') 
+  const group = newGroupInput.value === '' ? form.elements['group-dropdown'].value : newGroupInput.value;
 
   // save the bookmark to local storage
-  saveBookmark(name, url, category);
+  saveBookmark(name, url, group);
 
-  // Update the categories dropdown against the saved bookmarks
-  refreshCategoryDropdown();
+  // Update the group dropdown against the saved bookmark groups
+  refreshGroupDropdown();
 
   // clear the form fields
   form.reset();
 });
 
 
-// Refresh the options in the categories dropdown against the saved bookmarks
-function refreshCategoryDropdown() {
-  let bookmarks = JSON.parse(localStorage.getItem('bookmarks')) || [];
-  bookmarks.forEach(bookmark => {
-    let category = bookmark.category;
-    addCategoryOptionToDropdownUI(bookmark.category, getUniqueID());
+// Refresh the options in the group dropdown against the saved bookmark groups
+function refreshGroupDropdown() {
+  let bookmarkGroups = JSON.parse(localStorage.getItem(STORAGE_KEY_BOOKMARK_GROUPS)) || [];
+  bookmarkGroups.forEach(bookmarkGroup => {
+    addGroupToDropdownUI(bookmarkGroup.groupName, getUniqueID());
   });
 }
 
-// Add a new category option to the category dropdown UI
-function addCategoryOptionToDropdownUI(name, id) {
-  let categoryDropdown = document.getElementById('category-dropdown');
-  const categoryExistsInDropdown = Array.from(categoryDropdown.options).some(option => option.text === name);
+// Add a group with a provided name to the group dropdown UI
+function addGroupToDropdownUI(name, id) {
+  let groupDropdown = document.getElementById('group-dropdown');
+  console.log("groupDropdown: " + groupDropdown);
+  const groupExistsInDropdown = Array.from(groupDropdown.options).some(option => option.text === name);
   
-  if (!categoryExistsInDropdown) {
-    const newCategoryOption = document.createElement('option');
-    newCategoryOption.id = id;  
-    newCategoryOption.value = name;  
-    newCategoryOption.text = name;  
-    categoryDropdown.add(newCategoryOption);
+  if (!groupExistsInDropdown) {
+    const newGroupOption = document.createElement('option');
+    newGroupOption.id = id;  
+    newGroupOption.value = name;  
+    newGroupOption.text = name;  
+    groupDropdown.add(newGroupOption);
   } 
 }
 
@@ -89,22 +92,22 @@ function getUniqueID() {
 
 
 // function to save a bookmark to local storage
-function saveBookmark(name, url, category) {
-  let bookmarks = JSON.parse(localStorage.getItem('bookmarks')) || [];
-  let bookmark = { name: name, url: url };
+function saveBookmark(bookmarkName, url, groupName) {
+  let bookmarkGroups = JSON.parse(localStorage.getItem(STORAGE_KEY_BOOKMARK_GROUPS)) || [];
+  let bookmark = { name: bookmarkName, url: url };
   
-  // Check if bookmark name already exists in the current category
-  let existingCategoryIndex = bookmarks.findIndex((item) => item.category === category);
-  if (existingCategoryIndex !== -1) {
-    let existingCategory = bookmarks[existingCategoryIndex];
-    if (!existingCategory.bookmarks.some((item) => item.name === name)) {
-      existingCategory.bookmarks.push(bookmark);
+  // Check if bookmark name already exists in the current group
+  let existingGroupIndex = bookmarkGroups.findIndex((item) => item.groupName === groupName);
+  if (existingGroupIndex !== -1) {
+    let existingGroup = bookmarkGroups[existingGroupIndex];
+    if (!existingGroup.bookmarks.some((item) => item.bookmarkName === name)) {
+      existingGroup.bookmarks.push(bookmark);
     } else {
-      alert(`A bookmark with the name "${name}" already exists in the "${category}" category.`);
+      alert(`A bookmark with the name "${bookmarkName}" already exists in the "${groupName}" group.`);
     }
   } else {
-    bookmarks.push({ category: category, bookmarks: [bookmark] });
+    bookmarkGroups.push({ groupName: groupName, bookmarks: [bookmark] });
   }
   
-  localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
+  localStorage.setItem(STORAGE_KEY_BOOKMARK_GROUPS, JSON.stringify(bookmarkGroups));
 }

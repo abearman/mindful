@@ -1,0 +1,8 @@
+.bookmark-group-box {
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    resize: both;
+    overflow: auto;
+    cursor: move;
+  }
