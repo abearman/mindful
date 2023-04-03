@@ -34,8 +34,11 @@ function renderSavedBookmarks(bookmarkGroups) {
       const link = document.createElement('a');
       
       // set attributes and content of link element
-      link.href = bookmark.url;
       link.textContent = bookmark.name;
+
+      // Remove the chrome-extension protocol from the URL
+      let bookmarkURL = bookmark.url;
+      link.setAttribute('href', bookmarkURL);
       
       // add link element to bookmarkGroupBox element
       bookmarkGroupBox.appendChild(link);

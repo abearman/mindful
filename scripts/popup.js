@@ -1,6 +1,6 @@
 /* Imports */
 import { STORAGE_KEY_BOOKMARK_GROUPS } from './constants.js';
-import { createUniqueID } from './utilities.js';
+import { createUniqueID, constructValidURL } from './utilities.js';
 
 
 // Get references to the form and list elements in the HTML
@@ -49,7 +49,8 @@ form.addEventListener('submit', function(event) {
 
   // Get the values from the form fields
   const name = form.elements['bookmark-name'].value;
-  const url = form.elements['bookmark-url'].value;
+  const url = constructValidURL(form.elements['bookmark-url'].value);
+  console.log("Proper URL: " + constructValidURL); 
   const newGroupInput = document.getElementById('new-group-input') 
   const group = newGroupInput.value === '' ? form.elements['group-dropdown'].value : newGroupInput.value;
 
