@@ -1,3 +1,7 @@
+body {
+  font-size: 16px;
+}
+
 .bookmark-groups-container {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -5,15 +9,28 @@
 }
 
 .bookmark-group-box {
-    resize: both;
-    overflow: auto;
-    cursor: move;
-    background-color: #f2f2f2;
-    border: 1px solid #ccc;
-    padding: 10px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0,0,0,.1);
+  padding: 20px;
+  transition: all .2s ease-in-out;
+}
+
+.bookmark-group-box:hover,
+.bookmark-group-box:focus {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 8px rgba(0,0,0,.1);
 }
 
 .bookmark-group-box a {
   display: block;
   margin-bottom: 10px;
+  color: #007aff;
+  text-decoration: none;
+}
+
+.bookmark-group-box a:hover,
+.bookmark-group-box a:focus {
+  text-decoration: underline;
 }
