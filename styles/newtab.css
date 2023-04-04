@@ -28,8 +28,7 @@ body {
 }
 
 .bookmark-group-box a {
-  display: block;
-  margin-bottom: 10px;
+  display: flex;
   color: #007aff;
   text-decoration: none;
 }
@@ -59,4 +58,16 @@ body {
 
 .add-link-button:active {
   background-color: #005cbf;
+}
+
+.bookmark-container {
+  display: flex;
+  align-items: center;
+  vertical-align: center;
+  margin-bottom: 5px;
+}
+
+.favicon {
+  margin-right: 5px;
+  vertical-align: middle;
 }

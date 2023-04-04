@@ -35,18 +35,29 @@ function renderSavedBookmarks(bookmarkGroups) {
 
     /* Add the list of bookmark name/URL pairs to each bookmark group */
     bookmarkGroup.bookmarks.forEach(bookmark => {
+      // Create container element for bookmark
+      const bookmarkContainer = document.createElement('div');
+      bookmarkContainer.classList.add('bookmark-container');
+
+      // Create favicon element
+      const favicon = document.createElement('img');
+      favicon.classList.add('favicon');
+      favicon.setAttribute('src', `https://www.google.com/s2/favicons?sz=16&domain=${bookmark.url}`);
+      bookmarkContainer.appendChild(favicon);
+
       // Create link element
       const link = document.createElement('a');
-      
-      // Set attributes and content of link element
       link.textContent = bookmark.name;
 
       // Remove the chrome-extension protocol from the URL
       let bookmarkURL = bookmark.url;
       link.setAttribute('href', bookmarkURL);
-      
-      // Add link element to bookmarkGroupBox element
-      bookmarkGroupBox.appendChild(link);
+
+      // Add link element to bookmark container
+      bookmarkContainer.appendChild(link);
+
+      // Add bookmark container to bookmarkGroupBox element
+      bookmarkGroupBox.appendChild(bookmarkContainer);
     });
 
     // Create the "Add Link" button for the bookmarkGroupBox
