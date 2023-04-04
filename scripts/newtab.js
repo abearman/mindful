@@ -18,8 +18,6 @@ if (STORAGE_KEY_BOOKMARK_GROUPS in localStorage) {
 
 /* Render the draggable grid of bookmark groups */ 
 function renderSavedBookmarks(bookmarkGroups) {
-  //console.log("Saved bookmark groups: " + JSON.stringify(bookmarkGroups, null, 2));
-
   const bookmarkGroupsContainer = document.getElementById('bookmark-groups-container');
   bookmarkGroups.forEach(bookmarkGroup => {
     // create box element
@@ -66,16 +64,53 @@ function renderSavedBookmarks(bookmarkGroups) {
 
 
 function newLinkButtonClicked(event) {
+  /* Get the name of the bookmarkGroup and ID of the Add Link button clicked */
   const buttonId = event.target.id;
+  let addLinkButton = document.getElementById(buttonId);
   const groupName = buttonId.replace(new RegExp('^' + ADD_LINK_BUTTON_ID_PREFIX + '-'), '');
-  const popupWindow = window.open('add_link_popup.html', 'Popup', 'width=300,height=250');
-  // add an event listener to the popup window to handle the close event
-  popupWindow.addEventListener('beforeunload', () => {
-    const form = popupWindow.document.getElementById('add-link-button-form');
-    const bookmarkName = form.elements['bookmark-name'].value;
-    const url = constructValidURL(form.elements['bookmark-url'].value);
-    saveBookmark(bookmarkName, url, groupName);
+
+  /* Create the HTML of the popup menu */
+  const popupContainer = document.createElement("div");
+  popupContainer.setAttribute("id", "new-link-popup-container");
+  popupContainer.setAttribute("style", "display: none; position: absolute;");
+  popupContainer.innerHTML = `
+    <button id="close-popup-button">X</button>  
+    <form id="add-link-button-form">
+      <label for="bookmark-name">Name</label>
+      <input type="text" id="bookmark-name" name="bookmark-name" required>
+
+      <label for="bookmark-url">URL</label>
+      <!-- We make the URL be type of text so we can validate its format on our own, and we don't require the user to put https:// in front -->
+      <input type="text" id="bookmark-url" name="bookmark-url" pattern="^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$" required>
+
+      <button type="submit" class="add-bookmark-button">Add Bookmark</button>
+    </form> 
+  `;
+  const bookmarkGroupsContainer = document.getElementById('bookmark-groups-container');
+  bookmarkGroupsContainer.appendChild(popupContainer);
+
+  /* Create the close button element on the popup menu */
+  const closeButton = document.getElementById("close-popup-button");
+  closeButton.addEventListener("click", function() {
+    popupContainer.style.display = "none";
   });
+  
+  /* Display the popup menu */
+  popupContainer.style.display = 'block';
+  popupContainer.style.top = addLinkButton.offsetTop + addLinkButton.offsetHeight + 'px';
+  popupContainer.style.left = addLinkButton.offsetLeft + 'px';
+  console.log(addLinkButton.offsetTop + " " + addLinkButton.offsetHeight + " " + addLinkButton.offsetLeft);
+
+  /* Handle the popup form submission */
+  const form = document.getElementById('add-link-button-form');
+  form.addEventListener('submit', function(event) {
+    event.preventDefault(); // prevent the form from submitting normally
+    const name = form.elements['bookmark-name'].value;
+    const url = constructValidURL(form.elements['bookmark-url'].value);
+    saveBookmark(name, url, groupName);
+    form.reset();
+  });
+
 }
 
 
