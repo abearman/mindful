@@ -1,6 +1,10 @@
 /* Imports */
 import { STORAGE_KEY_BOOKMARK_GROUPS } from './constants.js';
-import { createUniqueID } from './utilities.js';
+import { createUniqueID, constructValidURL } from './utilities.js';
+import { saveBookmark } from './common.js';
+
+/* Constants */
+const ADD_LINK_BUTTON_ID_PREFIX = 'add-link-button'; 
 
 // Get the bookmarks data from localStorage
 if (STORAGE_KEY_BOOKMARK_GROUPS in localStorage) {
@@ -31,11 +35,6 @@ function renderSavedBookmarks(bookmarkGroups) {
     groupHeader.textContent = bookmarkGroup.groupName;
     bookmarkGroupBox.appendChild(groupHeader);
 
-    // bookmarkGroupBox.innerHTML = `
-    //   <h2 class=bookmark-group-title>${bookmarkGroup.groupName}</h2>
-    //   <button class="add-link-button">+ New Link</button>
-    // `;
-
     /* Add the list of bookmark name/URL pairs to each bookmark group */
     bookmarkGroup.bookmarks.forEach(bookmark => {
       // Create link element
@@ -54,12 +53,28 @@ function renderSavedBookmarks(bookmarkGroups) {
 
     // Create the "Add Link" button for the bookmarkGroupBox
     const addLinkButton = document.createElement("button");
-    addLinkButton.setAttribute('class', 'add-link-button');
+    addLinkButton.setAttribute('class', ADD_LINK_BUTTON_ID_PREFIX); 
+    addLinkButton.setAttribute('id', ADD_LINK_BUTTON_ID_PREFIX + '-' + bookmarkGroup.groupName);
     addLinkButton.textContent = "+ Add Link";
+    addLinkButton.addEventListener("click", newLinkButtonClicked);
     bookmarkGroupBox.appendChild(addLinkButton);
 
     // Add box element to bookmarkGroupsContainer element
     bookmarkGroupsContainer.appendChild(bookmarkGroupBox);
+  });
+}
+
+
+function newLinkButtonClicked(event) {
+  const buttonId = event.target.id;
+  const groupName = buttonId.replace(new RegExp('^' + ADD_LINK_BUTTON_ID_PREFIX + '-'), '');
+  const popupWindow = window.open('add_link_popup.html', 'Popup', 'width=300,height=250');
+  // add an event listener to the popup window to handle the close event
+  popupWindow.addEventListener('beforeunload', () => {
+    const form = popupWindow.document.getElementById('add-link-button-form');
+    const bookmarkName = form.elements['bookmark-name'].value;
+    const url = constructValidURL(form.elements['bookmark-url'].value);
+    saveBookmark(bookmarkName, url, groupName);
   });
 }
 

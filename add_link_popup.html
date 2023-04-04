@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Mindful</title>
+  <link rel="stylesheet" href="styles/popup.css">
+</head>
+<body>
+  <form id="add-link-button-form">
+    <label for="bookmark-name">Name</label>
+    <input type="text" id="bookmark-name" name="bookmark-name" required>
+
+    <label for="bookmark-url">URL</label>
+    <!-- We make the URL be type of text so we can validate its format on our own, and we don't require the user to put https:// in front -->
+    <input type="text" id="bookmark-url" name="bookmark-url" pattern="^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$" required>
+
+    <button type="submit">Add Bookmark</button>
+  </form>
+</body>
+</html>
