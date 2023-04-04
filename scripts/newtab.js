@@ -66,7 +66,6 @@ function renderSavedBookmarks(bookmarkGroups) {
 function newLinkButtonClicked(event) {
   /* Get the name of the bookmarkGroup and ID of the Add Link button clicked */
   const buttonId = event.target.id;
-  console.log("button Id: " + buttonId);
   let addLinkButton = document.getElementById(buttonId);
   const groupName = buttonId.replace(new RegExp('^' + ADD_LINK_BUTTON_ID_PREFIX + '-'), '');
 
@@ -98,9 +97,9 @@ function newLinkButtonClicked(event) {
 
   /* Display the popup menu */
   popupContainer.style.display = 'block';
-  popupContainer.style.top = addLinkButton.offsetTop + addLinkButton.offsetHeight + 'px';
-  popupContainer.style.left = addLinkButton.offsetLeft + 'px';
-  console.log(addLinkButton.offsetTop + " " + addLinkButton.offsetHeight + " " + addLinkButton.offsetLeft);
+  const rect = addLinkButton.getBoundingClientRect();
+  popupContainer.style.top = rect.bottom + 'px';
+  popupContainer.style.left = rect.left + 'px';
 
   /* Handle the popup form submission */
   const form = document.getElementById('add-link-button-form');
