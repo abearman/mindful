@@ -19,4 +19,9 @@ export function saveBookmark(bookmarkName, url, groupName) {
     }
     
     localStorage.setItem(STORAGE_KEY_BOOKMARK_GROUPS, JSON.stringify(bookmarkGroups));
+
+    // Reload the active tab to reflect the new bookmark
+    chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+      chrome.tabs.reload(tabs[0].id);
+    });
   }
