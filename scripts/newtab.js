@@ -66,6 +66,7 @@ function renderSavedBookmarks(bookmarkGroups) {
 function newLinkButtonClicked(event) {
   /* Get the name of the bookmarkGroup and ID of the Add Link button clicked */
   const buttonId = event.target.id;
+  console.log("button Id: " + buttonId);
   let addLinkButton = document.getElementById(buttonId);
   const groupName = buttonId.replace(new RegExp('^' + ADD_LINK_BUTTON_ID_PREFIX + '-'), '');
 
@@ -90,11 +91,11 @@ function newLinkButtonClicked(event) {
   bookmarkGroupsContainer.appendChild(popupContainer);
 
   /* Create the close button element on the popup menu */
-  const closeButton = document.getElementById("close-popup-button");
+  const closeButton = popupContainer.querySelector("#close-popup-button");
   closeButton.addEventListener("click", function() {
     popupContainer.style.display = "none";
   });
-  
+
   /* Display the popup menu */
   popupContainer.style.display = 'block';
   popupContainer.style.top = addLinkButton.offsetTop + addLinkButton.offsetHeight + 'px';
