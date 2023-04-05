@@ -44,15 +44,32 @@ export function deleteBookmark(bookmarkName, groupName) {
   let bookmarkGroups = loadBookmarkGroups();
   let groupIndex = bookmarkGroups.findIndex((item) => item.groupName === groupName);
   if (groupIndex !== -1) {
-    console.log("group index found with name: " + groupName);
     let bookmarkGroup = bookmarkGroups[groupIndex];
     let bookmarks = bookmarkGroup["bookmarks"];
     const bookmarkIndex = bookmarks.findIndex((bookmark) => bookmark.name === bookmarkName);
-    console.log("bookmark index found: " + bookmarkIndex);
 
     // If the bookmark was found, remove it from the array and update local storage
     if (bookmarkIndex !== -1) {
       bookmarks.splice(bookmarkIndex, 1);
+      overwriteBookmarkGroups(bookmarkGroups); 
+      refreshActiveTab();
+    }
+  }
+}
+
+
+/* Function to edit a bookmark's name */
+export function editBookmarkName(oldBookmarkName, groupName, newBookmarkName) {
+  let bookmarkGroups = loadBookmarkGroups();
+  let groupIndex = bookmarkGroups.findIndex((item) => item.groupName === groupName);
+  if (groupIndex !== -1) {
+    let bookmarkGroup = bookmarkGroups[groupIndex];
+    let bookmarks = bookmarkGroup["bookmarks"];
+    const bookmarkIndex = bookmarks.findIndex((bookmark) => bookmark.name === oldBookmarkName);
+
+    // If the bookmark was found, edit its name and update local storage
+    if (bookmarkIndex !== -1) {
+      bookmarks[bookmarkIndex].name = newBookmarkName;
       overwriteBookmarkGroups(bookmarkGroups); 
       refreshActiveTab();
     }

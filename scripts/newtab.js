@@ -1,11 +1,15 @@
 /* Imports */
 import { STORAGE_KEY_BOOKMARK_GROUPS } from './constants.js';
 import { createUniqueID, constructValidURL } from './utilities.js';
-import { loadBookmarkGroups, deleteBookmark, overwriteBookmarkGroups, saveBookmark } from './bookmark_management.js';
+import { loadBookmarkGroups, deleteBookmark, editBookmarkName, overwriteBookmarkGroups, saveBookmark } from './bookmark_management.js';
 
 /* Constants */
 const ADD_LINK_BUTTON_ID_PREFIX = 'add-link-button'; 
 const BOOKMARK_GROUP_TITLE_PREFIX = 'bookmark-group-box-title';
+const ModifyButtonType = Object.freeze({
+  EDIT: 'edit',
+  DELETE: 'delete',
+});
 
 // Get the bookmarks data from localStorage
 let bookmarkGroups = loadBookmarkGroups();
@@ -69,26 +73,9 @@ function renderSavedBookmarks(bookmarkGroups) {
       link.setAttribute('href', bookmarkURL);  // Remove the chrome-extension protocol from the URL
       bookmarkContainer.appendChild(link);
 
-      // Create the link delete button element. It should only appear when bookmarkContainer is hovered over.
-      const deleteLinkButton = document.createElement('button');
-      deleteLinkButton.innerHTML = 'x'; 
-      deleteLinkButton.classList.add('delete-link-button');
-      deleteLinkButton.style.display = "none";
-      bookmarkContainer.addEventListener('mouseenter', () => {
-        deleteLinkButton.style.display = "block";
-      });
-      bookmarkContainer.addEventListener('mouseleave', () => {
-        deleteLinkButton.style.display = "none";
-      });
-      deleteLinkButton.addEventListener("click", function() {
-        const shouldDelete = window.confirm(
-          "Are you sure you want to delete the " + bookmark.name + " bookmark from " + bookmarkGroup.groupName + "?"
-        ); 
-        if (shouldDelete) {
-          deleteBookmark(bookmark.name, bookmarkGroup.groupName);
-        }
-      }); 
-      bookmarkContainer.appendChild(deleteLinkButton);
+      // Create the link edit and delete buttons. They should only appear when bookmarkContainer is hovered over. 
+      renderModifyBookmarkButtons(bookmarkContainer, link, ModifyButtonType.EDIT, bookmark.name, bookmarkGroup.groupName);
+      renderModifyBookmarkButtons(bookmarkContainer, link, ModifyButtonType.DELETE, bookmark.name, bookmarkGroup.groupName);
 
       // Add bookmark container to bookmarkGroupBox element
       bookmarkGroupBox.appendChild(bookmarkContainer);
@@ -105,6 +92,61 @@ function renderSavedBookmarks(bookmarkGroups) {
     // Add box element to bookmarkGroupsContainer element
     bookmarkGroupsContainer.appendChild(bookmarkGroupBox);
   });
+}
+
+
+function renderModifyBookmarkButtons(bookmarkContainer, linkElement, button_type, bookmarkName, groupName) {
+  const imagePath = button_type == ModifyButtonType.EDIT ? "assets/edit-icon-16.png" : "assets/delete-icon-16.png";
+  const button = document.createElement('button');
+  const img = document.createElement("img");
+  img.src = imagePath; 
+  button.appendChild(img);
+
+  button.classList.add('modify-link-button');
+  button.style.display = "none";  
+  bookmarkContainer.addEventListener('mouseenter', () => {
+    button.style.display = "block";
+  });
+  bookmarkContainer.addEventListener('mouseleave', () => {
+    button.style.display = "none";
+  });
+  button.addEventListener("click", function() {
+    /* Callback for clicking on the edit button */
+    if (button_type == ModifyButtonType.EDIT) {
+      // Make the link element's content editable
+      linkElement.setAttribute('contenteditable', 'true'); 
+      linkElement.focus();
+      document.execCommand('selectAll', false, null);
+
+      // Listen for "keydown - Enter" and "blur" events on the link element
+      linkElement.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') { 
+          event.preventDefault(); 
+          linkElement.blur(); // Remove focus from the linkElement to trigger the blur function
+        }
+      });
+      linkElement.addEventListener('blur', (event) => {
+        const newBookmarkName = event.target.textContent.trim();
+        if (newBookmarkName !== bookmarkName) {
+          // TODO: Edit the bookmark and save it back to storage
+          editBookmarkName(bookmarkName, groupName, newBookmarkName);
+          //overwriteBookmarkGroups(bookmarkGroups);      
+        }
+        linkElement.setAttribute('contenteditable', 'false'); 
+      });
+
+    /* Callback for clicking on the delete button */
+    } else if (button_type == ModifyButtonType.DELETE) {
+      const shouldDelete = window.confirm(
+        "Are you sure you want to delete the " + bookmarkName + " bookmark from " + groupName + "?"
+      ); 
+      if (shouldDelete) {
+        deleteBookmark(bookmarkName, groupName);
+      }
+    }
+  });
+
+  bookmarkContainer.appendChild(button);
 }
 
 
