@@ -5,7 +5,7 @@ export function loadBookmarkGroups() {
   return JSON.parse(localStorage.getItem(STORAGE_KEY_BOOKMARK_GROUPS)) || [];
 }
 
-function overwriteBookmarkGroups(bookmarkGroups) {
+export function overwriteBookmarkGroups(bookmarkGroups) {
   localStorage.setItem(STORAGE_KEY_BOOKMARK_GROUPS, JSON.stringify(bookmarkGroups));
 }
 

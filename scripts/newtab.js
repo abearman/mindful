@@ -1,10 +1,11 @@
 /* Imports */
 import { STORAGE_KEY_BOOKMARK_GROUPS } from './constants.js';
 import { createUniqueID, constructValidURL } from './utilities.js';
-import { loadBookmarkGroups, deleteBookmark, saveBookmark } from './bookmark_management.js';
+import { loadBookmarkGroups, deleteBookmark, overwriteBookmarkGroups, saveBookmark } from './bookmark_management.js';
 
 /* Constants */
 const ADD_LINK_BUTTON_ID_PREFIX = 'add-link-button'; 
+const BOOKMARK_GROUP_TITLE_PREFIX = 'bookmark-group-box-title';
 
 // Get the bookmarks data from localStorage
 let bookmarkGroups = loadBookmarkGroups();
@@ -29,8 +30,24 @@ function renderSavedBookmarks(bookmarkGroups) {
 
     // Create the header for the bookmarkGroupBox
     const groupHeader = document.createElement("h2");
-    groupHeader.setAttribute('class', 'bookmark-group-box-title');
+    groupHeader.setAttribute('class', BOOKMARK_GROUP_TITLE_PREFIX); 
+    groupHeader.setAttribute('id', BOOKMARK_GROUP_TITLE_PREFIX + '-' + bookmarkGroup.groupName);
+    groupHeader.setAttribute('contenteditable', 'true'); 
     groupHeader.textContent = bookmarkGroup.groupName;
+    // Listen for "keydown - Enter" and "blur" events on the <h2> header element
+    groupHeader.addEventListener('keydown', function(event) {
+      if (event.key === 'Enter') { 
+        event.preventDefault(); 
+        groupHeader.blur(); // Remove focus from the header to trigger the blur function
+      }
+    });
+    groupHeader.addEventListener('blur', (event) => {
+      const newGroupName = event.target.textContent.trim();
+      if (newGroupName !== bookmarkGroup.groupName) {
+        bookmarkGroup.groupName = newGroupName;
+        overwriteBookmarkGroups(bookmarkGroups);      
+      }
+    });
     bookmarkGroupBox.appendChild(groupHeader);
 
     /* Add the list of bookmark name/URL pairs to each bookmark group */
