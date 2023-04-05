@@ -72,15 +72,23 @@ body {
   vertical-align: middle;
 }
 
+a {
+  margin-right: 5px;
+}
+
 .modify-link-button {
   border: none;
   background-color: transparent;
   color: grey;
-  font-size: 16px;
   margin-left: 5px;
   padding: 0px;
 }
 
 .modify-link-button:hover {
   cursor: pointer;
+}
+
+.modify-link-button-img {
+  width: 16px;
+  height: 16px;
 }

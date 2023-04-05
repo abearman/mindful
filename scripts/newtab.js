@@ -96,9 +96,10 @@ function renderSavedBookmarks(bookmarkGroups) {
 
 
 function renderModifyBookmarkButtons(bookmarkContainer, linkElement, button_type, bookmarkName, groupName) {
-  const imagePath = button_type == ModifyButtonType.EDIT ? "assets/edit-icon-16.png" : "assets/delete-icon-16.png";
+  const imagePath = button_type == ModifyButtonType.EDIT ? "assets/edit-icon.svg" : "assets/delete-icon.svg";
   const button = document.createElement('button');
   const img = document.createElement("img");
+  img.classList.add('modify-link-button-img');
   img.src = imagePath; 
   button.appendChild(img);
 
