@@ -63,7 +63,8 @@ function renderSavedBookmarks(bookmarkGroups) {
       // Create favicon element
       const favicon = document.createElement('img');
       favicon.classList.add('favicon');
-      favicon.setAttribute('src', `https://www.google.com/s2/favicons?sz=16&domain=${bookmark.url}`);
+      let faviconUrl = getFaviconUrl(bookmark.url);
+      favicon.setAttribute('src', faviconUrl);
       bookmarkContainer.appendChild(favicon);
 
       // Create link element 
@@ -92,6 +93,11 @@ function renderSavedBookmarks(bookmarkGroups) {
     // Add box element to bookmarkGroupsContainer element
     bookmarkGroupsContainer.appendChild(bookmarkGroupBox);
   });
+}
+
+
+function getFaviconUrl(bookmarkUrl) {
+  return `https://www.google.com/s2/favicons?sz=16&domain=${bookmarkUrl}`
 }
 
 
