@@ -1,14 +1,14 @@
 /* Imports */
 import { STORAGE_KEY_BOOKMARK_GROUPS } from './constants.js';
 import { createUniqueID, constructValidURL } from './utilities.js';
-import { saveBookmark } from './common.js';
+import { loadBookmarkGroups, deleteBookmark, saveBookmark } from './bookmark_management.js';
 
 /* Constants */
 const ADD_LINK_BUTTON_ID_PREFIX = 'add-link-button'; 
 
 // Get the bookmarks data from localStorage
-if (STORAGE_KEY_BOOKMARK_GROUPS in localStorage) {
-  const bookmarkGroups = JSON.parse(localStorage.getItem(STORAGE_KEY_BOOKMARK_GROUPS));
+let bookmarkGroups = loadBookmarkGroups();
+if (bookmarkGroups != null) { 
   renderSavedBookmarks(bookmarkGroups);
   makeBookmarkGroupsDraggable(bookmarkGroups);
 } else {
@@ -45,16 +45,33 @@ function renderSavedBookmarks(bookmarkGroups) {
       favicon.setAttribute('src', `https://www.google.com/s2/favicons?sz=16&domain=${bookmark.url}`);
       bookmarkContainer.appendChild(favicon);
 
-      // Create link element
+      // Create link element 
       const link = document.createElement('a');
       link.textContent = bookmark.name;
-
-      // Remove the chrome-extension protocol from the URL
       let bookmarkURL = bookmark.url;
-      link.setAttribute('href', bookmarkURL);
-
-      // Add link element to bookmark container
+      link.setAttribute('href', bookmarkURL);  // Remove the chrome-extension protocol from the URL
       bookmarkContainer.appendChild(link);
+
+      // Create the link delete button element. It should only appear when bookmarkContainer is hovered over.
+      const deleteLinkButton = document.createElement('button');
+      deleteLinkButton.innerHTML = 'x'; 
+      deleteLinkButton.classList.add('delete-link-button');
+      deleteLinkButton.style.display = "none";
+      bookmarkContainer.addEventListener('mouseenter', () => {
+        deleteLinkButton.style.display = "block";
+      });
+      bookmarkContainer.addEventListener('mouseleave', () => {
+        deleteLinkButton.style.display = "none";
+      });
+      deleteLinkButton.addEventListener("click", function() {
+        const shouldDelete = window.confirm(
+          "Are you sure you want to delete the " + bookmark.name + " bookmark from " + bookmarkGroup.groupName + "?"
+        ); 
+        if (shouldDelete) {
+          deleteBookmark(bookmark.name, bookmarkGroup.groupName);
+        }
+      }); 
+      bookmarkContainer.appendChild(deleteLinkButton);
 
       // Add bookmark container to bookmarkGroupBox element
       bookmarkGroupBox.appendChild(bookmarkContainer);

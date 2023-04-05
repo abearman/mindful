@@ -1,7 +1,7 @@
 /* Imports */
 import { STORAGE_KEY_BOOKMARK_GROUPS } from './constants.js';
 import { createUniqueID, constructValidURL } from './utilities.js';
-import { saveBookmark } from './common.js';
+import { loadBookmarkGroups, saveBookmark } from './bookmark_management.js';
 
 
 // Get references to the form and list elements in the HTML
@@ -11,7 +11,7 @@ const form = document.getElementById('add-bookmark-form');
 document.addEventListener('DOMContentLoaded', () => {
   //localStorage.clear(); // TODO: remove
   let groupDropdown = document.getElementById('group-dropdown');
-  const bookmarkGroups = JSON.parse(localStorage.getItem(STORAGE_KEY_BOOKMARK_GROUPS)) || [];
+  const bookmarkGroups = loadBookmarkGroups(); 
   console.log("bookmarkGroups: " + JSON.stringify(bookmarkGroups, null, 2));
 
   // Add options to the group name dropdown
@@ -67,7 +67,7 @@ form.addEventListener('submit', function(event) {
 
 // Refresh the options in the group dropdown against the saved bookmark groups
 function refreshGroupDropdown() {
-  let bookmarkGroups = JSON.parse(localStorage.getItem(STORAGE_KEY_BOOKMARK_GROUPS)) || [];
+  let bookmarkGroups = loadBookmarkGroups();
   bookmarkGroups.forEach(bookmarkGroup => {
     addGroupToDropdownUI(bookmarkGroup.groupName, createUniqueID());
   });
