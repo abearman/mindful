@@ -12,7 +12,6 @@ document.addEventListener('DOMContentLoaded', () => {
   //localStorage.clear(); // TODO: remove
   let groupDropdown = document.getElementById('group-dropdown');
   const bookmarkGroups = loadBookmarkGroups(); 
-  console.log("bookmarkGroups: " + JSON.stringify(bookmarkGroups, null, 2));
 
   // Add options to the group name dropdown
   refreshGroupDropdown();
@@ -76,7 +75,6 @@ function refreshGroupDropdown() {
 // Add a group with a provided name to the group dropdown UI
 function addGroupToDropdownUI(name, id) {
   let groupDropdown = document.getElementById('group-dropdown');
-  console.log("groupDropdown: " + groupDropdown);
   const groupExistsInDropdown = Array.from(groupDropdown.options).some(option => option.text === name);
   
   if (!groupExistsInDropdown) {

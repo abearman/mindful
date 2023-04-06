@@ -13,6 +13,7 @@ body {
 }
 
 .bookmark-group-box {
+  position: relative;
   background-color: #fff;
   border: 1px solid #ddd;
   border-radius: 5px;
@@ -38,7 +39,7 @@ body {
   text-decoration: underline;
 }
 
-.add-link-button {
+.bookmark-group-box .add-link-button {
   position: absolute;
   bottom: 10px;
   right: 10px;
@@ -49,15 +50,20 @@ body {
   border: none;
   border-radius: 5px;
   box-shadow: 0 2px 4px rgba(0,0,0,.1);
+  display: none;
 }
 
-.add-link-button:hover {
+.bookmark-group-box .add-link-button {
   background-color: #0069d9;
   cursor: pointer;
 }
 
-.add-link-button:active {
+.bookmark-group-box .add-link-button:active {
   background-color: #005cbf;
+}
+
+.bookmark-group-box:hover .add-link-button {
+  display: block;
 }
 
 .bookmark-container {
