@@ -135,9 +135,7 @@ function renderModifyBookmarkButtons(bookmarkContainer, linkElement, button_type
       linkElement.addEventListener('blur', (event) => {
         const newBookmarkName = event.target.textContent.trim();
         if (newBookmarkName !== bookmarkName) {
-          // TODO: Edit the bookmark and save it back to storage
           editBookmarkName(bookmarkName, groupName, newBookmarkName);
-          //overwriteBookmarkGroups(bookmarkGroups);      
         }
         linkElement.setAttribute('contenteditable', 'false'); 
       });
@@ -216,7 +214,6 @@ function makeBookmarkGroupsDraggable(bookmarkGroups) {
     // Implement dragstart and dragover event listeners for each bookmarkGroupBox
     bookmarkGroupBox.setAttribute('draggable', true);
     bookmarkGroupBox.addEventListener('dragstart', dragStartHandler);
-    console.log("bookmarkGroupBox ID when listeners are set up: " + bookmarkGroupBox.id);
   });
 
   // Implement a dragover and drop event listener for the overall bookmarkGroupContainer
@@ -227,8 +224,6 @@ function makeBookmarkGroupsDraggable(bookmarkGroups) {
 
 function dragStartHandler(event) {
   event.dataTransfer.setData('text/plain', event.target.id);
-  console.log("Drag start detected with event: " + JSON.stringify(event));
-  console.log("event.target.id in dragStartHandler: " + event.target.id);
 }
 
 
