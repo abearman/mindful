@@ -15,7 +15,7 @@
     "128": "assets/icon-128.png"
   },
 
-  "permissions": ["storage"],
+  "permissions": ["storage", "tabs"],
 
   "action": {
     "default_icon": {

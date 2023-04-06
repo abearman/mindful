@@ -17,6 +17,15 @@ function constructPopupUI() {
   // Construct and populate the groups dropdown menu
   constructGroupsDropdown();
 
+  // Pre-populate URL and our best guess at the bookmark name
+  chrome.tabs.query({active: true, currentWindow: true }, function(tabs) {
+    var currentTab = tabs[0]; // there will be only one in this array
+    let currentTabURL = currentTab.url;
+    let currentTabTitle = currentTab.title;
+    document.getElementById('bookmark-url').value = currentTabURL;
+    document.getElementById('bookmark-name').value = currentTabTitle;
+  });
+
   // Adds an event listener to the form for when it's submitted 
   respondToFormSubmission(form);
  
@@ -26,13 +35,11 @@ function constructPopupUI() {
     /*localStorage.setItem('popupState', JSON.stringify({
       // store any relevant data about the popup state here
     }));*/
-    console.log("Popup window blurred");
   });
 
   // Restore popup state when it gains focus
   window.addEventListener('focus', function() {
     // Check if there is stored state
-    console.log("Popup window focused");
     // const popupState = localStorage.getItem('popupState');
     // if (popupState) {
     //   // Restore state from local storage

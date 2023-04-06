@@ -4,10 +4,11 @@ export function createUniqueID() {
 
 export function constructValidURL(url) {
   if (!/^https?:\/\//i.test(url)) {
-    url = "https://" + url;
+    url = 'http://' + url;
   }
-  if (!/^www\./i.test(url)) {
-    url = url.replace(/^(https?:\/\/)?([a-z0-9\-]+\.[a-z0-9\-]+)/i, "$1www.$2");
+  url = new URL(url);
+  if (!/^www\./i.test(url.hostname)) {
+    url.hostname = 'www.' + url.hostname;
   }
-  return url;
+  return url.href;
 }
