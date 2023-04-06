@@ -11,14 +11,49 @@ const ModifyButtonType = Object.freeze({
   DELETE: 'delete',
 });
 
-// Get the bookmarks data from localStorage
-let bookmarkGroups = loadBookmarkGroups();
-if (bookmarkGroups != null) { 
-  renderSavedBookmarks(bookmarkGroups);
-  makeBookmarkGroupsDraggable(bookmarkGroups);
-} else {
-  // No saved bookmarks
-  // TODO: Decide what to render in this case 
+/* Main code entrypoint */
+main();
+
+function main() {
+  // Get the bookmarks data from localStorage
+  let bookmarkGroups = loadBookmarkGroups();
+  if (bookmarkGroups != null) { 
+    renderSavedBookmarks(bookmarkGroups);
+    makeBookmarkGroupsDraggable(bookmarkGroups);
+  } else {
+    // No saved bookmarks
+    // TODO: Decide what to render in this case 
+  }
+
+  // TODO: Retain info about the popup window if the user switches tabs
+  // let activeWindowId = null;
+  // let activeTabId = null;
+
+  // chrome.windows.onFocusChanged.addListener(windowId => {
+  //   if (windowId === chrome.windows.WINDOW_ID_NONE) {
+  //     // The user switched to a non-Chrome window
+  //     activeWindowId = null;
+  //     activeTabId = null;
+  //     console.log("User switched to a non-Chrome window");
+  //   } else {
+  //     // The user switched to a Chrome window
+  //     activeWindowId = windowId;
+  //     chrome.tabs.query({ active: true, windowId: activeWindowId }, tabs => {
+  //       if (tabs.length > 0) {
+  //         activeTabId = tabs[0].id;
+  //       }
+  //     });
+  //     console.log("User switched to a Chrome window");
+  //   }
+  // });
+
+  // chrome.tabs.onActivated.addListener(info => {
+  //   if (info.windowId === activeWindowId) {
+  //     activeTabId = info.tabId;
+  //     console.log("User switched back to active tab");
+  //   }
+  // });
+
 }
 
 /* Render the draggable grid of bookmark groups */ 
