@@ -17,15 +17,15 @@ body {
   background-color: #fff;
   border: 1px solid #ddd;
   border-radius: 5px;
-  box-shadow: 0 2px 4px rgba(0,0,0,.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   padding: 20px;
-  transition: all .2s ease-in-out;
+  transition: all 0.2s ease-in-out;
 }
 
 .bookmark-group-box:hover,
 .bookmark-group-box:focus {
   transform: translateY(-3px);
-  box-shadow: 0 4px 8px rgba(0,0,0,.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .bookmark-group-box a {
@@ -49,21 +49,32 @@ body {
   color: white;
   border: none;
   border-radius: 5px;
-  box-shadow: 0 2px 4px rgba(0,0,0,.1);
-  display: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.bookmark-group-box .add-link-button {
-  background-color: #0069d9;
+.add-link-button:hover {
   cursor: pointer;
 }
 
-.bookmark-group-box .add-link-button:active {
-  background-color: #005cbf;
+.bookmark-group-box .edit-link-button,
+.bookmark-group-box .delete-link-button {
+  position: absolute;
+  bottom: 10px;
+  font-size: 14px;
+  padding: 10px;
+  background-color: transparent;
+  color: #007aff;
+  border: none;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.bookmark-group-box:hover .add-link-button {
-  display: block;
+.bookmark-group-box .edit-link-button {
+  right: 70px;
+}
+
+.bookmark-group-box .delete-link-button {
+  right: 10px;
 }
 
 .bookmark-container {
@@ -97,4 +108,20 @@ a {
 .modify-link-button-img {
   width: 16px;
   height: 16px;
+}
+
+/* Add Link button should only appear when its parent bookmarkGroupBox is being hovered over */
+.bookmark-group-box:hover .add-link-button {
+  display: block;
+}
+.bookmark-group-box:not(:hover) .add-link-button {
+  display: none;
+}
+
+/* Modify link buttons should only appear when their parent single bookmarkContainer is being hovered over*/
+.bookmark-group-box .bookmark-container:hover + .modify-link-button {
+  display: block;
+}
+.bookmark-group-box .bookmark-container:not(:hover) .modify-link-button {
+  display: none;
 }

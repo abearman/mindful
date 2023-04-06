@@ -54,6 +54,14 @@ function renderSavedBookmarks(bookmarkGroups) {
     });
     bookmarkGroupBox.appendChild(groupHeader);
 
+    // Create the "Add Link" button for the bookmarkGroupBox
+    const addLinkButton = document.createElement("button");
+    addLinkButton.setAttribute('class', ADD_LINK_BUTTON_ID_PREFIX); 
+    addLinkButton.setAttribute('id', ADD_LINK_BUTTON_ID_PREFIX + '-' + bookmarkGroup.groupName);
+    addLinkButton.textContent = "+ Add Link";
+    addLinkButton.addEventListener("click", newLinkButtonClicked);
+    bookmarkGroupBox.appendChild(addLinkButton);
+
     /* Add the list of bookmark name/URL pairs to each bookmark group */
     bookmarkGroup.bookmarks.forEach(bookmark => {
       // Create container element for bookmark
@@ -82,14 +90,6 @@ function renderSavedBookmarks(bookmarkGroups) {
       bookmarkGroupBox.appendChild(bookmarkContainer);
     });
 
-    // Create the "Add Link" button for the bookmarkGroupBox
-    const addLinkButton = document.createElement("button");
-    addLinkButton.setAttribute('class', ADD_LINK_BUTTON_ID_PREFIX); 
-    addLinkButton.setAttribute('id', ADD_LINK_BUTTON_ID_PREFIX + '-' + bookmarkGroup.groupName);
-    addLinkButton.textContent = "+ Add Link";
-    addLinkButton.addEventListener("click", newLinkButtonClicked);
-    bookmarkGroupBox.appendChild(addLinkButton);
-
     // Add box element to bookmarkGroupsContainer element
     bookmarkGroupsContainer.appendChild(bookmarkGroupBox);
   });
@@ -110,13 +110,6 @@ function renderModifyBookmarkButtons(bookmarkContainer, linkElement, button_type
   button.appendChild(img);
 
   button.classList.add('modify-link-button');
-  button.style.display = "none";  
-  bookmarkContainer.addEventListener('mouseenter', () => {
-    button.style.display = "block";
-  });
-  bookmarkContainer.addEventListener('mouseleave', () => {
-    button.style.display = "none";
-  });
   button.addEventListener("click", function() {
     /* Callback for clicking on the edit button */
     if (button_type == ModifyButtonType.EDIT) {
