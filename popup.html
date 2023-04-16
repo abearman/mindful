@@ -8,7 +8,7 @@
 <body>
   <h1>Mindful</h1>
 
-  <form id="add-bookmark-form">
+  <form id="add-bookmark-form"> 
     <label for="group-dropdown">Group</label>
     <select id="group-dropdown"></select>
 
@@ -22,7 +22,7 @@
     <!-- We make the URL be type of text so we can validate its format on our own, and we don't require the user to put https:// in front -->
     <input type="text" id="bookmark-url" name="bookmark-url" pattern="^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/|www\.|)[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$" required>
 
-    <button type="submit" class="add-bookmark-button">Add Bookmark</button>
+    <button id="submit-form-button" class="add-bookmark-button">Add Bookmark</button>
   </form>
 
   <script type="module" src="scripts/popup.js"></script>
