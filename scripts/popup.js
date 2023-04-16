@@ -92,7 +92,8 @@ function respondToFormSubmission(form) {
 
     // Get the values from the form fields
     const name = form.elements['bookmark-name'].value;
-    const url = constructValidURL(form.elements['bookmark-url'].value);
+    // Do not call constructValidURL if we're populating from the open tab
+    const url = form.elements['bookmark-url'].value;
     const newGroupInput = document.getElementById('new-group-input') 
     const group = newGroupInput.value === '' ? form.elements['group-dropdown'].value : newGroupInput.value;
 
