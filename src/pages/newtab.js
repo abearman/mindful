@@ -1,7 +1,7 @@
 /* Imports */
-import { STORAGE_KEY_BOOKMARK_GROUPS } from './constants.js';
-import { createUniqueID, constructValidURL } from './utilities.js';
-import { loadBookmarkGroups, deleteBookmark, editBookmarkName, overwriteBookmarkGroups, saveBookmark } from './bookmark_management.js';
+import { STORAGE_KEY_BOOKMARK_GROUPS } from '../scripts/constants.js';
+import { createUniqueID, constructValidURL } from '../scripts/utilities.js';
+import { loadBookmarkGroups, deleteBookmark, editBookmarkName, overwriteBookmarkGroups, saveBookmark } from '../scripts/bookmark_management.js';
 
 /* Constants */
 const ADD_LINK_BUTTON_ID_PREFIX = 'add-link-button'; 
