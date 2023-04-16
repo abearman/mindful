@@ -227,7 +227,7 @@ function newLinkButtonClicked(event) {
     event.preventDefault(); // prevent the form from submitting normally
     const name = form.elements['bookmark-name'].value;
     const url = constructValidURL(form.elements['bookmark-url'].value);
-    saveBookmark(name, url, groupName);
+    saveBookmark(name, url, groupName, /*should refresh */ true);
     form.reset();
   });
 

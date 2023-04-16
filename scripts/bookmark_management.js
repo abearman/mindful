@@ -17,7 +17,7 @@ function refreshActiveTab() {
 }
 
 /* Function to save a bookmark to local storage */
-export function saveBookmark(bookmarkName, url, groupName) {
+export function saveBookmark(bookmarkName, url, groupName, shouldRefresh=false) {
   let bookmarkGroups = loadBookmarkGroups();
   let bookmark = { name: bookmarkName, url: url };
   
@@ -35,7 +35,9 @@ export function saveBookmark(bookmarkName, url, groupName) {
   }
   
   overwriteBookmarkGroups(bookmarkGroups);
-  refreshActiveTab();
+  if (shouldRefresh) {
+    refreshActiveTab();
+  }
 }
 
 

@@ -27,7 +27,13 @@ function constructPopupUI() {
   });
 
   // Adds an event listener to the form for when it's submitted 
-  respondToFormSubmission(form);
+  let submitButton = document.getElementById('submit-form-button');
+  submitButton.addEventListener('click', function(event) {
+    respondToFormSubmission(form, event);
+  });
+  // form.addEventListener('submit', function(event) {
+  //   respondToFormSubmission(form, event);
+  // });
  
   // Store popup state when it loses focus
   window.addEventListener('blur', function() {
@@ -86,26 +92,25 @@ function constructGroupsDropdown() {
 }
 
 /* Respond to form submission */
-function respondToFormSubmission(form) {
-  form.addEventListener('submit', function(event) {
-    event.preventDefault(); // prevent the form from submitting normally
+function respondToFormSubmission(form, event) {
+  // Prevent the page from refreshing
+  event.preventDefault(); 
 
-    // Get the values from the form fields
-    const name = form.elements['bookmark-name'].value;
-    // Do not call constructValidURL if we're populating from the open tab
-    const url = form.elements['bookmark-url'].value;
-    const newGroupInput = document.getElementById('new-group-input') 
-    const group = newGroupInput.value === '' ? form.elements['group-dropdown'].value : newGroupInput.value;
+  // Get the values from the form fields
+  const name = form.elements['bookmark-name'].value;
+  // Do not call constructValidURL if we're populating from the open tab
+  const url = form.elements['bookmark-url'].value;
+  const newGroupInput = document.getElementById('new-group-input') 
+  const group = newGroupInput.value === '' ? form.elements['group-dropdown'].value : newGroupInput.value;
 
-    // save the bookmark to local storage
-    saveBookmark(name, url, group);
+  // save the bookmark to local storage
+  saveBookmark(name, url, group);
 
-    // Update the group dropdown against the saved bookmark groups
-    refreshGroupDropdown();
+  // Update the group dropdown against the saved bookmark groups
+  refreshGroupDropdown();
 
-    // clear the form fields
-    form.reset();
-  });
+  // clear the form fields
+  form.reset();
 }
 
 /* Refresh the options in the group dropdown against the saved bookmark groups */
