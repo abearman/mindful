@@ -139,7 +139,7 @@ function NewTabUI() {
                   alt=""
                 />
                 <a
-                  href={bookmark.url}
+                  href={constructValidURL(bookmark.url)}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
