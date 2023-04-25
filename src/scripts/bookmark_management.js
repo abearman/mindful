@@ -1,6 +1,11 @@
 import { STORAGE_KEY_BOOKMARK_GROUPS } from './constants.js';
 
-/* Load bookmark groups */
+export function clearBookmarkGroups() {
+  chrome.storage.local.remove(STORAGE_KEY_BOOKMARK_GROUPS, function() {
+    console.log('Cleared bookmarks');
+  });
+}
+
 export function loadBookmarkGroups() {
   return JSON.parse(localStorage.getItem(STORAGE_KEY_BOOKMARK_GROUPS)) || [];
 }
