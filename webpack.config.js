@@ -2,7 +2,7 @@ const path = require('path');
 const CopyPlugin = require('copy-webpack-plugin');
 
 module.exports = {
-  mode: 'production', // or 'development'
+  mode: 'development', // or 'production'
   entry: {
     popup: './src/pages/popup.js',
     newtab: './src/pages/newtab.js',

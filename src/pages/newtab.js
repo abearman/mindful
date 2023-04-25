@@ -119,10 +119,56 @@ function NewTabUI() {
   };
 
   return (
-    <div id="root">
-      Test Words
+    <div id="bookmark-groups-container">
+      {bookmarkGroups.map((bookmarkGroup, index) => (
+        <div key={createUniqueID()} className="bookmark-group-box">
+          <h2 
+            id={BOOKMARK_GROUP_TITLE_PREFIX + '-' + bookmarkGroup.groupName}
+            className={BOOKMARK_GROUP_TITLE_PREFIX}
+            contentEditable={true}
+          >
+            {bookmarkGroup.groupName}
+          </h2>
+
+          <div className="bookmark-list">
+            {bookmarkGroup.bookmarks.map((bookmark, bookmarkIndex) => (
+              <div key={createUniqueID()} className="bookmark-container">
+                <img
+                  className="favicon"
+                  src={`https://www.google.com/s2/favicons?sz=16&domain=${bookmark.url}`}
+                  alt=""
+                />
+                <a
+                  href={bookmark.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onBlur={(event) => handleBookmarkNameEdit(event, index, bookmarkIndex)}
+                >
+                  {bookmark.name}
+                </a>
+
+                <ModifyBookmarkButton buttonType={ModifyButtonType.DELETE}/>
+                
+              </div>
+            ))}
+          </div>
+
+        </div>
+      ))}
     </div>
   );
 }
+
+
+function ModifyBookmarkButton(props) {
+  console.log("Button type: " + props.buttonType);
+  const imagePath = props.buttonType == ModifyButtonType.EDIT ? "assets/edit-icon.svg" : "assets/delete-icon.svg";
+  return (
+    <button className='modify-link-button'>
+      <img src={imagePath} className='modify-link-button-img'/>
+    </button>
+  );
+}
+
 
 ReactDOM.render(<NewTabUI />, document.getElementById('root'));
