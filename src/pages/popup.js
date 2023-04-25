@@ -12,6 +12,8 @@ function Popup() {
   const [newGroupInput, setNewGroupInput] = useState('');
   const [name, setName] = useState('');
   const [url, setUrl] = useState('');
+  let bookmarkGroups = loadBookmarkGroups();
+  console.log("bookmarkGroups: " + JSON.stringify(bookmarkGroups, null, 2));
 
   useEffect(() => {
     loadGroupDropdown();
@@ -26,6 +28,13 @@ function Popup() {
       setUrl(currentTabURL);
       setName(currentTabTitle);
     });
+    if (bookmarkGroups.length == 0) {
+      setSelectedGroup("New Group");
+    } else {
+      // TODO: Default select to the name of the last modified bookmark group.
+      // For now, we'll just select the name of the first bookmark group.
+      setSelectedGroup(bookmarkGroups[0].groupName);
+    }
   }
 
   function handleNameChange(event) {
@@ -119,7 +128,10 @@ function Popup() {
           id="bookmark-url"
           name="bookmark-url"
           value={url}
-          pattern="^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/|www\.|)[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$" required>
+          onChange={handleUrlChange}
+          pattern="^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/|www\.|)[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$" 
+          required
+        >
         </input>
         <button type="submit" class="add-bookmark-button">Add Bookmark</button>
       </form>
