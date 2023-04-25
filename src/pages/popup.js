@@ -13,7 +13,6 @@ function Popup() {
   const [name, setName] = useState('');
   const [url, setUrl] = useState('');
   let bookmarkGroups = loadBookmarkGroups();
-  console.log("bookmarkGroups: " + JSON.stringify(bookmarkGroups, null, 2));
 
   useEffect(() => {
     loadGroupDropdown();
@@ -27,7 +26,11 @@ function Popup() {
       let currentTabTitle = currentTab.title;
       setUrl(currentTabURL);
       setName(currentTabTitle);
+      setSelectedGroupNewOrLastModified();
     });
+  }
+
+  function setSelectedGroupNewOrLastModified() {
     if (bookmarkGroups.length == 0) {
       setSelectedGroup("New Group");
     } else {
@@ -64,10 +67,10 @@ function Popup() {
     saveBookmark(name, url, group);
 
     // Update the group dropdown with the new group name
-    setGroups(refreshGroupsDropdown());
-
+    refreshGroupsDropdown();
+    
     setNewGroupInput('');
-    setSelectedGroup('');
+    setSelectedGroupNewOrLastModified();
     setName('');
     setUrl('');
   }
