@@ -63,7 +63,8 @@ function Popup() {
 
     saveBookmark(name, url, group);
 
-    setGroups(loadBookmarkGroups());
+    // Update the group dropdown with the new group name
+    setGroups(refreshGroupsDropdown());
 
     setNewGroupInput('');
     setSelectedGroup('');
@@ -85,7 +86,7 @@ function Popup() {
     setGroups(options);
   }
 
-  function addNewGroup() {
+  function refreshGroupsDropdown() {
     if (newGroupInput !== '') {
       setGroups((groups) => [
         ...groups,
