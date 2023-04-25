@@ -119,7 +119,7 @@ function NewTabUI() {
   };
 
   return (
-    <div id="bookmark-groups-container">
+    <div className="bookmark-groups-container">
       {bookmarkGroups.map((bookmarkGroup, groupIndex) => (
         <div key={createUniqueID()} className="bookmark-group-box">
           <h2 
