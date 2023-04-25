@@ -56,27 +56,27 @@ function NewTabUI() {
     }
   }
 
-  function handleBookmarkNameEdit(event, index, bookmarkIndex) {
+  function handleBookmarkNameEdit(event, groupIndex, bookmarkIndex) {
     const newBookmarkName = event.target.textContent.trim();
-    const bookmarkGroup = bookmarkGroups[index];
+    const bookmarkGroup = bookmarkGroups[groupIndex];
     const bookmark = bookmarkGroup.bookmarks[bookmarkIndex];
     if (newBookmarkName !== bookmark.name) {
       const updatedGroups = [...bookmarkGroups];
-      updatedGroups[index].bookmarks[bookmarkIndex].name = newBookmarkName;
+      updatedGroups[groupIndex].bookmarks[bookmarkIndex].name = newBookmarkName;
       setBookmarkGroups(updatedGroups);
       editBookmarkName(bookmark.name, bookmarkGroup.groupName, newBookmarkName);
     }
   }
 
-  function handleBookmarkDelete(index, bookmarkIndex) {
-    const bookmarkGroup = bookmarkGroups[index];
+  function handleBookmarkDelete(event, groupIndex, bookmarkIndex) {
+    const bookmarkGroup = bookmarkGroups[groupIndex];
     const bookmark = bookmarkGroup.bookmarks[bookmarkIndex];
     const shouldDelete = window.confirm(
       "Are you sure you want to delete the " + bookmark.name + " bookmark from " + bookmarkGroup.groupName + "?"
     ); 
     if (shouldDelete) {
       const updatedGroups = [...bookmarkGroups];
-      updatedGroups[index].bookmarks.splice(bookmarkIndex, 1);
+      updatedGroups[groupIndex].bookmarks.splice(bookmarkIndex, 1);
       setBookmarkGroups(updatedGroups);
       deleteBookmark(bookmark.name, bookmarkGroup.groupName);
     }
@@ -120,7 +120,7 @@ function NewTabUI() {
 
   return (
     <div id="bookmark-groups-container">
-      {bookmarkGroups.map((bookmarkGroup, index) => (
+      {bookmarkGroups.map((bookmarkGroup, groupIndex) => (
         <div key={createUniqueID()} className="bookmark-group-box">
           <h2 
             id={BOOKMARK_GROUP_TITLE_PREFIX + '-' + bookmarkGroup.groupName}
@@ -142,12 +142,12 @@ function NewTabUI() {
                   href={bookmark.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  onBlur={(event) => handleBookmarkNameEdit(event, index, bookmarkIndex)}
                 >
                   {bookmark.name}
                 </a>
 
-                <ModifyBookmarkButton buttonType={ModifyButtonType.DELETE}/>
+                <ModifyBookmarkButton imagePath="assets/edit-icon.svg" onClick={handleBookmarkNameEdit} groupIndex={groupIndex} bookmarkIndex={bookmarkIndex}/>
+                <ModifyBookmarkButton imagePath="assets/delete-icon.svg" onClick={handleBookmarkDelete} groupIndex={groupIndex} bookmarkIndex={bookmarkIndex}/>
                 
               </div>
             ))}
@@ -161,11 +161,9 @@ function NewTabUI() {
 
 
 function ModifyBookmarkButton(props) {
-  console.log("Button type: " + props.buttonType);
-  const imagePath = props.buttonType == ModifyButtonType.EDIT ? "assets/edit-icon.svg" : "assets/delete-icon.svg";
   return (
-    <button className='modify-link-button'>
-      <img src={imagePath} className='modify-link-button-img'/>
+    <button className='modify-link-button' onClick={(event) => props.onClick(event, props.groupIndex, props.bookmarkIndex)}>
+      <img src={props.imagePath} className='modify-link-button-img'/>
     </button>
   );
 }
