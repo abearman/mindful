@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 
 import '../styles/popup.css';
-import { STORAGE_KEY_BOOKMARK_GROUPS } from '../scripts/constants.js';
-import { createUniqueID, constructValidURL } from '../scripts/utilities.js';
+import { CHROME_NEW_TAB } from '../scripts/constants.js';
+import { createUniqueID, constructValidURL, isCurrentTabTheNewTab } from '../scripts/utilities.js';
 import { loadBookmarkGroups, saveBookmark } from '../scripts/bookmark_management.js';
 
 function Popup() {
@@ -12,6 +12,7 @@ function Popup() {
   const [newGroupInput, setNewGroupInput] = useState('');
   const [name, setName] = useState('');
   const [url, setUrl] = useState('');
+  const [urlManuallyEntered, setUrlManuallyEntered] = useState(false);
   let bookmarkGroups = loadBookmarkGroups();
 
   useEffect(() => {
@@ -46,6 +47,7 @@ function Popup() {
 
   function handleUrlChange(event) {
     setUrl(event.target.value);
+    setUrlManuallyEntered(true);
   }
 
   function handleNewGroupInputChange(event) {
@@ -68,21 +70,12 @@ function Popup() {
       can refresh to update the bookmarks. If it's any other webpage, we don't want
       to refresh for the user.
     */
-    const getShouldRefreshTab = () => {
-      return new Promise((resolve) => {
-        chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-          var currentTab = tabs[0];
-          if (currentTab.url === "chrome://newtab/") {
-            // This is the new tab page
-            resolve(true);
-          } else {
-            resolve(false);
-          } 
-        });
-      });
+    const shouldRefresh = await isCurrentTabTheNewTab();
+    let urlToSubmit = url;
+    if (urlManuallyEntered) {
+      urlToSubmit = constructValidURL(url);
     }
-    const shouldRefresh = await getShouldRefreshTab();
-    saveBookmark(name, url, group, shouldRefresh);
+    saveBookmark(name, urlToSubmit, group, shouldRefresh);
 
     // Update the group dropdown with the new group name
     refreshGroupsDropdown();
