@@ -3,28 +3,16 @@ import ReactDOM from 'react-dom';
 
 import '../styles/newtab.css';
 import {
-  STORAGE_KEY_BOOKMARK_GROUPS,
-} from "../scripts/constants.js";
-import {
   createUniqueID,
   constructValidURL,
 } from "../scripts/utilities.js";
 import {
   loadBookmarkGroups,
-  deleteBookmark,
-  editBookmarkName,
   overwriteBookmarkGroupsToStorage,
   saveBookmark,
-  clearBookmarkGroups,
 } from "../scripts/bookmark_management.js";
 import { AppContextProvider, AppContext } from '../scripts/AppContext';
 
-
-import editIcon from '../../public/assets/edit-icon.svg';
-import deleteIcon from '../../public/assets/delete-icon.svg';
-
-const ADD_LINK_BUTTON_ID_PREFIX = "add-link-button";
-const BOOKMARK_GROUP_TITLE_PREFIX = "bookmark-group-box-title";
 
 const ModifyButtonType = Object.freeze({
   EDIT: "edit",
@@ -34,20 +22,6 @@ const ModifyButtonType = Object.freeze({
 
 function NewTabUI() {
   const { bookmarkGroups, setBookmarkGroups } = useContext(AppContext);
-
-  const getFaviconUrl = (bookmarkUrl) => {
-    return `https://www.google.com/s2/favicons?sz=16&domain=${bookmarkUrl}`;
-  };
-
-  function handleBookmarkGroupHeaderBlur(event, index) {
-    const newGroupName = event.target.textContent.trim();
-    if (newGroupName !== bookmarkGroups[index].groupName) {
-      const updatedGroups = [...bookmarkGroups];
-      updatedGroups[index].groupName = newGroupName;
-      setBookmarkGroups(updatedGroups);
-      overwriteBookmarkGroupsToStorage(updatedGroups);
-    }
-  }
 
   function handleAddBookmarkSubmit(event, index) {
     event.preventDefault();
@@ -59,14 +33,6 @@ function NewTabUI() {
     const groups = loadBookmarkGroups();
     setBookmarkGroups(groups);
   }
-
-
-  const handleLinkEditBlur = (bookmark, groupName, event) => {
-    const newBookmarkName = event.target.textContent.trim();
-    if (newBookmarkName !== bookmark.name) {
-      editBookmarkName(bookmark.name, groupName, newBookmarkName);
-    }
-  };
 
   const handleNewLinkButtonClick = (groupName) => {
     // TODO: Implement the adding of a new bookmark link.
@@ -96,8 +62,7 @@ function EditableBookmarkGroupHeading(props) {
   const { bookmarkGroups, setBookmarkGroups } = useContext(AppContext);
 
   function handleBlur(event) {
-    console.log("handleBlur called for <h2> element");
-    setText(event.target.textContent);
+    setText(event.target.textContent.trim());
 
     const newGroupName = event.target.textContent.trim();
     if (newGroupName !== props.bookmarkGroup.groupName) {
@@ -109,7 +74,7 @@ function EditableBookmarkGroupHeading(props) {
   }
 
   return (
-    <h2 contentEditable onBlur={handleBlur} className={BOOKMARK_GROUP_TITLE_PREFIX}>
+    <h2 contentEditable onBlur={handleBlur} className="bookmark-group-box-title">
       {text}
     </h2>
   );
@@ -120,6 +85,10 @@ function EditableBookmark(props) {
   const { bookmarkGroups, setBookmarkGroups } = useContext(AppContext);
   const [text, setText] = useState(props.bookmark.name);
   const [url, setUrl] = useState(props.bookmark.url);
+
+  const getFaviconUrl = (bookmarkUrl) => {
+    return `https://www.google.com/s2/favicons?sz=16&domain=${bookmarkUrl}`;
+  };
 
   function handleBookmarkNameEdit(event, groupIndex, bookmarkIndex, aRef) {
     // Make the <a> element's content editable
@@ -174,7 +143,7 @@ function EditableBookmark(props) {
     <div key={createUniqueID()} className="bookmark-container">
       <img
         className="favicon"
-        src={`https://www.google.com/s2/favicons?sz=16&domain=${props.bookmark.url}`}
+        src={getFaviconUrl(props.bookmark.url)}
         alt=""
       />
       
