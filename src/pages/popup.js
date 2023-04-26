@@ -59,12 +59,30 @@ function Popup() {
     setSelectedGroup(event.target.value);
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
 
     const group = newGroupInput === '' ? selectedGroup : newGroupInput;
 
-    saveBookmark(name, url, group, /* shouldRefresh */ false);
+    /* Check what the current tab is. If it's the new tab (Mindful app), then we 
+      can refresh to update the bookmarks. If it's any other webpage, we don't want
+      to refresh for the user.
+    */
+    const getShouldRefreshTab = () => {
+      return new Promise((resolve) => {
+        chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+          var currentTab = tabs[0];
+          if (currentTab.url === "chrome://newtab/") {
+            // This is the new tab page
+            resolve(true);
+          } else {
+            resolve(false);
+          } 
+        });
+      });
+    }
+    const shouldRefresh = await getShouldRefreshTab();
+    saveBookmark(name, url, group, shouldRefresh);
 
     // Update the group dropdown with the new group name
     refreshGroupsDropdown();
