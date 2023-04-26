@@ -76,13 +76,7 @@ function NewTabUI() {
     <div className="bookmark-groups-container">
       {bookmarkGroups.map((bookmarkGroup, groupIndex) => (
         <div key={createUniqueID()} className="bookmark-group-box">
-          <h2 
-            id={BOOKMARK_GROUP_TITLE_PREFIX + '-' + bookmarkGroup.groupName}
-            className={BOOKMARK_GROUP_TITLE_PREFIX}
-            contentEditable={true}
-          >
-            {bookmarkGroup.groupName}
-          </h2>
+          <EditableBookmarkGroupHeading key={createUniqueID} bookmarkGroup={bookmarkGroup} groupIndex={groupIndex}/>
 
           <div className="bookmark-list">
             {bookmarkGroup.bookmarks.map((bookmark, bookmarkIndex) => (
@@ -93,6 +87,31 @@ function NewTabUI() {
         </div>
       ))}
     </div>
+  );
+}
+
+
+function EditableBookmarkGroupHeading(props) {
+  const [text, setText] = useState(props.bookmarkGroup.groupName);
+  const { bookmarkGroups, setBookmarkGroups } = useContext(AppContext);
+
+  function handleBlur(event) {
+    console.log("handleBlur called for <h2> element");
+    setText(event.target.textContent);
+
+    const newGroupName = event.target.textContent.trim();
+    if (newGroupName !== props.bookmarkGroup.groupName) {
+      const updatedGroups = [...bookmarkGroups];
+      updatedGroups[props.groupIndex].groupName = newGroupName;
+      setBookmarkGroups(updatedGroups);
+      overwriteBookmarkGroupsToStorage(bookmarkGroups);      
+    }
+  }
+
+  return (
+    <h2 contentEditable onBlur={handleBlur} className={BOOKMARK_GROUP_TITLE_PREFIX}>
+      {text}
+    </h2>
   );
 }
 
