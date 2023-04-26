@@ -1,5 +1,13 @@
 # Mindful
 Chrome plugin for productivity and efficiently storing bookmarks
 
-## How to compile the React project
-Run `npx webpack`.
+## How to install the Chrome extension
+1. Download the code zip file from Github and extract it.
+2. In Chrome, navigate to https://chrome://extensions/
+3. In the top right corner, click to enable "Developer mode."
+4. In the top left corner, click on "Load unpacked."
+5. Navigate to the `mindful/` directory you just downloaded. As the root folder, select the `dist/` subdirectory and click select.
+6. Now, the Mindful Chrome extension is running in your browser. To make it easier to access, you can pin it to your Chrome extensions bar.
+
+## How to compile the React project for development
+Run `npx webpack` from the root `mindful` directory.
