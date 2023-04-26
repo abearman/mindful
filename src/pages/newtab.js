@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import ReactDOM from 'react-dom';
 
 import '../styles/newtab.css';
@@ -13,10 +13,12 @@ import {
   loadBookmarkGroups,
   deleteBookmark,
   editBookmarkName,
-  overwriteBookmarkGroups,
+  overwriteBookmarkGroupsToStorage,
   saveBookmark,
   clearBookmarkGroups,
 } from "../scripts/bookmark_management.js";
+import { AppContextProvider, AppContext } from '../scripts/AppContext';
+
 
 import editIcon from '../../public/assets/edit-icon.svg';
 import deleteIcon from '../../public/assets/delete-icon.svg';
@@ -31,16 +33,7 @@ const ModifyButtonType = Object.freeze({
 
 
 function NewTabUI() {
-  const [bookmarkGroups, setBookmarkGroups] = useState([]);
-
-  useEffect(() => {
-    let groups = loadBookmarkGroups();
-    if (groups !== null) {
-      setBookmarkGroups(groups);
-    } else {
-      // TODO: Decide what to render for the landing page if there are no saved bookmarks
-    }
-  }, []);
+  const { bookmarkGroups, setBookmarkGroups } = useContext(AppContext);
 
   const getFaviconUrl = (bookmarkUrl) => {
     return `https://www.google.com/s2/favicons?sz=16&domain=${bookmarkUrl}`;
@@ -52,33 +45,7 @@ function NewTabUI() {
       const updatedGroups = [...bookmarkGroups];
       updatedGroups[index].groupName = newGroupName;
       setBookmarkGroups(updatedGroups);
-      overwriteBookmarkGroups(updatedGroups);
-    }
-  }
-
-  function handleBookmarkNameEdit(event, groupIndex, bookmarkIndex) {
-    const newBookmarkName = event.target.textContent.trim();
-    const bookmarkGroup = bookmarkGroups[groupIndex];
-    const bookmark = bookmarkGroup.bookmarks[bookmarkIndex];
-    if (newBookmarkName !== bookmark.name) {
-      const updatedGroups = [...bookmarkGroups];
-      updatedGroups[groupIndex].bookmarks[bookmarkIndex].name = newBookmarkName;
-      setBookmarkGroups(updatedGroups);
-      editBookmarkName(bookmark.name, bookmarkGroup.groupName, newBookmarkName);
-    }
-  }
-
-  function handleBookmarkDelete(event, groupIndex, bookmarkIndex) {
-    const bookmarkGroup = bookmarkGroups[groupIndex];
-    const bookmark = bookmarkGroup.bookmarks[bookmarkIndex];
-    const shouldDelete = window.confirm(
-      "Are you sure you want to delete the " + bookmark.name + " bookmark from " + bookmarkGroup.groupName + "?"
-    ); 
-    if (shouldDelete) {
-      const updatedGroups = [...bookmarkGroups];
-      updatedGroups[groupIndex].bookmarks.splice(bookmarkIndex, 1);
-      setBookmarkGroups(updatedGroups);
-      deleteBookmark(bookmark.name, bookmarkGroup.groupName);
+      overwriteBookmarkGroupsToStorage(updatedGroups);
     }
   }
 
@@ -101,19 +68,6 @@ function NewTabUI() {
     }
   };
 
-  const handleModifyButtonClick = (buttonType, bookmark, groupName) => {
-    if (buttonType === ModifyButtonType.EDIT) {
-      // TODO: Implement the editing of the bookmark name.
-    } else if (buttonType === ModifyButtonType.DELETE) {
-      const shouldDelete = window.confirm(
-        `Are you sure you want to delete the ${bookmark.name} bookmark from ${groupName}?`
-      );
-      if (shouldDelete) {
-        deleteBookmark(bookmark.name, groupName);
-      }
-    }
-  };
-
   const handleNewLinkButtonClick = (groupName) => {
     // TODO: Implement the adding of a new bookmark link.
   };
@@ -132,24 +86,7 @@ function NewTabUI() {
 
           <div className="bookmark-list">
             {bookmarkGroup.bookmarks.map((bookmark, bookmarkIndex) => (
-              <div key={createUniqueID()} className="bookmark-container">
-                <img
-                  className="favicon"
-                  src={`https://www.google.com/s2/favicons?sz=16&domain=${bookmark.url}`}
-                  alt=""
-                />
-                <a
-                  href={constructValidURL(bookmark.url)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {bookmark.name}
-                </a>
-
-                <ModifyBookmarkButton imagePath="assets/edit-icon.svg" onClick={handleBookmarkNameEdit} groupIndex={groupIndex} bookmarkIndex={bookmarkIndex}/>
-                <ModifyBookmarkButton imagePath="assets/delete-icon.svg" onClick={handleBookmarkDelete} groupIndex={groupIndex} bookmarkIndex={bookmarkIndex}/>
-                
-              </div>
+              <EditableBookmark key={createUniqueID()} bookmark={bookmark} bookmarkIndex={bookmarkIndex} groupIndex={groupIndex} />
             ))}
           </div>
 
@@ -160,13 +97,102 @@ function NewTabUI() {
 }
 
 
+function EditableBookmark(props) {
+  const { bookmarkGroups, setBookmarkGroups } = useContext(AppContext);
+  const [text, setText] = useState(props.bookmark.name);
+  const [url, setUrl] = useState(props.bookmark.url);
+
+  function handleBookmarkNameEdit(event, groupIndex, bookmarkIndex, aRef) {
+    // Make the <a> element's content editable
+    let aElement = aRef.current;
+    aElement.setAttribute('contenteditable', 'true'); 
+    aElement.focus();
+    
+    // Select all text in the <a> element
+    const selection = window.getSelection();
+    const range = document.createRange();
+    range.selectNodeContents(aElement);
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    // Listen for "keydown - Enter" and "blur" events on the link element
+    aElement.addEventListener('keydown', function(event) {
+      if (event.key === 'Enter') { 
+        event.preventDefault(); 
+        aElement.blur(); // Remove focus from the linkElement to trigger the blur function
+      }
+    });
+    aElement.addEventListener('blur', (event) => {
+      const bookmarkGroup = bookmarkGroups[groupIndex];
+      const bookmark = bookmarkGroup.bookmarks[bookmarkIndex];
+      const newBookmarkName = event.target.textContent.trim();
+      if (newBookmarkName !== bookmark.name) {
+        const updatedGroups = [...bookmarkGroups];
+        updatedGroups[groupIndex].bookmarks[bookmarkIndex].name = newBookmarkName;
+        setBookmarkGroups(updatedGroups);
+        overwriteBookmarkGroupsToStorage(updatedGroups, /* shouldRefresh */ false);
+      }
+      aElement.setAttribute('contenteditable', 'false'); 
+    });
+  }
+
+  function handleBookmarkDelete(event, groupIndex, bookmarkIndex) {
+    const bookmarkGroup = bookmarkGroups[groupIndex];
+    const bookmark = bookmarkGroup.bookmarks[bookmarkIndex];
+    const shouldDelete = window.confirm(
+      "Are you sure you want to delete the " + bookmark.name + " bookmark from " + bookmarkGroup.groupName + "?"
+    ); 
+    if (shouldDelete) {
+      const updatedGroups = [...bookmarkGroups];
+      updatedGroups[groupIndex].bookmarks.splice(bookmarkIndex, 1);
+      setBookmarkGroups(updatedGroups);
+      overwriteBookmarkGroupsToStorage(updatedGroups, /* shouldRefresh */ false);
+    }
+  }
+
+  const aRef = useRef(null);
+  return (
+    <div key={createUniqueID()} className="bookmark-container">
+      <img
+        className="favicon"
+        src={`https://www.google.com/s2/favicons?sz=16&domain=${props.bookmark.url}`}
+        alt=""
+      />
+      
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        ref={aRef}
+      >
+        {text}
+      </a>
+
+      <ModifyBookmarkButton 
+        imagePath="assets/edit-icon.svg" 
+        onClick={(event) => handleBookmarkNameEdit(event, props.groupIndex, props.bookmarkIndex, aRef)} 
+      />
+      <ModifyBookmarkButton 
+        imagePath="assets/delete-icon.svg" 
+        onClick={(event) => handleBookmarkDelete(event, props.groupIndex, props.bookmarkIndex)}  
+      />
+      
+    </div>
+  );
+}
+
 function ModifyBookmarkButton(props) {
   return (
-    <button className='modify-link-button' onClick={(event) => props.onClick(event, props.groupIndex, props.bookmarkIndex)}>
+    <button className='modify-link-button' onClick={props.onClick}>
       <img src={props.imagePath} className='modify-link-button-img'/>
     </button>
   );
 }
 
 
-ReactDOM.render(<NewTabUI />, document.getElementById('root'));
+ReactDOM.render(
+  <AppContextProvider>
+    <NewTabUI />
+  </AppContextProvider>,
+  document.getElementById('root')
+);

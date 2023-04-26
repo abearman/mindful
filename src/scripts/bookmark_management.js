@@ -10,8 +10,11 @@ export function loadBookmarkGroups() {
   return JSON.parse(localStorage.getItem(STORAGE_KEY_BOOKMARK_GROUPS)) || [];
 }
 
-export function overwriteBookmarkGroups(bookmarkGroups) {
+export function overwriteBookmarkGroupsToStorage(bookmarkGroups, shouldRefresh=false) {
   localStorage.setItem(STORAGE_KEY_BOOKMARK_GROUPS, JSON.stringify(bookmarkGroups));
+  if (shouldRefresh) {
+    refreshActiveTab();
+  }
 }
 
 function refreshActiveTab() {
@@ -39,10 +42,7 @@ export function saveBookmark(bookmarkName, url, groupName, shouldRefresh=false) 
     bookmarkGroups.push({ groupName: groupName, bookmarks: [bookmark] });
   }
   
-  overwriteBookmarkGroups(bookmarkGroups);
-  if (shouldRefresh) {
-    refreshActiveTab();
-  }
+  overwriteBookmarkGroupsToStorage(bookmarkGroups, shouldRefresh=shouldRefresh);
 }
 
 
@@ -58,7 +58,7 @@ export function deleteBookmark(bookmarkName, groupName) {
     // If the bookmark was found, remove it from the array and update local storage
     if (bookmarkIndex !== -1) {
       bookmarks.splice(bookmarkIndex, 1);
-      overwriteBookmarkGroups(bookmarkGroups); 
+      overwriteBookmarkGroupsToStorage(bookmarkGroups); 
       refreshActiveTab();
     }
   }
@@ -77,7 +77,7 @@ export function editBookmarkName(oldBookmarkName, groupName, newBookmarkName) {
     // If the bookmark was found, edit its name and update local storage
     if (bookmarkIndex !== -1) {
       bookmarks[bookmarkIndex].name = newBookmarkName;
-      overwriteBookmarkGroups(bookmarkGroups); 
+      overwriteBookmarkGroupsToStorage(bookmarkGroups); 
       refreshActiveTab();
     }
   }

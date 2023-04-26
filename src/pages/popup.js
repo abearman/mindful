@@ -64,7 +64,7 @@ function Popup() {
 
     const group = newGroupInput === '' ? selectedGroup : newGroupInput;
 
-    saveBookmark(name, url, group);
+    saveBookmark(name, url, group, /* shouldRefresh */ false);
 
     // Update the group dropdown with the new group name
     refreshGroupsDropdown();
@@ -137,7 +137,7 @@ function Popup() {
           required
         >
         </input>
-        <button type="submit" class="add-bookmark-button">Add Bookmark</button>
+        <button type="submit" className="add-bookmark-button">Add Bookmark</button>
       </form>
     </div>
   );
