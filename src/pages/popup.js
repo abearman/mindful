@@ -17,6 +17,12 @@ function Popup() {
   useEffect(() => {
     loadGroupDropdown();
     setInitialValues();
+
+    // Keep the window open even when it loses focus
+    chrome.windows.getCurrent(function (window) {
+      console.log("Window ID in Popup: " + window.id);
+      chrome.windows.update(window.id, { focused: true });
+    });
   }, []);
 
   function setInitialValues() {

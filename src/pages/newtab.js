@@ -23,6 +23,13 @@ const ModifyButtonType = Object.freeze({
 function NewTabUI() {
   const { bookmarkGroups, setBookmarkGroups } = useContext(AppContext);
 
+  useEffect(() => {
+    chrome.windows.getCurrent(function (window) {
+      console.log("Window ID in NewTab: " + window.id);
+      chrome.windows.update(window.id, { focused: true });
+    });
+  }, []);
+
   function handleAddBookmarkSubmit(event, index) {
     event.preventDefault();
     const form = event.target;
