@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom';
 import '../styles/Popup.css';
 import { constructValidURL } from '../scripts/Utilities.js';
 import { loadBookmarkGroups, saveBookmark } from '../scripts/BookmarkManagement.js';
+import { URL_PATTERN } from '../scripts/Constants';
 
 function Popup() {
   const [groups, setGroups] = useState([]);
@@ -18,11 +19,13 @@ function Popup() {
     loadGroupDropdown();
     setInitialValues();
 
-    // Keep the window open even when it loses focus
-    chrome.windows.getCurrent(function (window) {
-      console.log("Window ID in Popup: " + window.id);
-      chrome.windows.update(window.id, { focused: true });
-    });
+    setTimeout(function() {
+      console.log("In timeout");
+      window.addEventListener('blur', function(event) {
+        console.log("In window event listener");
+        event.preventDefault();
+      });
+    }, 500);
   }, []);
 
   function setInitialValues() {
@@ -144,7 +147,7 @@ function Popup() {
           name="bookmark-url"
           value={url}
           onChange={handleUrlChange}
-          pattern="^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/|www\.|)[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$" 
+          pattern={URL_PATTERN} 
           required
         >
         </input>
