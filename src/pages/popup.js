@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 
-import '../styles/popup.css';
-import { constructValidURL } from '../scripts/utilities.js';
-import { loadBookmarkGroups, saveBookmark } from '../scripts/bookmark_management.js';
+import '../styles/Popup.css';
+import { constructValidURL } from '../scripts/Utilities.js';
+import { loadBookmarkGroups, saveBookmark } from '../scripts/BookmarkManagement.js';
 
 function Popup() {
   const [groups, setGroups] = useState([]);

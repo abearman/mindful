@@ -1,4 +1,4 @@
-import { CHROME_NEW_TAB } from '../scripts/constants.js';
+import { CHROME_NEW_TAB } from './Constants.js';
 
 
 export function createUniqueID() {

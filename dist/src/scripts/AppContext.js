@@ -2,7 +2,7 @@ import React, { createContext, useState } from 'react';
 
 import {
     loadBookmarkGroups,
-} from "../scripts/bookmark_management.js";
+} from "./BookmarkManagement.js";
 
 
 export const AppContext = createContext();

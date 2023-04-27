@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import ReactDOM from 'react-dom';
 
-import '../styles/newtab.css';
+import '../styles/NewTab.css';
 import {
   createUniqueID,
   constructValidURL,
-} from "../scripts/utilities.js";
+} from "../scripts/Utilities.js";
 import {
   loadBookmarkGroups,
   overwriteBookmarkGroupsToStorage,
   saveBookmark,
-} from "../scripts/bookmark_management.js";
+} from "../scripts/BookmarkManagement.js";
 import { AppContextProvider, AppContext } from '../scripts/AppContext';
 
 

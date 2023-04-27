@@ -1,4 +1,4 @@
-import { CHROME_NEW_TAB, STORAGE_KEY_BOOKMARK_GROUPS } from './constants.js';
+import { CHROME_NEW_TAB, STORAGE_KEY_BOOKMARK_GROUPS } from './Constants.js';
 
 export function clearBookmarkGroups() {
   chrome.storage.local.remove(STORAGE_KEY_BOOKMARK_GROUPS, function() {
