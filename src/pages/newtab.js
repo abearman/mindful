@@ -28,7 +28,7 @@ function NewTabUI() {
     const form = event.target;
     const name = form.elements['bookmark-name'].value;
     const url = constructValidURL(form.elements['bookmark-url'].value);
-    saveBookmark(name, url, bookmarkGroups[index].groupName, /*should refresh */ true);
+    saveBookmark(name, url, bookmarkGroups[index].groupName); 
     form.reset();
     const groups = loadBookmarkGroups();
     setBookmarkGroups(groups);
@@ -118,7 +118,7 @@ function EditableBookmark(props) {
         const updatedGroups = [...bookmarkGroups];
         updatedGroups[groupIndex].bookmarks[bookmarkIndex].name = newBookmarkName;
         setBookmarkGroups(updatedGroups);
-        overwriteBookmarkGroupsToStorage(updatedGroups, /* shouldRefresh */ false);
+        overwriteBookmarkGroupsToStorage(updatedGroups); 
       }
       aElement.setAttribute('contenteditable', 'false'); 
     });
@@ -134,7 +134,7 @@ function EditableBookmark(props) {
       const updatedGroups = [...bookmarkGroups];
       updatedGroups[groupIndex].bookmarks.splice(bookmarkIndex, 1);
       setBookmarkGroups(updatedGroups);
-      overwriteBookmarkGroupsToStorage(updatedGroups, /* shouldRefresh */ false);
+      overwriteBookmarkGroupsToStorage(updatedGroups); 
     }
   }
 

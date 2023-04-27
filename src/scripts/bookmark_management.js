@@ -1,4 +1,4 @@
-import { STORAGE_KEY_BOOKMARK_GROUPS } from './constants.js';
+import { CHROME_NEW_TAB, STORAGE_KEY_BOOKMARK_GROUPS } from './constants.js';
 
 export function clearBookmarkGroups() {
   chrome.storage.local.remove(STORAGE_KEY_BOOKMARK_GROUPS, function() {
@@ -10,22 +10,24 @@ export function loadBookmarkGroups() {
   return JSON.parse(localStorage.getItem(STORAGE_KEY_BOOKMARK_GROUPS)) || [];
 }
 
-export function overwriteBookmarkGroupsToStorage(bookmarkGroups, shouldRefresh=false) {
+export function overwriteBookmarkGroupsToStorage(bookmarkGroups) {
   localStorage.setItem(STORAGE_KEY_BOOKMARK_GROUPS, JSON.stringify(bookmarkGroups));
-  if (shouldRefresh) {
-    refreshActiveTab();
-  }
+  refreshAllMindfulTabs();
 }
 
-function refreshActiveTab() {
-  // Reload the active tab to reflect the new bookmark
-  chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
-    chrome.tabs.reload(tabs[0].id);
+function refreshAllMindfulTabs() {
+  // Reload any tabs that are open and pointed to newtab (aka Mindful page)
+  chrome.tabs.query({}, function(tabs) {
+    tabs.forEach(function(tab) {
+      if (tab.url == CHROME_NEW_TAB) {
+        chrome.tabs.reload(tab.id);
+      }    
+    });
   });
 }
 
 /* Function to save a bookmark to local storage */
-export function saveBookmark(bookmarkName, url, groupName, shouldRefresh=false) {
+export function saveBookmark(bookmarkName, url, groupName) {
   let bookmarkGroups = loadBookmarkGroups();
   let bookmark = { name: bookmarkName, url: url };
   
@@ -42,7 +44,7 @@ export function saveBookmark(bookmarkName, url, groupName, shouldRefresh=false) 
     bookmarkGroups.push({ groupName: groupName, bookmarks: [bookmark] });
   }
   
-  overwriteBookmarkGroupsToStorage(bookmarkGroups, shouldRefresh=shouldRefresh);
+  overwriteBookmarkGroupsToStorage(bookmarkGroups);
 }
 
 

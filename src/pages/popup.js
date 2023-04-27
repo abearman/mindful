@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 
 import '../styles/popup.css';
-import { CHROME_NEW_TAB } from '../scripts/constants.js';
-import { createUniqueID, constructValidURL, isCurrentTabTheNewTab } from '../scripts/utilities.js';
+import { constructValidURL } from '../scripts/utilities.js';
 import { loadBookmarkGroups, saveBookmark } from '../scripts/bookmark_management.js';
 
 function Popup() {
@@ -66,16 +65,11 @@ function Popup() {
 
     const group = newGroupInput === '' ? selectedGroup : newGroupInput;
 
-    /* Check what the current tab is. If it's the new tab (Mindful app), then we 
-      can refresh to update the bookmarks. If it's any other webpage, we don't want
-      to refresh for the user.
-    */
-    const shouldRefresh = await isCurrentTabTheNewTab();
     let urlToSubmit = url;
     if (urlManuallyEntered) {
       urlToSubmit = constructValidURL(url);
     }
-    saveBookmark(name, urlToSubmit, group, shouldRefresh);
+    saveBookmark(name, urlToSubmit, group);
 
     // Update the group dropdown with the new group name
     refreshGroupsDropdown();
