@@ -8,9 +8,11 @@ import {
   constructValidURL,
 } from "../scripts/Utilities.js";
 import {
+  deleteBookmark,
   loadBookmarkGroups,
   overwriteBookmarkGroupsToStorage,
   saveBookmark,
+  deleteBookmarkGroup,
 } from "../scripts/BookmarkManagement.js";
 import { AppContextProvider, AppContext } from '../scripts/AppContext';
 import { URL_PATTERN } from '../scripts/Constants.js';
@@ -27,21 +29,42 @@ Modal.setAppElement('#root');
 function NewTabUI() {
   const { bookmarkGroups, setBookmarkGroups } = useContext(AppContext);
 
+  function handleDeleteBookmarkGroup(event, groupIndex) {
+    const shouldDelete = window.confirm(
+      "Are you sure you want to delete the entire group " + bookmarkGroups[groupIndex].groupName + "?"
+    ); 
+    if (shouldDelete) {
+      deleteBookmarkGroup(groupIndex);
+      setBookmarkGroups(loadBookmarkGroups()); 
+    } 
+  }
+
   return (
-    <div className="bookmark-groups-container">
-      {bookmarkGroups.map((bookmarkGroup, groupIndex) => (
-        <div key={createUniqueID()} className="bookmark-group-box">
-          <EditableBookmarkGroupHeading key={createUniqueID} bookmarkGroup={bookmarkGroup} groupIndex={groupIndex}/>
+    <div>
+      <div className="bookmark-groups-container">
+        {bookmarkGroups.map((bookmarkGroup, groupIndex) => (
+          <div key={createUniqueID()} className="bookmark-group-box">
+            <button 
+              className="delete-bookmark-group-button" 
+              onClick={(event) => handleDeleteBookmarkGroup(event, groupIndex)} 
+            >
+              <img src="./assets/delete-icon.svg" />
+            </button>
+            <EditableBookmarkGroupHeading key={createUniqueID} bookmarkGroup={bookmarkGroup} groupIndex={groupIndex}/>
 
-          <div className="bookmark-list">
-            {bookmarkGroup.bookmarks.map((bookmark, bookmarkIndex) => (
-              <EditableBookmark key={createUniqueID()} bookmark={bookmark} bookmarkIndex={bookmarkIndex} groupIndex={groupIndex} />
-            ))}
+            <div className="bookmark-list">
+              {bookmarkGroup.bookmarks.map((bookmark, bookmarkIndex) => (
+                <EditableBookmark key={createUniqueID()} bookmark={bookmark} bookmarkIndex={bookmarkIndex} groupIndex={groupIndex} />
+              ))}
+            </div>
+
+            <PopupContainer groupName={bookmarkGroups[groupIndex].groupName}/>
           </div>
-
-          <PopupContainer groupName={bookmarkGroups[groupIndex].groupName}/>
-        </div>
-      ))}
+        ))}
+      </div>
+      <button className='add-group-button'>
+        + Add Group
+      </button>
     </div>
   );
 }
@@ -121,10 +144,8 @@ function EditableBookmark(props) {
       "Are you sure you want to delete the " + bookmark.name + " bookmark from " + bookmarkGroup.groupName + "?"
     ); 
     if (shouldDelete) {
-      const updatedGroups = [...bookmarkGroups];
-      updatedGroups[groupIndex].bookmarks.splice(bookmarkIndex, 1);
-      setBookmarkGroups(updatedGroups);
-      overwriteBookmarkGroupsToStorage(updatedGroups); 
+      deleteBookmark(bookmarkIndex, groupIndex);
+      setBookmarkGroups(loadBookmarkGroups()); 
     }
   }
 
@@ -220,7 +241,7 @@ function PopupContainer(props) {
   // We make the URL be of type text so we can validate its format on our own, and we don't require the user to put https:// in front
   return (
     <div> 
-      <button className="add-link-button" onClick={openModal}>
+      <button className="add-bookmark-button" onClick={openModal}>
         + Add Link
       </button>
       <Modal

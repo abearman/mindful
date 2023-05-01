@@ -26,6 +26,16 @@ function refreshAllMindfulTabs() {
   });
 }
 
+/* Function to delete an entire bookmark group by index */
+export function deleteBookmarkGroup(groupIndex) {
+  let bookmarkGroups = loadBookmarkGroups();
+  if (groupIndex !== -1) {
+    bookmarkGroups.splice(groupIndex, 1);
+    overwriteBookmarkGroupsToStorage(bookmarkGroups); 
+    refreshAllMindfulTabs();
+  }
+}
+
 /* Function to save a bookmark to local storage */
 export function saveBookmark(bookmarkName, url, groupName) {
   let bookmarkGroups = loadBookmarkGroups();
@@ -49,19 +59,17 @@ export function saveBookmark(bookmarkName, url, groupName) {
 
 
 /* Function to delete a bookmark by name from a group */
-export function deleteBookmark(bookmarkName, groupName) {
+export function deleteBookmark(bookmarkIndex, groupIndex) {
   let bookmarkGroups = loadBookmarkGroups();
-  let groupIndex = bookmarkGroups.findIndex((item) => item.groupName === groupName);
   if (groupIndex !== -1) {
     let bookmarkGroup = bookmarkGroups[groupIndex];
-    let bookmarks = bookmarkGroup["bookmarks"];
-    const bookmarkIndex = bookmarks.findIndex((bookmark) => bookmark.name === bookmarkName);
+    let bookmarks = bookmarkGroup.bookmarks;
 
     // If the bookmark was found, remove it from the array and update local storage
     if (bookmarkIndex !== -1) {
       bookmarks.splice(bookmarkIndex, 1);
       overwriteBookmarkGroupsToStorage(bookmarkGroups); 
-      refreshActiveTab();
+      refreshAllMindfulTabs();
     }
   }
 }
@@ -80,7 +88,7 @@ export function editBookmarkName(oldBookmarkName, groupName, newBookmarkName) {
     if (bookmarkIndex !== -1) {
       bookmarks[bookmarkIndex].name = newBookmarkName;
       overwriteBookmarkGroupsToStorage(bookmarkGroups); 
-      refreshActiveTab();
+      refreshAllMindfulTabs();
     }
   }
 }
