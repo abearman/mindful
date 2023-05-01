@@ -4,8 +4,8 @@ const CopyPlugin = require('copy-webpack-plugin');
 module.exports = {
   mode: 'development', // or 'production'
   entry: {
-    popup: './src/pages/Popup.js',
-    newtab: './src/pages/NewTab.js',
+    PopUp: './src/pages/PopUp.js',
+    NewTab: './src/pages/NewTab.js',
   },
   output: {
     filename: '[name].js',
@@ -19,6 +19,8 @@ module.exports = {
         { from: 'public/NewTab.html', to: '.' },
         { from: 'src/scripts', to: 'src/scripts' },
         { from: 'src/styles', to: 'src/styles' },
+        { from: 'src/pages', to: 'src/pages' },
+        { from: 'src/components', to: 'src/components' },
       ],
     }),
   ],
