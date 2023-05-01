@@ -22,8 +22,6 @@ import {
 
 function AddLinkInline(props) {
   const { bookmarkGroups, setBookmarkGroups } = useContext(AppContext);
-  const [bookmarkName, setBookmarkName] = React.useState('')
-  const [bookmarkUrl, setBookmarkUrl] = React.useState('')
   const [linkBeingEdited, setLinkBeingEdited] = React.useState(false);
 
   function handleAddLinkClicked(event) {
@@ -36,7 +34,7 @@ function AddLinkInline(props) {
       {!linkBeingEdited ? (
         <AddLinkButton onClick={handleAddLinkClicked} />
       ) : (
-        <CreateNewBookmark groupName={props.groupName}/>
+        <CreateNewBookmark groupName={props.groupName} setLinkBeingEdited={setLinkBeingEdited}/>
       )}
     </div> 
   );
@@ -66,6 +64,13 @@ function CreateNewBookmark(props) {
     setBookmarkUrl(event.target.value);
   }
 
+  function handleKeyDown(event) {
+    if (event.key === 'Enter') {
+      event.preventDefault(); // prevent the form from submitting
+      handleSubmit(event);
+    }
+  }
+
   function handleSubmit(event) {
     event.preventDefault(); // prevent the form from submitting normally
     saveBookmark(bookmarkName, constructValidURL(bookmarkUrl), props.groupName);
@@ -77,13 +82,13 @@ function CreateNewBookmark(props) {
   }
 
   function closeForm(event) {
-    console.log("Close form button clicked");
+    props.setLinkBeingEdited(false);
   }
 
   return (
     <div className="create-new-bookmark-component"> 
       <div className="form-container">
-        <form>
+        <form onKeyDown={handleKeyDown}>
           <input type="text" placeholder="Enter a bookmark name ..." value={bookmarkName} onChange={handleBookmarkNameChange} required />
           <input type="text" placeholder="Enter a bookmark URL ..." value={bookmarkUrl} onChange={handleBookmarkUrlChange} pattern={URL_PATTERN} required></input>
         </form>
