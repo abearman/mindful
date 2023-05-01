@@ -20,7 +20,7 @@ import { AppContextProvider, AppContext } from '../scripts/AppContext';
 import { URL_PATTERN } from '../scripts/Constants.js';
 
 
-function BookmarkPopupContainer(props) {
+function CreateNewGroupPopUp(props) {
   const { bookmarkGroups, setBookmarkGroups } = useContext(AppContext);
   const [modalIsOpen, setIsOpen] = React.useState(false);
   const [bookmarkName, setBookmarkName] = React.useState('')
@@ -95,4 +95,4 @@ function BookmarkPopupContainer(props) {
   );
 }
 
-export { BookmarkPopupContainer };
+export { CreateNewGroupPopUp };

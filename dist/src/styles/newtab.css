@@ -42,26 +42,6 @@ body {
   text-decoration: underline;
 }
 
-.bookmark-group-box .add-bookmark-button {
-  font-size: 14px;
-  padding: 10px;
-  background-color: #fff;
-  color: #cccccc;
-  border: none;
-  border-radius: 5px;
-  width: 100%;
-  margin-top: auto;
-  text-align: left;
-  padding-left: 20px;
-}
-
-.add-bookmark-button:hover {
-  cursor: pointer;
-  background-color: #cccccc;
-  color: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
 .bookmark-group-box .edit-link-button,
 .bookmark-group-box .delete-link-button {
   position: absolute;

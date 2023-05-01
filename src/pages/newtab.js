@@ -25,8 +25,8 @@ import {
   EditableBookmarkGroupHeading
 } from "../components/EditableBookmarkGroupHeading.js";
 import {
-  BookmarkPopupContainer
-} from "../components/BookmarkPopupContainer.js";
+  AddLinkInline
+} from "../components/AddLinkInline.js";
 
 
 // Binding popup modal for accessibility
@@ -65,7 +65,7 @@ function NewTabUI() {
               ))}
             </div>
 
-            <BookmarkPopupContainer groupName={bookmarkGroups[groupIndex].groupName}/>
+            <AddLinkInline groupName={bookmarkGroups[groupIndex].groupName}/>
           </div>
         ))}
       </div>
