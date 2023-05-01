@@ -89,7 +89,7 @@ function CreateNewBookmark(props) {
     <div className="create-new-bookmark-component"> 
       <div className="form-container">
         <form onKeyDown={handleKeyDown}>
-          <input type="text" placeholder="Enter a bookmark name ..." value={bookmarkName} onChange={handleBookmarkNameChange} required />
+          <input type="text" placeholder="Enter a bookmark name ..." autoFocus value={bookmarkName} onChange={handleBookmarkNameChange} required />
           <input type="text" placeholder="Enter a bookmark URL ..." value={bookmarkUrl} onChange={handleBookmarkUrlChange} pattern={URL_PATTERN} required></input>
         </form>
       </div>

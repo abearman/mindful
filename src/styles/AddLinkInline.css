@@ -19,9 +19,8 @@
 
 .add-bookmark-button-1:hover {
   cursor: pointer;
-  background-color: #cccccc;
-  color: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: #f5f5f5;
+  color: #484848;
 }
 
 .create-new-bookmark-component {
