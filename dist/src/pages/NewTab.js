@@ -1,6 +1,6 @@
 import React, { useContext, useRef, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
-import Modal from 'react-modal';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
 /* CSS styles */
 import '../styles/NewTab.css';
@@ -15,6 +15,7 @@ import {
   addEmptyBookmarkGroup,
   deleteBookmarkGroup,
   loadBookmarkGroups,
+  reorderBookmarks,
   setBookmarkGroups,
 } from "../scripts/BookmarkManagement.js";
 import { AppContextProvider, AppContext } from '../scripts/AppContext';
@@ -30,9 +31,6 @@ import {
   AddLinkInline
 } from "../components/AddLinkInline.js";
 
-
-// Binding popup modal for accessibility
-Modal.setAppElement('#root');
 
 const UserAction = {
   ADD_EMPTY_GROUP: 'add_empty_group',
@@ -65,6 +63,20 @@ function NewTabUI() {
     setBookmarkGroups(loadBookmarkGroups());
   }
 
+  function handleOnDragEnd(result) {
+    if (!result.destination) {
+      return;
+    }
+  
+    const sourceBookmarkIndex = result.source.index;
+    const destinationBookmarkIndex = result.destination.index;
+    const sourceGroupIndex = parseInt(result.source.droppableId);
+    const destinationGroupIndex = parseInt(result.destination.droppableId);
+
+    reorderBookmarks(sourceBookmarkIndex, destinationBookmarkIndex, sourceGroupIndex, destinationGroupIndex);
+    setBookmarkGroups(loadBookmarkGroups()); 
+  }
+
   useEffect(() => {
     if ((lastBookmarkGroupRef.current) && (lastActionRef.current == UserAction.ADD_EMPTY_GROUP)) {
       lastBookmarkGroupRef.current.querySelector('.editable-heading').focus();
@@ -73,33 +85,50 @@ function NewTabUI() {
   
   return (
     <div>
-      <div className="bookmark-groups-container">
-        {bookmarkGroups.map((bookmarkGroup, groupIndex) => (
-          <div key={createUniqueID()} className="bookmark-group-box" ref={bookmarkGroups.length - 1 === groupIndex ? lastBookmarkGroupRef : null}>            <button 
-              className="delete-bookmark-group-button" 
-              onClick={(event) => handleDeleteBookmarkGroup(event, groupIndex)} 
-            >
-              <img src="./assets/delete-icon.svg" />
-            </button>
-            <EditableBookmarkGroupHeading 
-              key={createUniqueID} 
-              bookmarkGroup={bookmarkGroup} 
-              groupIndex={groupIndex}
-            />
+      <DragDropContext onDragEnd={handleOnDragEnd}>
+        <div className="bookmark-groups-container">
+          {bookmarkGroups.map((bookmarkGroup, groupIndex) => (
+            <div key={createUniqueID()} className="bookmark-group-box" ref={bookmarkGroups.length - 1 === groupIndex ? lastBookmarkGroupRef : null}>            <button 
+                className="delete-bookmark-group-button" 
+                onClick={(event) => handleDeleteBookmarkGroup(event, groupIndex)} 
+              >
+                <img src="./assets/delete-icon.svg" />
+              </button>
+              <EditableBookmarkGroupHeading 
+                key={createUniqueID} 
+                bookmarkGroup={bookmarkGroup} 
+                groupIndex={groupIndex}
+              />
 
-            <div className="bookmark-list">
-              {bookmarkGroup.bookmarks.map((bookmark, bookmarkIndex) => (
-                <EditableBookmark key={createUniqueID()} bookmark={bookmark} bookmarkIndex={bookmarkIndex} groupIndex={groupIndex} />
-              ))}
+              <Droppable droppableId={groupIndex.toString()}>
+              {(provided, snapshot) => (
+                <div ref={provided.innerRef} {...provided.droppableProps}>
+                  {bookmarkGroup.bookmarks.map((bookmark, bookmarkIndex) => (
+                    <Draggable 
+                      key={bookmark.id} 
+                      draggableId={bookmark.id} 
+                      index={bookmarkIndex}
+                    >
+                      {(provided, snapshot) => (
+                        <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+                          <EditableBookmark bookmark={bookmark} bookmarkIndex={bookmarkIndex} groupIndex={groupIndex} />
+                        </div>
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
+                </div>
+              )}
+              </Droppable>
+
+              <AddLinkInline groupName={bookmarkGroups[groupIndex].groupName}/>
             </div>
-
-            <AddLinkInline groupName={bookmarkGroups[groupIndex].groupName}/>
-          </div>
-        ))}
-      </div>
-      <button className='add-group-button' onClick={handleAddEmptyBookmarkGroup}>
-        + Add Group
-      </button>
+          ))}
+        </div>
+        <button className='add-group-button' onClick={handleAddEmptyBookmarkGroup}>
+          + Add Group
+        </button>
+      </DragDropContext>
     </div>
   );
 }
