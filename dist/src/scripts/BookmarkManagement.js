@@ -12,14 +12,14 @@ export function loadBookmarkGroups() {
 
 export function overwriteBookmarkGroupsToStorage(bookmarkGroups) {
   localStorage.setItem(STORAGE_KEY_BOOKMARK_GROUPS, JSON.stringify(bookmarkGroups));
-  refreshAllMindfulTabs();
+  refreshOtherMindfulTabs();
 }
 
-function refreshAllMindfulTabs() {
-  // Reload any tabs that are open and pointed to newtab (aka Mindful page)
+function refreshOtherMindfulTabs() {
+  // Reload any tabs (except the current one) that are open and pointed to newtab (aka Mindful page)
   chrome.tabs.query({}, function(tabs) {
     tabs.forEach(function(tab) {
-      if (tab.url == CHROME_NEW_TAB) {
+      if ((tab.url == CHROME_NEW_TAB) && (!tab.active))  {
         chrome.tabs.reload(tab.id);
       }    
     });
@@ -32,8 +32,16 @@ export function deleteBookmarkGroup(groupIndex) {
   if (groupIndex !== -1) {
     bookmarkGroups.splice(groupIndex, 1);
     overwriteBookmarkGroupsToStorage(bookmarkGroups); 
-    refreshAllMindfulTabs();
+    refreshOtherMindfulTabs();
   }
+}
+
+/* Function to add a new empty bookmark group to the end */
+export function addEmptyBookmarkGroup() {
+  let bookmarkGroups = loadBookmarkGroups();
+  bookmarkGroups.push({ groupName: "", bookmarks: [] });
+  overwriteBookmarkGroupsToStorage(bookmarkGroups); 
+  refreshOtherMindfulTabs();
 }
 
 /* Function to save a bookmark to local storage */
@@ -69,7 +77,7 @@ export function deleteBookmark(bookmarkIndex, groupIndex) {
     if (bookmarkIndex !== -1) {
       bookmarks.splice(bookmarkIndex, 1);
       overwriteBookmarkGroupsToStorage(bookmarkGroups); 
-      refreshAllMindfulTabs();
+      refreshOtherMindfulTabs();
     }
   }
 }
@@ -88,7 +96,7 @@ export function editBookmarkName(oldBookmarkName, groupName, newBookmarkName) {
     if (bookmarkIndex !== -1) {
       bookmarks[bookmarkIndex].name = newBookmarkName;
       overwriteBookmarkGroupsToStorage(bookmarkGroups); 
-      refreshAllMindfulTabs();
+      refreshOtherMindfulTabs();
     }
   }
 }

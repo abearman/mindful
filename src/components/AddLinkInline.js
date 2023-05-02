@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 
 /* CSS styles */
 import '../styles/AddLinkInline.css';
@@ -17,7 +17,7 @@ import {
 
 function AddLinkInline(props) {
   const { bookmarkGroups, setBookmarkGroups } = useContext(AppContext);
-  const [linkBeingEdited, setLinkBeingEdited] = React.useState(false);
+  const [linkBeingEdited, setLinkBeingEdited] = useState(false);
 
   function handleAddLinkClicked(event) {
     setLinkBeingEdited(true);
@@ -48,6 +48,7 @@ function AddLinkButton(props) {
 
 
 function CreateNewBookmark(props) {
+  const { bookmarkGroups, setBookmarkGroups } = useContext(AppContext);
   const [bookmarkName, setBookmarkName] = React.useState('')
   const [bookmarkUrl, setBookmarkUrl] = React.useState('') 
 
@@ -73,7 +74,6 @@ function CreateNewBookmark(props) {
     setBookmarkGroups(loadBookmarkGroups());    
     setBookmarkName('');
     setBookmarkUrl('');
-    event.target.reset();  
   }
 
   function closeForm(event) {

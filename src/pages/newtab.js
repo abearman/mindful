@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useRef, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import Modal from 'react-modal';
 
@@ -12,8 +12,10 @@ import {
 
 /* Bookmark Storage */
 import {
-  loadBookmarkGroups,
+  addEmptyBookmarkGroup,
   deleteBookmarkGroup,
+  loadBookmarkGroups,
+  setBookmarkGroups,
 } from "../scripts/BookmarkManagement.js";
 import { AppContextProvider, AppContext } from '../scripts/AppContext';
 
@@ -32,26 +34,48 @@ import {
 // Binding popup modal for accessibility
 Modal.setAppElement('#root');
 
+const UserAction = {
+  ADD_EMPTY_GROUP: 'add_empty_group',
+  DELETE_GROUP: 'delete_group',
+  NONE: 'none',
+};
 
 function NewTabUI() {
   const { bookmarkGroups, setBookmarkGroups } = useContext(AppContext);
+  const lastBookmarkGroupRef = useRef(null);
+  //const [lastAction, setLastAction] = useState(UserAction.NONE);
+  const lastActionRef = useRef(UserAction.NONE);
 
   function handleDeleteBookmarkGroup(event, groupIndex) {
     const shouldDelete = window.confirm(
       "Are you sure you want to delete the entire group " + bookmarkGroups[groupIndex].groupName + "?"
     ); 
     if (shouldDelete) {
+      //setLastAction(UserAction.DELETE_GROUP);
+      lastActionRef.current = UserAction.DELETE_GROUP;
       deleteBookmarkGroup(groupIndex);
       setBookmarkGroups(loadBookmarkGroups()); 
     } 
   }
 
+  function handleAddEmptyBookmarkGroup() {
+    addEmptyBookmarkGroup();
+    //setLastAction(UserAction.ADD_EMPTY_GROUP);
+    lastActionRef.current = UserAction.ADD_EMPTY_GROUP;
+    setBookmarkGroups(loadBookmarkGroups());
+  }
+
+  useEffect(() => {
+    if ((lastBookmarkGroupRef.current) && (lastActionRef.current == UserAction.ADD_EMPTY_GROUP)) {
+      lastBookmarkGroupRef.current.querySelector('.bookmark-group-box-title').focus();
+    }
+  }, [bookmarkGroups]);
+  
   return (
     <div>
       <div className="bookmark-groups-container">
         {bookmarkGroups.map((bookmarkGroup, groupIndex) => (
-          <div key={createUniqueID()} className="bookmark-group-box">
-            <button 
+          <div key={createUniqueID()} className="bookmark-group-box" ref={bookmarkGroups.length - 1 === groupIndex ? lastBookmarkGroupRef : null}>            <button 
               className="delete-bookmark-group-button" 
               onClick={(event) => handleDeleteBookmarkGroup(event, groupIndex)} 
             >
@@ -69,7 +93,7 @@ function NewTabUI() {
           </div>
         ))}
       </div>
-      <button className='add-group-button'>
+      <button className='add-group-button' onClick={handleAddEmptyBookmarkGroup}>
         + Add Group
       </button>
     </div>
