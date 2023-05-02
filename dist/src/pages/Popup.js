@@ -12,7 +12,6 @@ function Popup() {
   const [newGroupInput, setNewGroupInput] = useState('');
   const [name, setName] = useState('');
   const [url, setUrl] = useState('');
-  const [urlManuallyEntered, setUrlManuallyEntered] = useState(false);
   let bookmarkGroups = loadBookmarkGroups();
 
   useEffect(() => {
@@ -55,7 +54,6 @@ function Popup() {
 
   function handleUrlChange(event) {
     setUrl(event.target.value);
-    setUrlManuallyEntered(true);
   }
 
   function handleNewGroupInputChange(event) {
@@ -71,14 +69,8 @@ function Popup() {
 
   async function handleSubmit(event) {
     event.preventDefault();
-
     const group = newGroupInput === '' ? selectedGroup : newGroupInput;
-
-    let urlToSubmit = url;
-    if (urlManuallyEntered) {
-      urlToSubmit = constructValidURL(url);
-    }
-    saveBookmark(name, urlToSubmit, group);
+    saveBookmark(name, url, group);
 
     // Update the group dropdown with the new group name
     refreshGroupsDropdown();

@@ -3,11 +3,6 @@ import React, { useContext } from 'react';
 /* CSS styles */
 import '../styles/AddLinkInline.css';
 
-/* Utilities */
-import {
-  constructValidURL,
-} from "../scripts/Utilities.js";
-
 /* Bookmark Storage */
 import {
   loadBookmarkGroups,
@@ -73,7 +68,7 @@ function CreateNewBookmark(props) {
 
   function handleSubmit(event) {
     event.preventDefault(); // prevent the form from submitting normally
-    saveBookmark(bookmarkName, constructValidURL(bookmarkUrl), props.groupName);
+    saveBookmark(bookmarkName, bookmarkUrl, props.groupName);
     
     setBookmarkGroups(loadBookmarkGroups());    
     setBookmarkName('');
