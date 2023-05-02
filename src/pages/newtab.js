@@ -67,7 +67,7 @@ function NewTabUI() {
 
   useEffect(() => {
     if ((lastBookmarkGroupRef.current) && (lastActionRef.current == UserAction.ADD_EMPTY_GROUP)) {
-      lastBookmarkGroupRef.current.querySelector('.bookmark-group-box-title').focus();
+      lastBookmarkGroupRef.current.querySelector('.editable-heading').focus();
     }
   }, [bookmarkGroups]);
   
@@ -81,7 +81,11 @@ function NewTabUI() {
             >
               <img src="./assets/delete-icon.svg" />
             </button>
-            <EditableBookmarkGroupHeading key={createUniqueID} bookmarkGroup={bookmarkGroup} groupIndex={groupIndex}/>
+            <EditableBookmarkGroupHeading 
+              key={createUniqueID} 
+              bookmarkGroup={bookmarkGroup} 
+              groupIndex={groupIndex}
+            />
 
             <div className="bookmark-list">
               {bookmarkGroup.bookmarks.map((bookmark, bookmarkIndex) => (

@@ -1,7 +1,7 @@
 import React, { useState, useContext } from 'react';
 
 /* CSS styles */
-import '../styles/NewTab.css';
+import '../styles/EditableBookmarkGroupHeading.css'
 
 /* Bookmark Storage */
 import {
@@ -27,7 +27,12 @@ function EditableBookmarkGroupHeading(props) {
   }
 
   return (
-    <h2 contentEditable onBlur={handleBlur} className="bookmark-group-box-title">
+    <h2 
+      contentEditable 
+      onBlur={handleBlur} 
+      className="editable-heading"
+      suppressContentEditableWarning={true}
+    >
       {text}
     </h2>
   );
