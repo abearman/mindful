@@ -1,19 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 
 import '../styles/Popup.css';
 import { constructValidURL } from '../scripts/Utilities.js';
-import { loadBookmarkGroups, saveBookmark } from '../scripts/BookmarkManagement.js';
+import { loadBookmarkGroups, saveBookmark, refreshActiveMindfulTab } from '../scripts/BookmarkManagement.js';
 import { URL_PATTERN } from '../scripts/Constants';
+import { AppContextProvider, AppContext } from '../scripts/AppContext';
 
 function Popup() {
+  const { bookmarkGroups, setBookmarkGroups } = useContext(AppContext);
   const [groups, setGroups] = useState([]);
   const [selectedGroup, setSelectedGroup] = useState('');
   const [newGroupInput, setNewGroupInput] = useState('');
   const [name, setName] = useState('');
   const [url, setUrl] = useState('');
-  let bookmarkGroups = loadBookmarkGroups();
-
+  
   useEffect(() => {
     loadGroupDropdown();
     setInitialValues();
@@ -71,6 +72,7 @@ function Popup() {
     event.preventDefault();
     const group = newGroupInput === '' ? selectedGroup : newGroupInput;
     saveBookmark(name, url, group);
+    setBookmarkGroups(loadBookmarkGroups()); 
 
     // Update the group dropdown with the new group name
     refreshGroupsDropdown();
@@ -79,6 +81,9 @@ function Popup() {
     setSelectedGroupNewOrLastModified();
     setName('');
     setUrl('');
+
+    // TODO: Do we need to do this if the underlying state is being updated?
+    refreshActiveMindfulTab();
   }
 
   function loadGroupDropdown() {
@@ -149,4 +154,9 @@ function Popup() {
   );
 }
 
-ReactDOM.render(<Popup />, document.getElementById('root'));
+ReactDOM.render(
+  <AppContextProvider>
+    <Popup />
+  </AppContextProvider>,
+  document.getElementById('root')
+);

@@ -28,6 +28,17 @@ function refreshOtherMindfulTabs() {
   });
 }
 
+export function refreshActiveMindfulTab() {
+  // Reload the current active tab if it is pointed to newtab (aka Mindful page)
+  chrome.tabs.query({}, function(tabs) {
+    tabs.forEach(function(tab) {
+      if ((tab.url == CHROME_NEW_TAB) && tab.active)  {
+        chrome.tabs.reload(tab.id);
+      }    
+    });
+  });
+}
+
 /* Function to delete an entire bookmark group by index */
 export function deleteBookmarkGroup(groupIndex) {
   let bookmarkGroups = loadBookmarkGroups();
