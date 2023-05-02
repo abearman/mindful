@@ -1,4 +1,6 @@
+import { v4 as uuidv4 } from 'uuid';
 import { CHROME_NEW_TAB, STORAGE_KEY_BOOKMARK_GROUPS } from './Constants.js';
+
 
 export function clearBookmarkGroups() {
   chrome.storage.local.remove(STORAGE_KEY_BOOKMARK_GROUPS, function() {
@@ -39,7 +41,13 @@ export function deleteBookmarkGroup(groupIndex) {
 /* Function to add a new empty bookmark group to the end */
 export function addEmptyBookmarkGroup() {
   let bookmarkGroups = loadBookmarkGroups();
-  bookmarkGroups.push({ groupName: "", bookmarks: [] });
+  bookmarkGroups.push(
+    { 
+      groupName: "", 
+      bookmarks: [],
+      id: uuidv4(), 
+    }
+  );
   overwriteBookmarkGroupsToStorage(bookmarkGroups); 
   refreshOtherMindfulTabs();
 }
@@ -47,7 +55,11 @@ export function addEmptyBookmarkGroup() {
 /* Function to save a bookmark to local storage */
 export function saveBookmark(bookmarkName, url, groupName) {
   let bookmarkGroups = loadBookmarkGroups();
-  let bookmark = { name: bookmarkName, url: url };
+  let bookmark = { 
+    name: bookmarkName, 
+    url: url,
+    id: uuidv4(),
+  };
   
   // Check if bookmark name already exists in the current group
   let existingGroupIndex = bookmarkGroups.findIndex((item) => item.groupName === groupName);
@@ -99,4 +111,24 @@ export function editBookmarkName(oldBookmarkName, groupName, newBookmarkName) {
       refreshOtherMindfulTabs();
     }
   }
+}
+
+/* Function to reorder bookmarks within a list or between groups */
+export function reorderBookmarks(sourceBookmarkIndex, destinationBookmarkIndex, sourceGroupIndex, destinationGroupIndex) {
+  // Copy the source group and remove the bookmark from its original position
+  let bookmarkGroups = loadBookmarkGroups();
+  const sourceGroup = { ...bookmarkGroups[sourceGroupIndex] };
+  const [removedBookmark] = sourceGroup.bookmarks.splice(sourceBookmarkIndex, 1);
+
+  // Copy the destination group and add the bookmark to its new position
+  const destinationGroup = { ...bookmarkGroups[destinationGroupIndex] };
+  destinationGroup.bookmarks.splice(destinationBookmarkIndex, 0, removedBookmark);
+
+  // Update the bookmarkGroups state with the modified groups
+  const updatedGroups = [...bookmarkGroups];
+  updatedGroups[sourceGroupIndex] = sourceGroup;
+  updatedGroups[destinationGroupIndex] = destinationGroup;
+
+  overwriteBookmarkGroupsToStorage(bookmarkGroups); 
+  refreshOtherMindfulTabs();
 }
