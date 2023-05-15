@@ -69,6 +69,9 @@ function CreateNewBookmark(props) {
 
   function handleSubmit(event) {
     event.preventDefault(); // prevent the form from submitting normally
+    urlWithProtocol = constructValidURL(bookmarkUrl);
+    setBookmarkUrl(urlWithProtocol);
+    console.log("urlWithProtocol: " + urlWithProtocol);
     saveBookmark(bookmarkName, bookmarkUrl, props.groupName);
     
     setBookmarkGroups(loadBookmarkGroups());    
