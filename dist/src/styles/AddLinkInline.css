@@ -1,0 +1,100 @@
+@import "NewTab.css";
+
+.add-link-inline-container {
+  position: "relative";
+}
+
+.bookmark-group-box .add-bookmark-button-1 {
+  font-size: 14px;
+  padding: 10px;
+  background-color: #fff;
+  color: #cccccc;
+  border: none;
+  border-radius: 5px;
+  width: 100%;
+  margin-top: auto;
+  text-align: left;
+  padding-left: 20px;
+}
+
+.add-bookmark-button-1:hover {
+  cursor: pointer;
+  background-color: #f5f5f5;
+  color: #484848;
+}
+
+.create-new-bookmark-component {
+  position: "relative";
+  background-color: #f5f5f5;
+  border-radius: 10px;
+  padding: 10px 10px;
+}
+
+.form-container {
+  position: "absolute";
+  background-color: white;
+  border-radius: 5px;
+  padding: 10px 10px;
+  margin-bottom: 10px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  max-width: 100%;
+  min-width: 200px;
+  box-sizing: border-box;
+  border-radius: 10px;
+}
+
+input[type="text"] {
+  font-size: 14px;
+  padding: 5px 0px;
+  max-width: 100%;
+  margin-bottom: 0px;
+  border: none;
+  border-radius: 0px;
+  box-shadow: none;
+}
+
+input:focus {
+  outline: none;
+}
+
+.add-bookmark-button-2 {
+  font-size: 14px;
+  padding: 10px;
+  background-color: rgb(40, 112, 220);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  margin-top: auto;
+  text-align: left;
+}
+
+.add-bookmark-button-2:hover {
+  cursor: pointer;
+  background-color: rgb(9, 71, 165);
+  color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.close-form-button {
+  border: none;
+  background-color: #f5f5f5;  
+  width: 36px;
+  height: 36px;
+  margin-left: auto;
+  padding: 0px;
+}
+
+.close-form-button img {
+  width: 20px;
+  height: 20px;
+  vertical-align: middle;
+}
+
+.close-form-button:hover {
+  cursor: pointer;
+}
