@@ -18,6 +18,7 @@ import {
   reorderBookmarks,
   setBookmarkGroups,
   addMissingBookmarkIDs,
+  overwriteBookmarkGroupsToStorage,
 } from "../scripts/BookmarkManagement.js";
 import { AppContextProvider, AppContext } from '../scripts/AppContext';
 
@@ -83,6 +84,54 @@ function NewTabUI() {
     setBookmarkGroups(loadBookmarkGroups()); 
   }
 
+  function exportBookmarksToJSON() {
+    let bookmarkGroupsData = loadBookmarkGroups();
+    
+    // Convert the data to JSON
+    const jsonData = JSON.stringify(bookmarkGroupsData);
+  
+    // Create a file blob with the JSON data
+    const blob = new Blob([jsonData], { type: 'application/json' });
+  
+    // Create a temporary anchor element
+    const anchor = document.createElement('a');
+    anchor.href = URL.createObjectURL(blob);
+    anchor.download = 'bookmarks.json';
+  
+    // Programmatically click the anchor to initiate the download
+    anchor.click();
+  }
+
+  function handleFileSelection(event) {
+    const file = event.target.files[0];
+    const reader = new FileReader();
+  
+    // Read the contents of the file
+    reader.onload = function (event) {
+      const contents = event.target.result;
+      const data = JSON.parse(contents);
+      // Save the parsed data to local storage
+      overwriteBookmarkGroupsToStorage(data);
+      setBookmarkGroups(loadBookmarkGroups());   
+      console.log('Bookmarks saved to local storage:', data);
+    };
+
+    // Read the file as text
+    reader.readAsText(file);
+  }
+
+  function loadBookmarksFromLocalFile() {
+    // Create an input element
+    const input = document.createElement('input');
+    input.type = 'file';
+
+    // Add an event listener for the file selection
+    input.addEventListener('change', handleFileSelection);
+
+    // Programmatically trigger a click event to open the file dialog
+    input.click();
+  }
+  
   useEffect(() => {
     if ((lastBookmarkGroupRef.current) && (lastActionRef.current == UserAction.ADD_EMPTY_GROUP)) {
       lastBookmarkGroupRef.current.querySelector('.editable-heading').focus();
@@ -91,6 +140,11 @@ function NewTabUI() {
   
   return (
     <div>
+      <div class="export-bookmarks-button-container">
+        <button className='export-or-load-bookmarks-button' onClick={exportBookmarksToJSON}>Export Bookmarks</button>
+        <button className='export-or-load-bookmarks-button' onClick={loadBookmarksFromLocalFile}>Load Bookmarks</button>
+      </div>
+
       <DragDropContext onDragEnd={handleOnDragEnd}>
         <div className="bookmark-groups-container">
           {bookmarkGroups.map((bookmarkGroup, groupIndex) => (
