@@ -12,6 +12,23 @@ export function loadBookmarkGroups() {
   return JSON.parse(localStorage.getItem(STORAGE_KEY_BOOKMARK_GROUPS)) || [];
 }
 
+export function addMissingBookmarkIDs() {
+  let bookmarkGroups = loadBookmarkGroups();
+  bookmarkGroups.forEach(function(bookmarkGroup) {
+    // If missing, add an ID to the overall bookmark group
+    if (!('id' in bookmarkGroup)) {
+      bookmarkGroup['id'] = uuidv4(); 
+    }
+    // If missing, add an ID to the individual bookmark
+    bookmarkGroup.bookmarks.forEach(function(bookmark) {
+      if (!('id' in bookmark)) {
+        bookmark['id'] = uuidv4(); 
+      }
+    });
+  }); 
+  overwriteBookmarkGroupsToStorage(bookmarkGroups); 
+}
+
 export function overwriteBookmarkGroupsToStorage(bookmarkGroups) {
   localStorage.setItem(STORAGE_KEY_BOOKMARK_GROUPS, JSON.stringify(bookmarkGroups));
   refreshOtherMindfulTabs();

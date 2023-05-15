@@ -17,6 +17,7 @@ import {
   loadBookmarkGroups,
   reorderBookmarks,
   setBookmarkGroups,
+  addMissingBookmarkIDs,
 } from "../scripts/BookmarkManagement.js";
 import { AppContextProvider, AppContext } from '../scripts/AppContext';
 
@@ -43,6 +44,11 @@ function NewTabUI() {
   const lastBookmarkGroupRef = useRef(null);
   //const [lastAction, setLastAction] = useState(UserAction.NONE);
   const lastActionRef = useRef(UserAction.NONE);
+
+  // One-time refresh of bookmark IDs
+  console.log("One time update of missing bookmark IDs");
+  addMissingBookmarkIDs();
+  //////////////////////////
 
   function handleDeleteBookmarkGroup(event, groupIndex) {
     const shouldDelete = window.confirm(
