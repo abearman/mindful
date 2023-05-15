@@ -10,4 +10,5 @@ Chrome plugin for productivity and efficiently storing bookmarks
 6. Now, the Mindful Chrome extension is running in your browser. To make it easier to access, you can pin it to your Chrome extensions bar.
 
 ## How to compile the React project for development
-Run `npx webpack` from the root `mindful` directory.
+1. Run `npm install` to install all the packages.
+2. Run `npx webpack` from the root `mindful` directory.
