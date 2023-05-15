@@ -10,6 +10,11 @@ import {
 } from "../scripts/BookmarkManagement.js";
 import { AppContext } from '../scripts/AppContext';
 
+/* Utilities */
+import {
+  constructValidURL
+} from "../scripts/Utilities.js";
+
 /* Constants */
 import {
   URL_PATTERN
@@ -69,10 +74,8 @@ function CreateNewBookmark(props) {
 
   function handleSubmit(event) {
     event.preventDefault(); // prevent the form from submitting normally
-    urlWithProtocol = constructValidURL(bookmarkUrl);
-    setBookmarkUrl(urlWithProtocol);
-    console.log("urlWithProtocol: " + urlWithProtocol);
-    saveBookmark(bookmarkName, bookmarkUrl, props.groupName);
+    const urlWithProtocol = constructValidURL(bookmarkUrl);
+    saveBookmark(bookmarkName, urlWithProtocol, props.groupName);
     
     setBookmarkGroups(loadBookmarkGroups());    
     setBookmarkName('');

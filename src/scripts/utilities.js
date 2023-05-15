@@ -9,9 +9,11 @@ export function constructValidURL(url) {
   // Check if the URL is missing the protocol
   if (!url.startsWith('http://') && !url.startsWith('https://')) {
     // Prepend the protocol to the URL
-    const urlWithProtocol = `http://${userInput}`;
-  } 
-  return urlWithProtocol;
+    const urlWithProtocol = `http://${url}`;
+    return urlWithProtocol;
+  } else {
+    return url;
+  }
   // if (!/^https?:\/\//i.test(url)) {
   //   url = 'http://' + url;
   // }

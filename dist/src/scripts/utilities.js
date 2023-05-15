@@ -6,14 +6,22 @@ export function createUniqueID() {
 }
 
 export function constructValidURL(url) {
-  if (!/^https?:\/\//i.test(url)) {
-    url = 'http://' + url;
+  // Check if the URL is missing the protocol
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    // Prepend the protocol to the URL
+    const urlWithProtocol = `http://${url}`;
+    return urlWithProtocol;
+  } else {
+    return url;
   }
-  url = new URL(url);
-  if (!/^www\./i.test(url.hostname)) {
-    url.hostname = 'www.' + url.hostname;
-  }
-  return url.href;
+  // if (!/^https?:\/\//i.test(url)) {
+  //   url = 'http://' + url;
+  // }
+  // url = new URL(url);
+  // if (!/^www\./i.test(url.hostname)) {
+  //   url.hostname = 'www.' + url.hostname;
+  // }
+  // return url.href;
 }
 
 export const isCurrentTabTheNewTab = () => {

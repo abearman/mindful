@@ -71,7 +71,8 @@ function Popup() {
   async function handleSubmit(event) {
     event.preventDefault();
     const group = newGroupInput === '' ? selectedGroup : newGroupInput;
-    saveBookmark(name, url, group);
+    const urlWithProtocol = constructValidURL(url);
+    saveBookmark(name, urlWithProtocol, group);
     setBookmarkGroups(loadBookmarkGroups()); 
 
     // Update the group dropdown with the new group name
