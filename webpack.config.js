@@ -15,7 +15,7 @@ module.exports = {
     new CopyPlugin({
       patterns: [
         { from: 'public', to: '.' },
-        { from: 'public/Popup.html', to: '.' },
+        { from: 'public/PopUp.html', to: '.' },
         { from: 'public/NewTab.html', to: '.' },
         { from: 'src/scripts', to: 'src/scripts' },
         { from: 'src/styles', to: 'src/styles' },
