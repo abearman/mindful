@@ -46,11 +46,6 @@ function NewTabUI() {
   //const [lastAction, setLastAction] = useState(UserAction.NONE);
   const lastActionRef = useRef(UserAction.NONE);
 
-  // One-time refresh of bookmark IDs
-  console.log("One time update of missing bookmark IDs");
-  addMissingBookmarkIDs();
-  //////////////////////////
-
   function handleDeleteBookmarkGroup(event, groupIndex) {
     const shouldDelete = window.confirm(
       "Are you sure you want to delete the entire group " + bookmarkGroups[groupIndex].groupName + "?"
