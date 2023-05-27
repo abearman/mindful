@@ -160,3 +160,13 @@ export function reorderBookmarks(sourceBookmarkIndex, destinationBookmarkIndex, 
   overwriteBookmarkGroupsToStorage(bookmarkGroups); 
   refreshOtherMindfulTabs();
 }
+
+export function reorderBookmarkGroups(sourceGroupIndex, destinationGroupIndex) {
+  //const newBookmarkGroups = Array.from(bookmarkGroups);
+  let bookmarkGroups = loadBookmarkGroups();
+  const [reorderedGroup] = bookmarkGroups.splice(sourceGroupIndex, 1);
+  bookmarkGroups.splice(destinationGroupIndex, 0, reorderedGroup);
+
+  overwriteBookmarkGroupsToStorage(bookmarkGroups); 
+  refreshOtherMindfulTabs();
+}
