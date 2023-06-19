@@ -146,9 +146,6 @@ function NewTabUI() {
     }
   }, [bookmarkGroups]);
   
-  console.log('here');
-  console.log(bookmarkGroups);
-  
   return (
     <div>
       <div className="export-bookmarks-button-container">
@@ -214,9 +211,7 @@ function NewTabUI() {
       </DragDropContext>
     </div>
   );
-      
 }
-
 
 ReactDOM.render(
   <AppContextProvider>
