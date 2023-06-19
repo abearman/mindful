@@ -99,7 +99,12 @@ export function saveBookmark(bookmarkName, url, groupName) {
       alert(`A bookmark with the name "${bookmarkName}" already exists in the "${groupName}" group.`);
     }
   } else {
-    bookmarkGroups.push({ groupName: groupName, bookmarks: [bookmark] });
+    bookmarkGroups.push(
+      { 
+        groupName: groupName, 
+        id: uuidv4(),
+        bookmarks: [bookmark],
+      });
   }
   
   overwriteBookmarkGroupsToStorage(bookmarkGroups);
