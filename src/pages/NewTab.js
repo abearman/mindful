@@ -1,6 +1,7 @@
 import React, { useContext, useRef, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+//import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import { Responsive, WidthProvider } from "react-grid-layout"; 
 
 /* CSS styles */
 import '../styles/NewTab.css';
@@ -34,6 +35,8 @@ import {
   AddLinkInline
 } from "../components/AddLinkInline.js";
 
+/* Responsive grid layout */
+const ResponsiveReactGridLayout = WidthProvider(Responsive);
 
 const UserAction = {
   ADD_EMPTY_GROUP: 'add_empty_group',
@@ -146,6 +149,12 @@ function NewTabUI() {
     }
   }, [bookmarkGroups]);
   
+  const grid_layout = [
+    { i: "a", x: 0, y: 0, w: 1, h: 2, static: true },
+    { i: "b", x: 1, y: 0, w: 3, h: 2, minW: 2, maxW: 4 },
+    { i: "c", x: 4, y: 0, w: 1, h: 2 }
+  ];
+
   return (
     <div>
       <div className="export-bookmarks-button-container">
@@ -153,7 +162,35 @@ function NewTabUI() {
         <button className='export-or-load-bookmarks-button' onClick={loadBookmarksFromLocalFile}>Load Bookmarks</button>
       </div>
 
-      <DragDropContext onDragEnd={handleOnDragEnd}>
+      <ResponsiveReactGridLayout
+        className="layout"
+        rowHeight={150}
+        onLayoutChange={function() {}}
+        cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
+      >
+        {bookmarkGroups.map((bookmarkGroup, groupIndex) => (
+          <div className="bookmark-group-box" key={bookmarkGroup.id}>
+            <button 
+              className="delete-bookmark-group-button" 
+              onClick={(event) => handleDeleteBookmarkGroup(event, groupIndex)} 
+            >
+              <img src="./assets/delete-icon.svg" />
+            </button>
+            <EditableBookmarkGroupHeading 
+              key={"heading-" + bookmarkGroup.id} 
+              bookmarkGroup={bookmarkGroup} 
+              groupIndex={groupIndex}
+            />
+            {bookmarkGroup.bookmarks.map((bookmark, bookmarkIndex) => (
+              <EditableBookmark bookmark={bookmark} bookmarkIndex={bookmarkIndex} groupIndex={groupIndex} key={bookmark.id} />
+            ))}
+          </div>
+        ))} 
+      </ResponsiveReactGridLayout>
+    </div>
+  );
+
+      {/* <DragDropContext onDragEnd={handleOnDragEnd}>
         <Droppable droppableId="all-groups" type="bookmark-group">
           {(provided, snapshot) => (
             <div 
@@ -170,7 +207,6 @@ function NewTabUI() {
                       {...provided.draggableProps}
                       {...provided.dragHandleProps}
                     >
-                      {/* your bookmark group content */}
                       <button 
                       className="delete-bookmark-group-button" 
                       onClick={(event) => handleDeleteBookmarkGroup(event, groupIndex)} 
@@ -209,8 +245,7 @@ function NewTabUI() {
           )}
         </Droppable>
       </DragDropContext>
-    </div>
-  );
+    </div> */}
 }
 
 ReactDOM.render(

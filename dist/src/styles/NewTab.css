@@ -12,7 +12,7 @@ body {
 }
 
 .bookmark-group-box {
-  position: relative;
+  position: absolute;
   background-color: #fff;
   border: 1px solid #ddd;
   border-radius: 10px;
@@ -22,6 +22,7 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  margin-top: 10px;
   margin-bottom: auto;
 }
 
@@ -67,7 +68,7 @@ body {
   display: flex;
   align-items: center;
   vertical-align: center;
-  margin-bottom: 5px; 
+  margin-bottom: 0px; 
 }
 
 .favicon {

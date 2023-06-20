@@ -1,6 +1,7 @@
 @import "NewTab.css";
 
 .editable-heading {
+  position: absolute;
   font-size: 24px;
   font-weight: bold;
 }
