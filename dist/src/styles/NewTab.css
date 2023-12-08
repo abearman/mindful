@@ -5,6 +5,28 @@ body {
   background-color: #f5f5f5;
 }
 
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+}
+
+.image-container {
+  width: 100%;
+  height: 100%;
+  position: absolute; 
+}
+
+.image-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* This ensures the image covers the entire div */
+  position: absolute; /* Aligns the image edge to edge */
+  top: 0;
+  left: 0;
+}
+
 .bookmark-groups-container {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));

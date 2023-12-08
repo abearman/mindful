@@ -1,0 +1,13 @@
+{
+  "resourceName": "backgroundImages",
+  "policyUUID": "354bd45a",
+  "bucketName": "mindful",
+  "storageAccess": "authAndGuest",
+  "guestAccess": [
+    "READ"
+  ],
+  "authAccess": [
+    "READ"
+  ],
+  "groupAccess": {}
+}

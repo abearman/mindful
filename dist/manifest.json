@@ -16,9 +16,11 @@
   },
 
   "permissions": [
+    "runtime",
     "storage", 
     "tabs",
-    "windows"
+    "windows",
+    "activeTab"
   ],
 
   "action": {

@@ -1,0 +1,23 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-mindful-dev-172639-authRole",
+      "UnauthRoleArn": "arn:aws:iam::534861782220:role/amplify-mindful-dev-172639-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::534861782220:role/amplify-mindful-dev-172639-authRole",
+      "Region": "us-west-2",
+      "DeploymentBucketName": "amplify-mindful-dev-172639-deployment",
+      "UnauthRoleName": "amplify-mindful-dev-172639-unauthRole",
+      "StackName": "amplify-mindful-dev-172639",
+      "StackId": "arn:aws:cloudformation:us-west-2:534861782220:stack/amplify-mindful-dev-172639/d7211130-9568-11ee-a576-06abcfca2c8b",
+      "AmplifyAppId": "d1jz062tx1qm83"
+    },
+    "categories": {
+      "auth": {
+        "mindfula7eda9d9": {}
+      },
+      "storage": {
+        "backgroundImages": {}
+      }
+    }
+  }
+}

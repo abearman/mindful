@@ -2,6 +2,11 @@ import React, { useContext, useRef, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
+import { Amplify } from 'aws-amplify';
+import awsExports from '../aws-exports'; // ensure this path is correct
+
+import BackgroundImageGenerator from '../components/BackgroundImageGenerator';
+
 /* CSS styles */
 import '../styles/NewTab.css';
 
@@ -42,6 +47,8 @@ const UserAction = {
 };
 
 function NewTabUI() {
+  Amplify.configure(awsExports);
+
   const { bookmarkGroups, setBookmarkGroups } = useContext(AppContext);
   const lastBookmarkGroupRef = useRef(null);
   //const [lastAction, setLastAction] = useState(UserAction.NONE);
@@ -148,6 +155,8 @@ function NewTabUI() {
   
   return (
     <div>
+      <BackgroundImageGenerator />
+
       <div className="export-bookmarks-button-container">
         <button className='export-or-load-bookmarks-button' onClick={exportBookmarksToJSON}>Export Bookmarks</button>
         <button className='export-or-load-bookmarks-button' onClick={loadBookmarksFromLocalFile}>Load Bookmarks</button>
