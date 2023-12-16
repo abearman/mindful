@@ -48,6 +48,7 @@ const UserAction = {
 
 function NewTabUI() {
   Amplify.configure(awsExports);
+  console.log("Amplify: ", Amplify.getConfig());
 
   const { bookmarkGroups, setBookmarkGroups } = useContext(AppContext);
   const lastBookmarkGroupRef = useRef(null);

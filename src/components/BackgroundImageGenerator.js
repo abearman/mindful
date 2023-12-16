@@ -1,9 +1,13 @@
 import React, { useEffect, useState } from 'react';
 
-import { downloadData, list } from 'aws-amplify/storage';
+// Import Storage from Amplify
+import { downloadData, getUrl, list } from '@aws-amplify/storage';
+
 import axios from 'axios'; // using axios for fetching an image
 import OpenAI from "openai";
 
+import { BACKGROUND_IMAGES_S3_BUCKET_NAME } from '../scripts/Constants.js';
+import { Amplify } from 'aws-amplify';
 
 function BackgroundImageGenerator() {
   const [imageURL, setImageURL] = useState(null);
@@ -11,7 +15,7 @@ function BackgroundImageGenerator() {
   useEffect(() => {
     // This needs to be inside `useEffect` so we don't cause an infinite rendering loop in React
     console.log("Fetching new image ...");
-    setImageURL(getRandomImageFromS3());
+    getRandomImageFromS3();
   }, []);
 
   // const AWS = require('aws-sdk');
@@ -97,21 +101,28 @@ function BackgroundImageGenerator() {
   };
 
   async function getRandomImageFromS3() {
+    // Download the list of images from S3
     try {
-      // List objects in the S3 bucket
-      const storageListResult = await list({prefix: 'dalle3'});
-      console.log("storageListResult: ", storageListResult);
+      let items; // Define items here so it's accessible in the outer scope
+      try {
+        items = await list('public/'); 
+      } catch(err) {
+        console.error('Error listing bucket contents: ', err);
+      }
 
-      // Select a random object (image) from the list
-      const randomIndex = Math.floor(Math.random() * storageListResult.length);
-      const randomImageKey = storageListResult[randomIndex].key;
-
-      // Get the URL of the random image
-      const imageURL = await Storage.get(randomImageKey, { level: 'public' });
-
-      setRandomImageURL(imageURL);
+      // Extract image URLs from the items downloaded from S3
+      const imageUrls = await Promise.all(items.items.map(async item => {
+        if (item.key != '') {
+          console.log("item.key: ", item.key);
+          const getUrlResult = await getUrl({key: item.key});
+          console.log("getUrlResult: ", getUrlResult);
+          return getUrlResult.url;
+        }
+      }));
+      // Pick a random image URL
+      setImageURL(imageUrls[Math.floor(Math.random() * imageUrls.length)]);
     } catch (error) {
-      console.error('Error fetching random image:', error);
+      console.error('Error fetching images: ', error);
     }
   }
 
