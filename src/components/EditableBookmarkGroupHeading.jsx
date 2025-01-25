@@ -7,7 +7,7 @@ import '../styles/EditableBookmarkGroupHeading.css'
 import {
   overwriteBookmarkGroupsToStorage,
 } from "../scripts/BookmarkManagement.js";
-import { AppContext } from '../scripts/AppContext';
+import { AppContext } from '../scripts/AppContext.jsx';
 
 
 function EditableBookmarkGroupHeading(props) {

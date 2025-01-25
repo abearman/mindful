@@ -1,11 +1,11 @@
 import React, { useContext, useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 
-import '../styles/PopUp.css';
-import { constructValidURL } from '../scripts/Utilities.js';
-import { loadBookmarkGroups, saveBookmark, refreshActiveMindfulTab } from '../scripts/BookmarkManagement.js';
-import { URL_PATTERN } from '../scripts/Constants';
-import { AppContextProvider, AppContext } from '../scripts/AppContext';
+import './styles/PopUp.css';
+import { constructValidURL } from './scripts/Utilities.js';
+import { loadBookmarkGroups, saveBookmark, refreshActiveMindfulTab } from './scripts/BookmarkManagement.js';
+import { URL_PATTERN } from './scripts/Constants.js';
+import { AppContextProvider, AppContext } from './scripts/AppContext.jsx';
 
 function PopUp() {
   const { bookmarkGroups, setBookmarkGroups } = useContext(AppContext);

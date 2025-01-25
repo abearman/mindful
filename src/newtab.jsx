@@ -3,12 +3,12 @@ import ReactDOM from 'react-dom';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
 /* CSS styles */
-import '../styles/NewTab.css';
+import './styles/NewTab.css';
 
 /* Utilities */
 import {
   createUniqueID,
-} from "../scripts/Utilities.js";
+} from "./scripts/Utilities.js";
 
 /* Bookmark Storage */
 import {
@@ -20,19 +20,19 @@ import {
   setBookmarkGroups,
   addMissingBookmarkIDs,
   overwriteBookmarkGroupsToStorage,
-} from "../scripts/BookmarkManagement.js";
-import { AppContextProvider, AppContext } from '../scripts/AppContext';
+} from "./scripts/BookmarkManagement.js";
+import { AppContextProvider, AppContext } from './scripts/AppContext.jsx';
 
 /* Components */
 import {
   EditableBookmark
-} from "../components/EditableBookmark.js";
+} from "./components/EditableBookmark.jsx";
 import {
   EditableBookmarkGroupHeading
-} from "../components/EditableBookmarkGroupHeading.js";
+} from "./components/EditableBookmarkGroupHeading.jsx";
 import {
   AddLinkInline
-} from "../components/AddLinkInline.js";
+} from "./components/AddLinkInline.jsx";
 
 
 const UserAction = {

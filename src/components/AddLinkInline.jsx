@@ -8,7 +8,7 @@ import {
   loadBookmarkGroups,
   saveBookmark,
 } from "../scripts/BookmarkManagement.js";
-import { AppContext } from '../scripts/AppContext';
+import { AppContext } from '../scripts/AppContext.jsx';
 
 /* Utilities */
 import {

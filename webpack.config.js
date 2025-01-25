@@ -1,6 +1,7 @@
 const path = require('path');
 const CopyPlugin = require('copy-webpack-plugin');
 
+
 module.exports = {
   mode: 'development', // or 'production'
   entry: {
@@ -27,12 +28,12 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.js$/,
+        test: /\.(js|jsx)$/,
         exclude: /node_modules/,
         use: {
           loader: 'babel-loader',
           options: {
-            presets: ['@babel/preset-react'],
+            presets: ['@babel/preset-env', '@babel/preset-react'],
           },
         },
       },
@@ -48,6 +49,9 @@ module.exports = {
         }
       },
     ],
+  },
+  resolve: {
+    extensions: ['.js', '.jsx'],
   },
   devtool: 'inline-source-map',
 };
