@@ -31,12 +31,17 @@ body, html {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   grid-gap: 5px; 
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
+  top: 20px;
 }
 
 .bookmark-group-box {
   position: relative;
-  background-color: #fff;
-  border: 1px solid #ddd;
+  background-color: rgba(255, 255, 255, 0.7); /* 30% transparent white */
+  /*border: 1px solid #ddd;*/
   border-radius: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   padding: 20px 20px;  /* top/bottom, left/right */
@@ -164,7 +169,8 @@ form .add-bookmark-button {
 
 .delete-bookmark-group-button {
   border: none;
-  background-color: #fff;
+  background-color: rgba(255, 255, 255, 0.7); /* 30% transparent white */
+  /*background-color: #fff;*/
   width: 16px;
   height: 16px;
   margin-left: auto;
@@ -174,7 +180,7 @@ form .add-bookmark-button {
 .delete-bookmark-group-button img {
   width: 16px;
   height: 16px;
-  color: #cccccc;
+  fill: rgba(0, 0, 0, 0.7);
 }
 
 .delete-bookmark-group-button:hover {
@@ -213,7 +219,8 @@ form .add-bookmark-button {
   margin-right: 5px;
   font-size: 14px;
   padding: 10px;
-  background-color: #cccccc;
+  /*background-color: #cccccc;*/
+  background-color: rgba(255, 255, 255, 0.7); /* 30% transparent white */
   border: none;
   border-radius: 5px;
   text-align: left;
