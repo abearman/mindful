@@ -11,4 +11,4 @@ Chrome plugin for productivity and efficiently storing bookmarks
 
 ## How to compile the React project for development
 1. Run `npm install` to install all the packages.
-2. Run `npx run build` from the root `mindful` directory.
+2. Run `npm run build` from the root `mindful` directory.
