@@ -8,12 +8,13 @@ export function clearBookmarkGroups() {
   });
 }
 
-export function loadBookmarkGroups() {
-  return JSON.parse(localStorage.getItem(STORAGE_KEY_BOOKMARK_GROUPS)) || [];
+export async function loadBookmarkGroups() {
+  const result = await chrome.storage.local.get(STORAGE_KEY_BOOKMARK_GROUPS);
+  return result[STORAGE_KEY_BOOKMARK_GROUPS] || [];
 }
 
-export function addMissingBookmarkIDs() {
-  let bookmarkGroups = loadBookmarkGroups();
+export async function addMissingBookmarkIDs() {
+  let bookmarkGroups = await loadBookmarkGroups();
   bookmarkGroups.forEach(function(bookmarkGroup) {
     // If missing, add an ID to the overall bookmark group
     if (!('id' in bookmarkGroup)) {
@@ -30,7 +31,9 @@ export function addMissingBookmarkIDs() {
 }
 
 export function overwriteBookmarkGroupsToStorage(bookmarkGroups) {
-  localStorage.setItem(STORAGE_KEY_BOOKMARK_GROUPS, JSON.stringify(bookmarkGroups));
+  chrome.storage.local.set({
+    [STORAGE_KEY_BOOKMARK_GROUPS]: bookmarkGroups
+  });
   refreshOtherMindfulTabs();
 }
 
@@ -57,8 +60,8 @@ export function refreshActiveMindfulTab() {
 }
 
 /* Function to delete an entire bookmark group by index */
-export function deleteBookmarkGroup(groupIndex) {
-  let bookmarkGroups = loadBookmarkGroups();
+export async function deleteBookmarkGroup(groupIndex) {
+  let bookmarkGroups = await loadBookmarkGroups();
   if (groupIndex !== -1) {
     bookmarkGroups.splice(groupIndex, 1);
     overwriteBookmarkGroupsToStorage(bookmarkGroups); 
@@ -67,8 +70,8 @@ export function deleteBookmarkGroup(groupIndex) {
 }
 
 /* Function to add a new empty bookmark group to the end */
-export function addEmptyBookmarkGroup() {
-  let bookmarkGroups = loadBookmarkGroups();
+export async function addEmptyBookmarkGroup() {
+  let bookmarkGroups = await loadBookmarkGroups();
   bookmarkGroups.push(
     { 
       groupName: "", 
@@ -81,8 +84,8 @@ export function addEmptyBookmarkGroup() {
 }
 
 /* Function to save a bookmark to local storage */
-export function saveBookmark(bookmarkName, url, groupName) {
-  let bookmarkGroups = loadBookmarkGroups();
+export async function saveBookmark(bookmarkName, url, groupName) {
+  let bookmarkGroups = await loadBookmarkGroups();
   let bookmark = { 
     name: bookmarkName, 
     url: url,
@@ -112,8 +115,8 @@ export function saveBookmark(bookmarkName, url, groupName) {
 
 
 /* Function to delete a bookmark by name from a group */
-export function deleteBookmark(bookmarkIndex, groupIndex) {
-  let bookmarkGroups = loadBookmarkGroups();
+export async function deleteBookmark(bookmarkIndex, groupIndex) {
+  let bookmarkGroups = await loadBookmarkGroups();
   if (groupIndex !== -1) {
     let bookmarkGroup = bookmarkGroups[groupIndex];
     let bookmarks = bookmarkGroup.bookmarks;
@@ -129,8 +132,8 @@ export function deleteBookmark(bookmarkIndex, groupIndex) {
 
 
 /* Function to edit a bookmark's name */
-export function editBookmarkName(oldBookmarkName, groupName, newBookmarkName) {
-  let bookmarkGroups = loadBookmarkGroups();
+export async function editBookmarkName(oldBookmarkName, groupName, newBookmarkName) {
+  let bookmarkGroups = await loadBookmarkGroups();
   let groupIndex = bookmarkGroups.findIndex((item) => item.groupName === groupName);
   if (groupIndex !== -1) {
     let bookmarkGroup = bookmarkGroups[groupIndex];
@@ -147,9 +150,9 @@ export function editBookmarkName(oldBookmarkName, groupName, newBookmarkName) {
 }
 
 /* Function to reorder bookmarks within a list or between groups */
-export function reorderBookmarks(sourceBookmarkIndex, destinationBookmarkIndex, sourceGroupIndex, destinationGroupIndex) {
+export async function reorderBookmarks(sourceBookmarkIndex, destinationBookmarkIndex, sourceGroupIndex, destinationGroupIndex) {
   // Copy the source group and remove the bookmark from its original position
-  let bookmarkGroups = loadBookmarkGroups();
+  let bookmarkGroups = await loadBookmarkGroups();
   const sourceGroup = { ...bookmarkGroups[sourceGroupIndex] };
   const [removedBookmark] = sourceGroup.bookmarks.splice(sourceBookmarkIndex, 1);
 
@@ -166,9 +169,9 @@ export function reorderBookmarks(sourceBookmarkIndex, destinationBookmarkIndex, 
   refreshOtherMindfulTabs();
 }
 
-export function reorderBookmarkGroups(sourceGroupIndex, destinationGroupIndex) {
+export async function reorderBookmarkGroups(sourceGroupIndex, destinationGroupIndex) {
   //const newBookmarkGroups = Array.from(bookmarkGroups);
-  let bookmarkGroups = loadBookmarkGroups();
+  let bookmarkGroups = await loadBookmarkGroups();
   const [reorderedGroup] = bookmarkGroups.splice(sourceGroupIndex, 1);
   bookmarkGroups.splice(destinationGroupIndex, 0, reorderedGroup);
 

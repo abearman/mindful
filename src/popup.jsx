@@ -73,7 +73,7 @@ function PopUp() {
     const group = newGroupInput === '' ? selectedGroup : newGroupInput;
     const urlWithProtocol = constructValidURL(url);
     saveBookmark(name, urlWithProtocol, group);
-    setBookmarkGroups(loadBookmarkGroups()); 
+    setBookmarkGroups(await loadBookmarkGroups()); 
 
     // Update the group dropdown with the new group name
     refreshGroupsDropdown();
@@ -87,8 +87,8 @@ function PopUp() {
     refreshActiveMindfulTab();
   }
 
-  function loadGroupDropdown() {
-    const bookmarkGroups = loadBookmarkGroups();
+  async function loadGroupDropdown() {
+    const bookmarkGroups = await loadBookmarkGroups();
 
     let options = bookmarkGroups.map((group) => {
       return (

@@ -46,7 +46,7 @@ function NewTabUI() {
   //const [lastAction, setLastAction] = useState(UserAction.NONE);
   const lastActionRef = useRef(UserAction.NONE);
 
-  function handleDeleteBookmarkGroup(event, groupIndex) {
+  async function handleDeleteBookmarkGroup(event, groupIndex) {
     const shouldDelete = window.confirm(
       "Are you sure you want to delete the entire group " + bookmarkGroups[groupIndex].groupName + "?"
     ); 
@@ -54,18 +54,18 @@ function NewTabUI() {
       //setLastAction(UserAction.DELETE_GROUP);
       lastActionRef.current = UserAction.DELETE_GROUP;
       deleteBookmarkGroup(groupIndex);
-      setBookmarkGroups(loadBookmarkGroups()); 
+      setBookmarkGroups(await loadBookmarkGroups()); 
     } 
   }
 
-  function handleAddEmptyBookmarkGroup() {
+  async function handleAddEmptyBookmarkGroup() {
     addEmptyBookmarkGroup();
     //setLastAction(UserAction.ADD_EMPTY_GROUP);
     lastActionRef.current = UserAction.ADD_EMPTY_GROUP;
-    setBookmarkGroups(loadBookmarkGroups());
+    setBookmarkGroups(await loadBookmarkGroups());
   }
 
-  function handleOnDragEnd(result) {
+  async function handleOnDragEnd(result) {
     if (!result.destination) {
       return;
     }
@@ -87,12 +87,12 @@ function NewTabUI() {
       reorderBookmarks(sourceBookmarkIndex, destinationBookmarkIndex, sourceGroupIndex, destinationGroupIndex);
     }
 
-    setBookmarkGroups(loadBookmarkGroups()); 
+    setBookmarkGroups(await loadBookmarkGroups()); 
   }
 
 
-  function exportBookmarksToJSON() {
-    let bookmarkGroupsData = loadBookmarkGroups();
+  async function exportBookmarksToJSON() {
+    let bookmarkGroupsData = await loadBookmarkGroups();
     
     // Convert the data to JSON
     const jsonData = JSON.stringify(bookmarkGroupsData);
@@ -114,12 +114,12 @@ function NewTabUI() {
     const reader = new FileReader();
   
     // Read the contents of the file
-    reader.onload = function (event) {
+    reader.onload = async function (event) {
       const contents = event.target.result;
       const data = JSON.parse(contents);
       // Save the parsed data to local storage
       overwriteBookmarkGroupsToStorage(data);
-      setBookmarkGroups(loadBookmarkGroups());   
+      setBookmarkGroups(await loadBookmarkGroups());   
       console.log('Bookmarks saved to local storage:', data);
     };
 

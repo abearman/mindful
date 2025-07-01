@@ -60,7 +60,7 @@ function EditableBookmark(props) {
     });
   }
 
-  function handleBookmarkDelete(event, groupIndex, bookmarkIndex) {
+  async function handleBookmarkDelete(event, groupIndex, bookmarkIndex) {
     const bookmarkGroup = bookmarkGroups[groupIndex];
     const bookmark = bookmarkGroup.bookmarks[bookmarkIndex];
     const shouldDelete = window.confirm(
@@ -68,7 +68,7 @@ function EditableBookmark(props) {
     ); 
     if (shouldDelete) {
       deleteBookmark(bookmarkIndex, groupIndex);
-      setBookmarkGroups(loadBookmarkGroups()); 
+      setBookmarkGroups(await loadBookmarkGroups()); 
     }
   }
 
