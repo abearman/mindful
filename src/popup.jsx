@@ -72,8 +72,7 @@ function PopUp() {
     event.preventDefault();
     const group = newGroupInput === '' ? selectedGroup : newGroupInput;
     const urlWithProtocol = constructValidURL(url);
-    saveBookmark(name, urlWithProtocol, group);
-    setBookmarkGroups(await loadBookmarkGroups()); 
+    saveBookmark(name, urlWithProtocol, group, setBookmarkGroups);
 
     // Update the group dropdown with the new group name
     refreshGroupsDropdown();
@@ -82,9 +81,6 @@ function PopUp() {
     setSelectedGroupNewOrLastModified();
     setName('');
     setUrl('');
-
-    // TODO: Do we need to do this if the underlying state is being updated?
-    refreshActiveMindfulTab();
   }
 
   async function loadGroupDropdown() {

@@ -14,7 +14,7 @@ function EditableBookmarkGroupHeading(props) {
   const [text, setText] = useState(props.bookmarkGroup.groupName);
   const { bookmarkGroups, setBookmarkGroups } = useContext(AppContext);
 
-  function handleBlur(event) {
+  async function handleBlur(event) {
     setText(event.target.textContent.trim());
 
     const newGroupName = event.target.textContent.trim();
@@ -22,7 +22,7 @@ function EditableBookmarkGroupHeading(props) {
       const updatedGroups = [...bookmarkGroups];
       updatedGroups[props.groupIndex].groupName = newGroupName;
       setBookmarkGroups(updatedGroups);
-      overwriteBookmarkGroupsToStorage(bookmarkGroups);      
+      await overwriteBookmarkGroupsToStorage(bookmarkGroups, setBookmarkGroups);      
     }
   }
 

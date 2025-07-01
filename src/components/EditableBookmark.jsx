@@ -46,7 +46,7 @@ function EditableBookmark(props) {
         aElement.blur(); // Remove focus from the linkElement to trigger the blur function
       }
     });
-    aElement.addEventListener('blur', (event) => {
+    aElement.addEventListener('blur', async (event) => {
       const bookmarkGroup = bookmarkGroups[groupIndex];
       const bookmark = bookmarkGroup.bookmarks[bookmarkIndex];
       const newBookmarkName = event.target.textContent.trim();
@@ -54,7 +54,7 @@ function EditableBookmark(props) {
         const updatedGroups = [...bookmarkGroups];
         updatedGroups[groupIndex].bookmarks[bookmarkIndex].name = newBookmarkName;
         setBookmarkGroups(updatedGroups);
-        overwriteBookmarkGroupsToStorage(updatedGroups); 
+        await overwriteBookmarkGroupsToStorage(updatedGroups, setBookmarkGroups); 
       }
       aElement.setAttribute('contenteditable', 'false'); 
     });
@@ -67,8 +67,7 @@ function EditableBookmark(props) {
       "Are you sure you want to delete the " + bookmark.name + " bookmark from " + bookmarkGroup.groupName + "?"
     ); 
     if (shouldDelete) {
-      deleteBookmark(bookmarkIndex, groupIndex);
-      setBookmarkGroups(await loadBookmarkGroups()); 
+      deleteBookmark(bookmarkIndex, groupIndex, setBookmarkGroups);
     }
   }
 

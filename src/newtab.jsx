@@ -10,6 +10,9 @@ import {
   createUniqueID,
 } from "./scripts/Utilities.js";
 
+/* Constants */
+import { STORAGE_KEY_BOOKMARK_GROUPS } from './scripts/Constants.js';
+
 /* Bookmark Storage */
 import {
   addEmptyBookmarkGroup,
@@ -34,6 +37,8 @@ import {
 } from "./components/AddLinkInline.jsx";
 
 
+
+
 const UserAction = {
   ADD_EMPTY_GROUP: 'add_empty_group',
   DELETE_GROUP: 'delete_group',
@@ -53,16 +58,14 @@ function NewTabUI() {
     if (shouldDelete) {
       //setLastAction(UserAction.DELETE_GROUP);
       lastActionRef.current = UserAction.DELETE_GROUP;
-      deleteBookmarkGroup(groupIndex);
-      setBookmarkGroups(await loadBookmarkGroups()); 
+      await deleteBookmarkGroup(groupIndex, setBookmarkGroups);
     } 
   }
 
   async function handleAddEmptyBookmarkGroup() {
-    addEmptyBookmarkGroup();
     //setLastAction(UserAction.ADD_EMPTY_GROUP);
     lastActionRef.current = UserAction.ADD_EMPTY_GROUP;
-    setBookmarkGroups(await loadBookmarkGroups());
+    addEmptyBookmarkGroup(setBookmarkGroups);
   }
 
   async function handleOnDragEnd(result) {
@@ -75,7 +78,7 @@ function NewTabUI() {
     if (type == 'bookmark-group') {
       const sourceGroupIndex = source.index;
       const destinationGroupIndex = destination.index;
-      reorderBookmarkGroups(sourceGroupIndex, destinationGroupIndex);
+      reorderBookmarkGroups(sourceGroupIndex, destinationGroupIndex, setBookmarkGroups);
     }
 
     // if you're dragging bookmarks
@@ -84,10 +87,8 @@ function NewTabUI() {
       const destinationBookmarkIndex = destination.index;
       const sourceGroupIndex = parseInt(source.droppableId);
       const destinationGroupIndex = parseInt(destination.droppableId);
-      reorderBookmarks(sourceBookmarkIndex, destinationBookmarkIndex, sourceGroupIndex, destinationGroupIndex);
+      reorderBookmarks(sourceBookmarkIndex, destinationBookmarkIndex, sourceGroupIndex, destinationGroupIndex, setBookmarkGroups);
     }
-
-    setBookmarkGroups(await loadBookmarkGroups()); 
   }
 
 
@@ -109,7 +110,7 @@ function NewTabUI() {
     anchor.click();
   }
 
-  function handleFileSelection(event) {
+  async function handleFileSelection(event) {
     const file = event.target.files[0];
     const reader = new FileReader();
   
@@ -118,7 +119,7 @@ function NewTabUI() {
       const contents = event.target.result;
       const data = JSON.parse(contents);
       // Save the parsed data to local storage
-      overwriteBookmarkGroupsToStorage(data);
+      await overwriteBookmarkGroupsToStorage(data, setBookmarkGroups);
       setBookmarkGroups(await loadBookmarkGroups());   
       console.log('Bookmarks saved to local storage:', data);
     };
@@ -138,13 +139,26 @@ function NewTabUI() {
     // Programmatically trigger a click event to open the file dialog
     input.click();
   }
-  
+
+  // Automatically refresh the new tab page if the state is change (e.g., from the popup menu)
+  useEffect(() => {
+    function handleStorageChange(changes, area) {
+      console.log('Handling storage change');
+      if (area === 'local' && changes[STORAGE_KEY_BOOKMARK_GROUPS]) {
+        loadBookmarkGroups().then(setBookmarkGroups);
+      }
+    }
+
+    chrome.storage.onChanged.addListener(handleStorageChange);
+    return () => chrome.storage.onChanged.removeListener(handleStorageChange);
+  }, []);
+
   useEffect(() => {
     if ((lastBookmarkGroupRef.current) && (lastActionRef.current == UserAction.ADD_EMPTY_GROUP)) {
       lastBookmarkGroupRef.current.querySelector('.editable-heading').focus();
     }
   }, [bookmarkGroups]);
-  
+
   return (
     <div>
       <div className="export-bookmarks-button-container">

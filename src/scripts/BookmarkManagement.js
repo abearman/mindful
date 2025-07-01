@@ -13,7 +13,7 @@ export async function loadBookmarkGroups() {
   return result[STORAGE_KEY_BOOKMARK_GROUPS] || [];
 }
 
-export async function addMissingBookmarkIDs() {
+export async function addMissingBookmarkIDs(setBookmarkGroups) {
   let bookmarkGroups = await loadBookmarkGroups();
   bookmarkGroups.forEach(function(bookmarkGroup) {
     // If missing, add an ID to the overall bookmark group
@@ -27,14 +27,27 @@ export async function addMissingBookmarkIDs() {
       }
     });
   }); 
-  overwriteBookmarkGroupsToStorage(bookmarkGroups); 
+  await overwriteBookmarkGroupsToStorage(bookmarkGroups, setBookmarkGroups); 
 }
 
-export function overwriteBookmarkGroupsToStorage(bookmarkGroups) {
-  chrome.storage.local.set({
-    [STORAGE_KEY_BOOKMARK_GROUPS]: bookmarkGroups
+export async function overwriteBookmarkGroupsToStorage(bookmarkGroups, setBookmarkGroups) {
+  return new Promise((resolve, reject) => {
+    chrome.storage.local.set(
+      { [STORAGE_KEY_BOOKMARK_GROUPS]: bookmarkGroups },
+      async () => {
+        if (chrome.runtime.lastError) {
+          return reject(chrome.runtime.lastError);
+        }
+
+        // Refresh React state with the latest stored value
+        const freshGroups = await loadBookmarkGroups();
+        setBookmarkGroups(freshGroups);
+
+        refreshOtherMindfulTabs();
+        resolve();
+      }
+    )
   });
-  refreshOtherMindfulTabs();
 }
 
 function refreshOtherMindfulTabs() {
@@ -60,17 +73,16 @@ export function refreshActiveMindfulTab() {
 }
 
 /* Function to delete an entire bookmark group by index */
-export async function deleteBookmarkGroup(groupIndex) {
+export async function deleteBookmarkGroup(groupIndex, setBookmarkGroups) {
   let bookmarkGroups = await loadBookmarkGroups();
   if (groupIndex !== -1) {
     bookmarkGroups.splice(groupIndex, 1);
-    overwriteBookmarkGroupsToStorage(bookmarkGroups); 
-    refreshOtherMindfulTabs();
+    await overwriteBookmarkGroupsToStorage(bookmarkGroups, setBookmarkGroups); 
   }
 }
 
 /* Function to add a new empty bookmark group to the end */
-export async function addEmptyBookmarkGroup() {
+export async function addEmptyBookmarkGroup(setBookmarkGroups) {
   let bookmarkGroups = await loadBookmarkGroups();
   bookmarkGroups.push(
     { 
@@ -79,12 +91,11 @@ export async function addEmptyBookmarkGroup() {
       id: uuidv4(), 
     }
   );
-  overwriteBookmarkGroupsToStorage(bookmarkGroups); 
-  refreshOtherMindfulTabs();
+  await overwriteBookmarkGroupsToStorage(bookmarkGroups, setBookmarkGroups); 
 }
 
 /* Function to save a bookmark to local storage */
-export async function saveBookmark(bookmarkName, url, groupName) {
+export async function saveBookmark(bookmarkName, url, groupName, setBookmarkGroups) {
   let bookmarkGroups = await loadBookmarkGroups();
   let bookmark = { 
     name: bookmarkName, 
@@ -110,12 +121,12 @@ export async function saveBookmark(bookmarkName, url, groupName) {
       });
   }
   
-  overwriteBookmarkGroupsToStorage(bookmarkGroups);
+  await overwriteBookmarkGroupsToStorage(bookmarkGroups, setBookmarkGroups);
 }
 
 
 /* Function to delete a bookmark by name from a group */
-export async function deleteBookmark(bookmarkIndex, groupIndex) {
+export async function deleteBookmark(bookmarkIndex, groupIndex, setBookmarkGroups) {
   let bookmarkGroups = await loadBookmarkGroups();
   if (groupIndex !== -1) {
     let bookmarkGroup = bookmarkGroups[groupIndex];
@@ -124,15 +135,14 @@ export async function deleteBookmark(bookmarkIndex, groupIndex) {
     // If the bookmark was found, remove it from the array and update local storage
     if (bookmarkIndex !== -1) {
       bookmarks.splice(bookmarkIndex, 1);
-      overwriteBookmarkGroupsToStorage(bookmarkGroups); 
-      refreshOtherMindfulTabs();
+      await overwriteBookmarkGroupsToStorage(bookmarkGroups, setBookmarkGroups); 
     }
   }
 }
 
 
 /* Function to edit a bookmark's name */
-export async function editBookmarkName(oldBookmarkName, groupName, newBookmarkName) {
+export async function editBookmarkName(oldBookmarkName, groupName, newBookmarkName, setBookmarkGroups) {
   let bookmarkGroups = await loadBookmarkGroups();
   let groupIndex = bookmarkGroups.findIndex((item) => item.groupName === groupName);
   if (groupIndex !== -1) {
@@ -143,14 +153,14 @@ export async function editBookmarkName(oldBookmarkName, groupName, newBookmarkNa
     // If the bookmark was found, edit its name and update local storage
     if (bookmarkIndex !== -1) {
       bookmarks[bookmarkIndex].name = newBookmarkName;
-      overwriteBookmarkGroupsToStorage(bookmarkGroups); 
+      await overwriteBookmarkGroupsToStorage(bookmarkGroups, setBookmarkGroups); 
       refreshOtherMindfulTabs();
     }
   }
 }
 
 /* Function to reorder bookmarks within a list or between groups */
-export async function reorderBookmarks(sourceBookmarkIndex, destinationBookmarkIndex, sourceGroupIndex, destinationGroupIndex) {
+export async function reorderBookmarks(sourceBookmarkIndex, destinationBookmarkIndex, sourceGroupIndex, destinationGroupIndex, setBookmarkGroups) {
   // Copy the source group and remove the bookmark from its original position
   let bookmarkGroups = await loadBookmarkGroups();
   const sourceGroup = { ...bookmarkGroups[sourceGroupIndex] };
@@ -165,16 +175,14 @@ export async function reorderBookmarks(sourceBookmarkIndex, destinationBookmarkI
   updatedGroups[sourceGroupIndex] = sourceGroup;
   updatedGroups[destinationGroupIndex] = destinationGroup;
 
-  overwriteBookmarkGroupsToStorage(bookmarkGroups); 
-  refreshOtherMindfulTabs();
+  await overwriteBookmarkGroupsToStorage(bookmarkGroups, setBookmarkGroups); 
 }
 
-export async function reorderBookmarkGroups(sourceGroupIndex, destinationGroupIndex) {
+export async function reorderBookmarkGroups(sourceGroupIndex, destinationGroupIndex, setBookmarkGroups) {
   //const newBookmarkGroups = Array.from(bookmarkGroups);
   let bookmarkGroups = await loadBookmarkGroups();
   const [reorderedGroup] = bookmarkGroups.splice(sourceGroupIndex, 1);
   bookmarkGroups.splice(destinationGroupIndex, 0, reorderedGroup);
 
-  overwriteBookmarkGroupsToStorage(bookmarkGroups); 
-  refreshOtherMindfulTabs();
+  await overwriteBookmarkGroupsToStorage(bookmarkGroups, setBookmarkGroups); 
 }
