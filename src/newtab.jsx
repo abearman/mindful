@@ -17,7 +17,6 @@ import {
   loadBookmarkGroups,
   reorderBookmarks,
   reorderBookmarkGroups,
-  setBookmarkGroups,
   addMissingBookmarkIDs,
   overwriteBookmarkGroupsToStorage,
 } from "./scripts/BookmarkManagement.js";
