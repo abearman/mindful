@@ -120,7 +120,6 @@ function NewTabUI() {
       const data = JSON.parse(contents);
       // Save the parsed data to local storage
       await overwriteBookmarkGroupsToStorage(data, setBookmarkGroups);
-      setBookmarkGroups(await loadBookmarkGroups());   
       console.log('Bookmarks saved to local storage:', data);
     };
 

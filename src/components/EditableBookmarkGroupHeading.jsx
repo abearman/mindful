@@ -11,15 +11,12 @@ import { AppContext } from '../scripts/AppContext.jsx';
 
 
 function EditableBookmarkGroupHeading(props) {
-  const [text, setText] = useState(props.bookmarkGroup.groupName);
   const { bookmarkGroups, setBookmarkGroups } = useContext(AppContext);
+  const bookmarkGroup = bookmarkGroups[props.groupIndex]
 
   async function handleBlur(event) {
-    setText(event.target.textContent.trim());
-
-    const bookmarkGroupIndex = props.groupIndex;
     const newGroupName = event.target.textContent.trim();
-    await editBookmarkGroupHeading(bookmarkGroupIndex, newGroupName, setBookmarkGroups);
+    await editBookmarkGroupHeading(props.groupIndex, newGroupName, setBookmarkGroups);
   }
 
   return (
@@ -29,7 +26,7 @@ function EditableBookmarkGroupHeading(props) {
       className="editable-heading"
       suppressContentEditableWarning={true}
     >
-      {text}
+      {bookmarkGroup.groupName}
     </h2>
   );
 }
