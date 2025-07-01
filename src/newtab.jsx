@@ -166,7 +166,7 @@ function NewTabUI() {
       </div>
 
       <DragDropContext onDragEnd={handleOnDragEnd}>
-        <Droppable droppableId="all-groups" type="bookmark-group">
+        <Droppable droppableId="all-groups" type="bookmark-group" direction="horizontal">
           {(provided, snapshot) => (
             <div 
               className="bookmark-groups-container"
