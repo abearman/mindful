@@ -12,6 +12,7 @@
         "mindful",
         "bookmarks"
     ],
+    "type": "module",
     "author": "Amy Bearman",
     "license": "MIT",
     "dependencies": {
