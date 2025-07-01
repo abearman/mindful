@@ -8,7 +8,7 @@ import {
   loadBookmarkGroups,
   saveBookmark,
 } from "../scripts/BookmarkManagement.js";
-import { AppContext } from '../scripts/AppContext';
+import { AppContext } from '../scripts/AppContext.jsx';
 
 /* Utilities */
 import {
@@ -72,12 +72,12 @@ function CreateNewBookmark(props) {
     }
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault(); // prevent the form from submitting normally
     const urlWithProtocol = constructValidURL(bookmarkUrl);
     saveBookmark(bookmarkName, urlWithProtocol, props.groupName);
     
-    setBookmarkGroups(loadBookmarkGroups());    
+    setBookmarkGroups(await loadBookmarkGroups());    
     setBookmarkName('');
     setBookmarkUrl('');
   }

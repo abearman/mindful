@@ -5,25 +5,21 @@ import '../styles/EditableBookmarkGroupHeading.css'
 
 /* Bookmark Storage */
 import {
-  overwriteBookmarkGroupsToStorage,
+  editBookmarkGroupHeading,
 } from "../scripts/BookmarkManagement.js";
-import { AppContext } from '../scripts/AppContext';
+import { AppContext } from '../scripts/AppContext.jsx';
 
 
 function EditableBookmarkGroupHeading(props) {
   const [text, setText] = useState(props.bookmarkGroup.groupName);
   const { bookmarkGroups, setBookmarkGroups } = useContext(AppContext);
 
-  function handleBlur(event) {
+  async function handleBlur(event) {
     setText(event.target.textContent.trim());
 
+    const bookmarkGroupIndex = props.groupIndex;
     const newGroupName = event.target.textContent.trim();
-    if (newGroupName !== props.bookmarkGroup.groupName) {
-      const updatedGroups = [...bookmarkGroups];
-      updatedGroups[props.groupIndex].groupName = newGroupName;
-      setBookmarkGroups(updatedGroups);
-      overwriteBookmarkGroupsToStorage(bookmarkGroups);      
-    }
+    await editBookmarkGroupHeading(bookmarkGroupIndex, newGroupName, setBookmarkGroups);
   }
 
   return (

@@ -59,11 +59,11 @@ function CreateNewGroupPopUp(props) {
     setIsOpen(false);
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault(); // prevent the form from submitting normally
     saveBookmark(bookmarkName, constructValidURL(bookmarkUrl), props.groupName);
     
-    setBookmarkGroups(loadBookmarkGroups());    
+    setBookmarkGroups(await loadBookmarkGroups());    
     setBookmarkName('');
     setBookmarkUrl('');
     event.target.reset();  

@@ -11,10 +11,9 @@ import {
 /* Bookmark Storage */
 import {
   deleteBookmark,
-  loadBookmarkGroups,
-  overwriteBookmarkGroupsToStorage,
+  editBookmarkName,
 } from "../scripts/BookmarkManagement.js";
-import { AppContext } from '../scripts/AppContext';
+import { AppContext } from '../scripts/AppContext.jsx';
 
 
 function EditableBookmark(props) {
@@ -46,29 +45,22 @@ function EditableBookmark(props) {
         aElement.blur(); // Remove focus from the linkElement to trigger the blur function
       }
     });
-    aElement.addEventListener('blur', (event) => {
-      const bookmarkGroup = bookmarkGroups[groupIndex];
-      const bookmark = bookmarkGroup.bookmarks[bookmarkIndex];
+    aElement.addEventListener('blur', async (event) => {
       const newBookmarkName = event.target.textContent.trim();
-      if (newBookmarkName !== bookmark.name) {
-        const updatedGroups = [...bookmarkGroups];
-        updatedGroups[groupIndex].bookmarks[bookmarkIndex].name = newBookmarkName;
-        setBookmarkGroups(updatedGroups);
-        overwriteBookmarkGroupsToStorage(updatedGroups); 
-      }
+      setText(newBookmarkName);
+      await editBookmarkName(groupIndex, bookmarkIndex, newBookmarkName, setBookmarkGroups);
       aElement.setAttribute('contenteditable', 'false'); 
     });
   }
 
-  function handleBookmarkDelete(event, groupIndex, bookmarkIndex) {
+  async function handleBookmarkDelete(event, groupIndex, bookmarkIndex) {
     const bookmarkGroup = bookmarkGroups[groupIndex];
     const bookmark = bookmarkGroup.bookmarks[bookmarkIndex];
     const shouldDelete = window.confirm(
       "Are you sure you want to delete the " + bookmark.name + " bookmark from " + bookmarkGroup.groupName + "?"
     ); 
     if (shouldDelete) {
-      deleteBookmark(bookmarkIndex, groupIndex);
-      setBookmarkGroups(loadBookmarkGroups()); 
+      await deleteBookmark(bookmarkIndex, groupIndex, setBookmarkGroups);
     }
   }
 

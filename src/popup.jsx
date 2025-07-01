@@ -1,11 +1,11 @@
 import React, { useContext, useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 
-import '../styles/PopUp.css';
-import { constructValidURL } from '../scripts/Utilities.js';
-import { loadBookmarkGroups, saveBookmark, refreshActiveMindfulTab } from '../scripts/BookmarkManagement.js';
-import { URL_PATTERN } from '../scripts/Constants';
-import { AppContextProvider, AppContext } from '../scripts/AppContext';
+import './styles/PopUp.css';
+import { constructValidURL } from './scripts/Utilities.js';
+import { loadBookmarkGroups, saveBookmark, refreshActiveMindfulTab } from './scripts/BookmarkManagement.js';
+import { URL_PATTERN } from './scripts/Constants.js';
+import { AppContextProvider, AppContext } from './scripts/AppContext.jsx';
 
 function PopUp() {
   const { bookmarkGroups, setBookmarkGroups } = useContext(AppContext);
@@ -72,8 +72,7 @@ function PopUp() {
     event.preventDefault();
     const group = newGroupInput === '' ? selectedGroup : newGroupInput;
     const urlWithProtocol = constructValidURL(url);
-    saveBookmark(name, urlWithProtocol, group);
-    setBookmarkGroups(loadBookmarkGroups()); 
+    saveBookmark(name, urlWithProtocol, group, setBookmarkGroups);
 
     // Update the group dropdown with the new group name
     refreshGroupsDropdown();
@@ -82,13 +81,10 @@ function PopUp() {
     setSelectedGroupNewOrLastModified();
     setName('');
     setUrl('');
-
-    // TODO: Do we need to do this if the underlying state is being updated?
-    refreshActiveMindfulTab();
   }
 
-  function loadGroupDropdown() {
-    const bookmarkGroups = loadBookmarkGroups();
+  async function loadGroupDropdown() {
+    const bookmarkGroups = await loadBookmarkGroups();
 
     let options = bookmarkGroups.map((group) => {
       return (

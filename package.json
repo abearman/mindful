@@ -4,8 +4,9 @@
     "description": "Store lists of bookmarks in separate categories",
     "main": "PopUp.js",
     "scripts": {
-        "start": "webpack serve --mode development",
-        "build": "webpack --mode production"
+        "dev": "vite",
+        "build": "vite build",
+        "preview": "vite preview"
     },
     "keywords": [
         "mindful",
@@ -19,18 +20,21 @@
         "react-dnd": "^16.0.1",
         "react-dnd-html5-backend": "^16.0.1",
         "react-dom": "^17.0.2",
-        "react-modal": "^3.16.1"
+        "react-modal": "^3.16.1",
+        "uuid": "^11.0.5",
+        "vite-plugin-static-copy": "^2.2.0"
     },
     "devDependencies": {
-        "@babel/preset-env": "^7.22.2",
-        "@babel/preset-react": "^7.22.0",
-        "babel-loader": "^9.1.2",
+        "@babel/core": "^7.26.7",
+        "@babel/preset-env": "^7.26.7",
+        "@babel/preset-react": "^7.26.3",
+        "@vitejs/plugin-react": "^4.3.4",
+        "babel-loader": "^9.2.1",
         "copy-webpack-plugin": "^9.0.0",
         "css-loader": "^6.7.3",
         "html-webpack-plugin": "^5.4.0",
         "style-loader": "^3.3.2",
-        "webpack": "^5.64.4",
-        "webpack-cli": "^5.1.1",
-        "webpack-dev-server": "^4.6.0"
+        "terser-webpack-plugin": "^5.3.11",
+        "vite": "^6.0.11"
     }
 }
