@@ -140,23 +140,27 @@ export async function deleteBookmark(bookmarkIndex, groupIndex, setBookmarkGroup
   }
 }
 
+/* Function to edit a bookmark group's heading */
+export async function editBookmarkGroupHeading(bookmarkGroupIndex, newHeadingName, setBookmarkGroups) {
+  let bookmarkGroups = await loadBookmarkGroups();
+  const updatedGroups = [...bookmarkGroups];  // Create a shallow copy
+  updatedGroups[bookmarkGroupIndex].groupName = newHeadingName;
+  await overwriteBookmarkGroupsToStorage(updatedGroups, setBookmarkGroups); 
+}
 
 /* Function to edit a bookmark's name */
-export async function editBookmarkName(oldBookmarkName, groupName, newBookmarkName, setBookmarkGroups) {
+export async function editBookmarkName(bookmarkGroupIndex, bookmarkIndex, newBookmarkName, setBookmarkGroups) {
   let bookmarkGroups = await loadBookmarkGroups();
-  let groupIndex = bookmarkGroups.findIndex((item) => item.groupName === groupName);
-  if (groupIndex !== -1) {
-    let bookmarkGroup = bookmarkGroups[groupIndex];
-    let bookmarks = bookmarkGroup["bookmarks"];
-    const bookmarkIndex = bookmarks.findIndex((bookmark) => bookmark.name === oldBookmarkName);
 
-    // If the bookmark was found, edit its name and update local storage
-    if (bookmarkIndex !== -1) {
-      bookmarks[bookmarkIndex].name = newBookmarkName;
-      await overwriteBookmarkGroupsToStorage(bookmarkGroups, setBookmarkGroups); 
-      refreshOtherMindfulTabs();
-    }
-  }
+  // Create a deep copy to guarantee that React sees a new reference at both groups array and bookmarks array
+  const updatedGroups = bookmarkGroups.map(group => ({
+    ...group,
+    bookmarks: [...group.bookmarks]
+  })); 
+
+  updatedGroups[bookmarkGroupIndex].bookmarks[bookmarkIndex].name = newBookmarkName;
+  console.log('Updated groups in editBookmarkName: ', updatedGroups);
+  await overwriteBookmarkGroupsToStorage(updatedGroups, setBookmarkGroups); 
 }
 
 /* Function to reorder bookmarks within a list or between groups */

@@ -11,8 +11,7 @@ import {
 /* Bookmark Storage */
 import {
   deleteBookmark,
-  loadBookmarkGroups,
-  overwriteBookmarkGroupsToStorage,
+  editBookmarkName,
 } from "../scripts/BookmarkManagement.js";
 import { AppContext } from '../scripts/AppContext.jsx';
 
@@ -47,15 +46,9 @@ function EditableBookmark(props) {
       }
     });
     aElement.addEventListener('blur', async (event) => {
-      const bookmarkGroup = bookmarkGroups[groupIndex];
-      const bookmark = bookmarkGroup.bookmarks[bookmarkIndex];
       const newBookmarkName = event.target.textContent.trim();
-      if (newBookmarkName !== bookmark.name) {
-        const updatedGroups = [...bookmarkGroups];
-        updatedGroups[groupIndex].bookmarks[bookmarkIndex].name = newBookmarkName;
-        setBookmarkGroups(updatedGroups);
-        await overwriteBookmarkGroupsToStorage(updatedGroups, setBookmarkGroups); 
-      }
+      setText(newBookmarkName);
+      await editBookmarkName(groupIndex, bookmarkIndex, newBookmarkName, setBookmarkGroups);
       aElement.setAttribute('contenteditable', 'false'); 
     });
   }
@@ -67,7 +60,7 @@ function EditableBookmark(props) {
       "Are you sure you want to delete the " + bookmark.name + " bookmark from " + bookmarkGroup.groupName + "?"
     ); 
     if (shouldDelete) {
-      deleteBookmark(bookmarkIndex, groupIndex, setBookmarkGroups);
+      await deleteBookmark(bookmarkIndex, groupIndex, setBookmarkGroups);
     }
   }
 
