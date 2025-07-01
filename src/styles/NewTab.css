@@ -16,7 +16,7 @@ body {
   background-color: #fff;
   border-radius: 10px;
   
-  border: 1px solid #ddd; /* remove? */
+  border: 1px solid #ddd; 
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
   padding: 20px 20px;  /* top/bottom, left/right */
@@ -31,6 +31,7 @@ body {
 
 .bookmark-group-box:hover,
 .bookmark-group-box:focus {
+  /*box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);*/
   outline: 2px solid #4897cf; 
   outline-offset: 0px;
   box-shadow: 0 0 20px rgba(72, 151, 207, 0.7); /* subtle glow */
@@ -139,7 +140,7 @@ form .add-bookmark-button {
   font-size: 18px;
   width: 100%;
   padding: 10px 15px;
-  background-color: #4CAF50;
+  background-color: #4897cf;
   color: white;
   border: none;
   border-radius: 5px;

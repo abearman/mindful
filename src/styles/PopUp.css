@@ -57,19 +57,19 @@ select {
   font-size: 18px;
   width: 100%;
   padding: 10px 15px;
-  background-color: #4CAF50;
+  background-color: #4897cf;
   color: white;
   border: none;
   border-radius: 5px;
 }
 
 .add-bookmark-button:hover {
-  background-color: #3e8e41;
+  background-color: #3a84b5;
   cursor: pointer;
 }
 
 .add-bookmark-button:active {
-  background-color: #285e29;
+  background-color: #3276a0;
 }
 
 .new-link-popup-container {
