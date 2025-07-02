@@ -1,14 +1,15 @@
 import React, { useContext, useRef, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+//import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import { DndContext, closestCenter, useSensor, useSensors, PointerSensor } from '@dnd-kit/core';
+import { arrayMove, SortableContext, rectSortingStrategy, useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 /* CSS styles */
 import './styles/NewTab.css';
 
 /* Utilities */
-import {
-  createUniqueID,
-} from "./scripts/Utilities.js";
+import { createUniqueID } from "./scripts/Utilities.js";
 
 /* Constants */
 import { STORAGE_KEY_BOOKMARK_GROUPS } from './scripts/Constants.js';
@@ -20,24 +21,29 @@ import {
   loadBookmarkGroups,
   reorderBookmarks,
   reorderBookmarkGroups,
-  addMissingBookmarkIDs,
   overwriteBookmarkGroupsToStorage,
 } from "./scripts/BookmarkManagement.js";
 import { AppContextProvider, AppContext } from './scripts/AppContext.jsx';
 
 /* Components */
-import {
-  EditableBookmark
-} from "./components/EditableBookmark.jsx";
-import {
-  EditableBookmarkGroupHeading
-} from "./components/EditableBookmarkGroupHeading.jsx";
-import {
-  AddLinkInline
-} from "./components/AddLinkInline.jsx";
+import { EditableBookmark } from "./components/EditableBookmark.jsx";
+import { EditableBookmarkGroupHeading } from "./components/EditableBookmarkGroupHeading.jsx";
+import { AddLinkInline } from "./components/AddLinkInline.jsx";
 
 
-
+function SortableItem({ id, children }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 999 : undefined,
+  };
+  return (
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+      {children}
+    </div>
+  );
+}
 
 const UserAction = {
   ADD_EMPTY_GROUP: 'add_empty_group',
@@ -48,6 +54,7 @@ const UserAction = {
 function NewTabUI() {
   const { bookmarkGroups, setBookmarkGroups } = useContext(AppContext);
   const lastBookmarkGroupRef = useRef(null);
+  const sensors = useSensors(useSensor(PointerSensor));
   //const [lastAction, setLastAction] = useState(UserAction.NONE);
   const lastActionRef = useRef(UserAction.NONE);
 
@@ -68,27 +75,25 @@ function NewTabUI() {
     addEmptyBookmarkGroup(setBookmarkGroups);
   }
 
-  async function handleOnDragEnd(result) {
-    if (!result.destination) {
-      return;
-    }
-    const { source, destination, type } = result;
+  async function handleDragEnd(event) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
 
     // if you're dragging groups
-    if (type == 'bookmark-group') {
-      const sourceGroupIndex = source.index;
-      const destinationGroupIndex = destination.index;
-      reorderBookmarkGroups(sourceGroupIndex, destinationGroupIndex, setBookmarkGroups);
-    }
+    //if (type == 'bookmark-group') {
+    const sourceGroupIndex = bookmarkGroups.findIndex(group => group.id === active.id);
+    const destinationGroupIndex = bookmarkGroups.findIndex(group => group.id === over.id);
+    reorderBookmarkGroups(sourceGroupIndex, destinationGroupIndex, setBookmarkGroups);
+    //}
 
     // if you're dragging bookmarks
-    if (type === 'bookmark') {
-      const sourceBookmarkIndex = source.index;
-      const destinationBookmarkIndex = destination.index;
-      const sourceGroupIndex = parseInt(source.droppableId);
-      const destinationGroupIndex = parseInt(destination.droppableId);
-      reorderBookmarks(sourceBookmarkIndex, destinationBookmarkIndex, sourceGroupIndex, destinationGroupIndex, setBookmarkGroups);
-    }
+    // if (type === 'bookmark') {
+    //   const sourceBookmarkIndex = source.index;
+    //   const destinationBookmarkIndex = destination.index;
+    //   const sourceGroupIndex = parseInt(source.droppableId);
+    //   const destinationGroupIndex = parseInt(destination.droppableId);
+    //   reorderBookmarks(sourceBookmarkIndex, destinationBookmarkIndex, sourceGroupIndex, destinationGroupIndex, setBookmarkGroups);
+    // }
   }
 
 
@@ -165,62 +170,36 @@ function NewTabUI() {
         <button className='export-or-load-bookmarks-button' onClick={loadBookmarksFromLocalFile}>Load Bookmarks</button>
       </div>
 
-      <DragDropContext onDragEnd={handleOnDragEnd}>
-        <Droppable droppableId="all-groups" type="bookmark-group" direction="horizontal">
-          {(provided, snapshot) => (
-            <div 
-              className="bookmark-groups-container"
-              ref={provided.innerRef} 
-              {...provided.droppableProps}
-            >
-              {bookmarkGroups.map((bookmarkGroup, groupIndex) => (
-                <Draggable key={bookmarkGroup.id} draggableId={bookmarkGroup.id} index={groupIndex}>
-                  {(provided, snapshot) => (
-                    <div
-                      className="bookmark-group-box"
-                      ref={provided.innerRef} 
-                      {...provided.draggableProps}
-                      {...provided.dragHandleProps}
-                    >
-                      {/* your bookmark group content */}
-                      <button 
-                      className="delete-bookmark-group-button" 
-                      onClick={(event) => handleDeleteBookmarkGroup(event, groupIndex)} 
-                    >
-                      <img src="./assets/delete-icon.svg" />
-                    </button>
-                      <EditableBookmarkGroupHeading 
-                        key={"heading-" + bookmarkGroup.id} 
-                        bookmarkGroup={bookmarkGroup} 
-                        groupIndex={groupIndex}
-                      />
-
-                      <Droppable droppableId={groupIndex.toString()} type="bookmark">
-                        {(provided, snapshot) => (
-                          <div ref={provided.innerRef} {...provided.droppableProps}>
-                            {bookmarkGroup.bookmarks.map((bookmark, bookmarkIndex) => (
-                              <Draggable key={bookmark.id} draggableId={bookmark.id} index={bookmarkIndex}>
-                                {(provided, snapshot) => (
-                                  <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
-                                    <EditableBookmark bookmark={bookmark} bookmarkIndex={bookmarkIndex} groupIndex={groupIndex} />
-                                  </div>
-                                )}
-                              </Draggable>
-                            ))}
-                            {provided.placeholder}
-                          </div>
-                        )}
-                      </Droppable>
-                      
-                    </div>
-                  )}
-                </Draggable>
-              ))}
-              {provided.placeholder}
-            </div>
-          )}
-        </Droppable>
-      </DragDropContext>
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <SortableContext items={bookmarkGroups.map(group => group.id)} strategy={rectSortingStrategy}>
+          <div className="bookmark-groups-container">
+            {bookmarkGroups.map((bookmarkGroup, groupIndex) => (
+              <SortableItem key={bookmarkGroup.id} id={bookmarkGroup.id}>
+                <div className="bookmark-group-box">
+                  <button 
+                    className="delete-bookmark-group-button" 
+                    onClick={(event) => handleDeleteBookmarkGroup(event, groupIndex)}>
+                    <img src="./assets/delete-icon.svg" />
+                  </button>
+                  <EditableBookmarkGroupHeading 
+                    key={"heading-" + bookmarkGroup.id} 
+                    bookmarkGroup={bookmarkGroup} 
+                    groupIndex={groupIndex}
+                  />
+                  {bookmarkGroup.bookmarks.map((bookmark, bookmarkIndex) => (
+                    <EditableBookmark 
+                      key={bookmark.id} 
+                      bookmark={bookmark} 
+                      bookmarkIndex={bookmarkIndex} 
+                      groupIndex={groupIndex} 
+                    />
+                  ))}
+                </div>
+              </SortableItem>
+            ))}
+          </div>
+        </SortableContext>
+      </DndContext>
     </div>
   );
 }

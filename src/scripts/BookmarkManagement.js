@@ -183,10 +183,8 @@ export async function reorderBookmarks(sourceBookmarkIndex, destinationBookmarkI
 }
 
 export async function reorderBookmarkGroups(sourceGroupIndex, destinationGroupIndex, setBookmarkGroups) {
-  //const newBookmarkGroups = Array.from(bookmarkGroups);
   let bookmarkGroups = await loadBookmarkGroups();
   const [reorderedGroup] = bookmarkGroups.splice(sourceGroupIndex, 1);
   bookmarkGroups.splice(destinationGroupIndex, 0, reorderedGroup);
-
   await overwriteBookmarkGroupsToStorage(bookmarkGroups, setBookmarkGroups); 
 }
