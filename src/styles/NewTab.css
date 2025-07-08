@@ -41,7 +41,8 @@ body {
 }
 
 .modify-link-button:hover,
-.delete-bookmark-group-button:hover { 
+.delete-bookmark-group-button:hover,
+.bookmark-container:hover { 
     cursor: pointer;
 }
 

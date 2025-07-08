@@ -1,8 +1,7 @@
 import React, { useContext, useRef, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
-//import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { DndContext, closestCenter, useSensor, useSensors, PointerSensor } from '@dnd-kit/core';
-import { arrayMove, SortableContext, rectSortingStrategy, useSortable } from '@dnd-kit/sortable';
+import { arrayMove, SortableContext, rectSortingStrategy, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'; // Import verticalListSortingStrategy
 import { CSS } from '@dnd-kit/utilities';
 
 /* CSS styles */
@@ -61,22 +60,19 @@ function NewTabUI() {
       },
     })
   );
-  //const [lastAction, setLastAction] = useState(UserAction.NONE);
   const lastActionRef = useRef(UserAction.NONE);
 
   async function handleDeleteBookmarkGroup(event, groupIndex) {
     const shouldDelete = window.confirm(
       "Are you sure you want to delete the entire group " + bookmarkGroups[groupIndex].groupName + "?"
-    ); 
+    );
     if (shouldDelete) {
-      //setLastAction(UserAction.DELETE_GROUP);
       lastActionRef.current = UserAction.DELETE_GROUP;
       await deleteBookmarkGroup(groupIndex, setBookmarkGroups);
-    } 
+    }
   }
 
   async function handleAddEmptyBookmarkGroup() {
-    //setLastAction(UserAction.ADD_EMPTY_GROUP);
     lastActionRef.current = UserAction.ADD_EMPTY_GROUP;
     addEmptyBookmarkGroup(setBookmarkGroups);
   }
@@ -85,38 +81,64 @@ function NewTabUI() {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
-    // if you're dragging groups
-    //if (type == 'bookmark-group') {
-    const sourceGroupIndex = bookmarkGroups.findIndex(group => group.id === active.id);
-    const destinationGroupIndex = bookmarkGroups.findIndex(group => group.id === over.id);
-    reorderBookmarkGroups(sourceGroupIndex, destinationGroupIndex, setBookmarkGroups);
-    //}
+    // Determine if it's a group drag or a bookmark drag
+    const activeGroup = bookmarkGroups.find(group => group.id === active.id);
+    const overGroup = bookmarkGroups.find(group => group.id === over.id);
 
-    // if you're dragging bookmarks
-    // if (type === 'bookmark') {
-    //   const sourceBookmarkIndex = source.index;
-    //   const destinationBookmarkIndex = destination.index;
-    //   const sourceGroupIndex = parseInt(source.droppableId);
-    //   const destinationGroupIndex = parseInt(destination.droppableId);
-    //   reorderBookmarks(sourceBookmarkIndex, destinationBookmarkIndex, sourceGroupIndex, destinationGroupIndex, setBookmarkGroups);
-    // }
+    if (activeGroup && overGroup) { // It's a group drag
+      const sourceGroupIndex = bookmarkGroups.findIndex(group => group.id === active.id);
+      const destinationGroupIndex = bookmarkGroups.findIndex(group => group.id === over.id);
+      reorderBookmarkGroups(sourceGroupIndex, destinationGroupIndex, setBookmarkGroups);
+    } else { // It's a bookmark drag (or possibly moving between groups, which isn't handled here)
+      // Find the group and bookmark indices
+      let sourceGroupIndex = -1;
+      let sourceBookmarkIndex = -1;
+      let destinationGroupIndex = -1;
+      let destinationBookmarkIndex = -1;
+
+      // Find the active bookmark's original position
+      bookmarkGroups.forEach((group, gIndex) => {
+        const bIndex = group.bookmarks.findIndex(bookmark => bookmark.id === active.id);
+        if (bIndex !== -1) {
+          sourceGroupIndex = gIndex;
+          sourceBookmarkIndex = bIndex;
+        }
+      });
+
+      // Find the over bookmark's new position
+      bookmarkGroups.forEach((group, gIndex) => {
+        const bIndex = group.bookmarks.findIndex(bookmark => bookmark.id === over.id);
+        if (bIndex !== -1) {
+          destinationGroupIndex = gIndex;
+          destinationBookmarkIndex = bIndex;
+        }
+      });
+
+      // Only reorder if both source and destination are within bookmarks and in the same group
+      // Cross-group dragging would require more complex logic
+      if (sourceGroupIndex !== -1 && sourceBookmarkIndex !== -1 &&
+          destinationGroupIndex !== -1 && destinationBookmarkIndex !== -1 &&
+          sourceGroupIndex === destinationGroupIndex) { // Ensure within the same group for now
+        reorderBookmarks(sourceBookmarkIndex, destinationBookmarkIndex, sourceGroupIndex, destinationGroupIndex, setBookmarkGroups);
+      }
+    }
   }
 
 
   async function exportBookmarksToJSON() {
     let bookmarkGroupsData = await loadBookmarkGroups();
-    
+
     // Convert the data to JSON
     const jsonData = JSON.stringify(bookmarkGroupsData);
-  
+
     // Create a file blob with the JSON data
     const blob = new Blob([jsonData], { type: 'application/json' });
-  
+
     // Create a temporary anchor element
     const anchor = document.createElement('a');
     anchor.href = URL.createObjectURL(blob);
     anchor.download = 'bookmarks.json';
-  
+
     // Programmatically click the anchor to initiate the download
     anchor.click();
   }
@@ -124,7 +146,7 @@ function NewTabUI() {
   async function handleFileSelection(event) {
     const file = event.target.files[0];
     const reader = new FileReader();
-  
+
     // Read the contents of the file
     reader.onload = async function (event) {
       const contents = event.target.result;
@@ -182,24 +204,35 @@ function NewTabUI() {
             {bookmarkGroups.map((bookmarkGroup, groupIndex) => (
               <SortableItem key={bookmarkGroup.id} id={bookmarkGroup.id}>
                 <div className="bookmark-group-box">
-                  <button 
-                    className="delete-bookmark-group-button" 
+                  <button
+                    className="delete-bookmark-group-button"
                     onClick={(event) => handleDeleteBookmarkGroup(event, groupIndex)}>
                     <img src="./assets/delete-icon.svg" />
                   </button>
-                  <EditableBookmarkGroupHeading 
-                    key={"heading-" + bookmarkGroup.id} 
-                    bookmarkGroup={bookmarkGroup} 
+                  <EditableBookmarkGroupHeading
+                    key={"heading-" + bookmarkGroup.id}
+                    bookmarkGroup={bookmarkGroup}
                     groupIndex={groupIndex}
                   />
-                  {bookmarkGroup.bookmarks.map((bookmark, bookmarkIndex) => (
-                    <EditableBookmark 
-                      key={bookmark.id} 
-                      bookmark={bookmark} 
-                      bookmarkIndex={bookmarkIndex} 
-                      groupIndex={groupIndex} 
-                    />
-                  ))}
+                  {/* DndContext and SortableContext for individual bookmarks */}
+                  <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                    <SortableContext
+                      items={bookmarkGroup.bookmarks.map(bookmark => bookmark.id)}
+                      strategy={verticalListSortingStrategy} // Use verticalListSortingStrategy for bookmarks
+                    >
+                      {bookmarkGroup.bookmarks.map((bookmark, bookmarkIndex) => (
+                        <SortableItem key={bookmark.id} id={bookmark.id}>
+                          <EditableBookmark
+                            key={bookmark.id}
+                            bookmark={bookmark}
+                            bookmarkIndex={bookmarkIndex}
+                            groupIndex={groupIndex}
+                          />
+                        </SortableItem>
+                      ))}
+                    </SortableContext>
+                  </DndContext>
+                  <AddLinkInline groupIndex={groupIndex}/>
                 </div>
               </SortableItem>
             ))}

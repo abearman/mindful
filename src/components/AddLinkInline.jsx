@@ -23,6 +23,7 @@ import {
 function AddLinkInline(props) {
   const { bookmarkGroups, setBookmarkGroups } = useContext(AppContext);
   const [linkBeingEdited, setLinkBeingEdited] = useState(false);
+  const bookmarkGroupName = bookmarkGroups[props.groupIndex].groupName;
 
   function handleAddLinkClicked(event) {
     setLinkBeingEdited(true);
@@ -34,7 +35,7 @@ function AddLinkInline(props) {
       {!linkBeingEdited ? (
         <AddLinkButton onClick={handleAddLinkClicked} />
       ) : (
-        <CreateNewBookmark groupName={props.groupName} setLinkBeingEdited={setLinkBeingEdited}/>
+        <CreateNewBookmark groupName={bookmarkGroupName} setLinkBeingEdited={setLinkBeingEdited}/>
       )}
     </div> 
   );
@@ -75,8 +76,9 @@ function CreateNewBookmark(props) {
   async function handleSubmit(event) {
     event.preventDefault(); // prevent the form from submitting normally
     const urlWithProtocol = constructValidURL(bookmarkUrl);
-    saveBookmark(bookmarkName, urlWithProtocol, props.groupName);
-    
+    console.log("props.groupName: ", props.groupName);
+    saveBookmark(bookmarkName, urlWithProtocol, props.groupName, setBookmarkGroups);
+
     setBookmarkGroups(await loadBookmarkGroups());    
     setBookmarkName('');
     setBookmarkUrl('');
