@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { CHROME_NEW_TAB, STORAGE_KEY_BOOKMARK_GROUPS } from './Constants.js';
+import { arrayMove } from '@dnd-kit/sortable';
 
 
 export function clearBookmarkGroups() {
@@ -183,8 +184,10 @@ export async function reorderBookmarks(sourceBookmarkIndex, destinationBookmarkI
 }
 
 export async function reorderBookmarkGroups(sourceGroupIndex, destinationGroupIndex, setBookmarkGroups) {
-  let bookmarkGroups = await loadBookmarkGroups();
-  const [reorderedGroup] = bookmarkGroups.splice(sourceGroupIndex, 1);
-  bookmarkGroups.splice(destinationGroupIndex, 0, reorderedGroup);
-  await overwriteBookmarkGroupsToStorage(bookmarkGroups, setBookmarkGroups); 
+  setBookmarkGroups((prev) => {
+    const newGroups = arrayMove(prev, sourceGroupIndex, destinationGroupIndex);
+    // write to storage in the background — don't block UI update
+    overwriteBookmarkGroupsToStorage(newGroups, () => {}); 
+    return newGroups;
+  });
 }
