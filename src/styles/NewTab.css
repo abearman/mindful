@@ -18,26 +18,45 @@ body {
   position: relative;
   background-color: #fff;
   border-radius: 10px;
-  
-  border: 1px solid #ddd; 
+  border: 1px solid #ddd;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-
   padding: 20px 20px;  /* top/bottom, left/right */
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   margin-bottom: auto;
-
-  /* Smooth outline and shadow transitions */
-  /*transition: outline 0.2s ease, box-shadow 0.2s ease;*/
 }
 
+.bookmark-group-box:hover {
+  outline: 2px solid #4897cf;
+  outline-offset: 0px;
+  box-shadow: 0 0 20px rgba(72, 151, 207, 0.7); /* subtle glow */
+  /* Add the default cursor for the group itself */
+  cursor: grab; /* Use 'grab' for draggable, or 'pointer' for general interaction */
+}
+
+/* Reset cursor for all direct children of .bookmark-group-box when hovered */
+.bookmark-group-box > *:hover {
+  cursor: initial; /* Resets to the browser's default cursor for that element */
+}
+
+.modify-link-button:hover,
+.delete-bookmark-group-button:hover { 
+    cursor: pointer;
+}
+
+.editable-heading:hover {
+  cursor: text;
+}
+
+/* Ensure specific child cursors override the general reset */
 .bookmark-group-box:hover,
 .bookmark-group-box:focus {
   /*box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);*/
   outline: 2px solid #4897cf; 
   outline-offset: 0px;
   box-shadow: 0 0 20px rgba(72, 151, 207, 0.7); /* subtle glow */
+  cursor: pointer;
 }
 
 .bookmark-group-box a {
