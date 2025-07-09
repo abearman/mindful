@@ -5,6 +5,7 @@ import { SortableItem } from './SortableItem.jsx';
 import { EditableBookmarkGroupHeading } from './EditableBookmarkGroupHeading.jsx'; 
 import { EditableBookmark } from './EditableBookmark.jsx'; 
 import { AddBookmarkInline } from './AddBookmarkInline.jsx'; 
+import { EMPTY_GROUP_IDENTIFIER } from '../scripts/Constants.js';
 
 class BookmarkGroup extends React.Component {
   render() {
@@ -15,6 +16,8 @@ class BookmarkGroup extends React.Component {
       handleDragEnd,
       handleDeleteBookmarkGroup,
     } = this.props;
+
+    const canShowAddBookmarkInline = bookmarkGroup.groupName && bookmarkGroup.groupName !== EMPTY_GROUP_IDENTIFIER;
 
     return (
       <SortableItem key={bookmarkGroup.id} id={bookmarkGroup.id}>
@@ -53,7 +56,7 @@ class BookmarkGroup extends React.Component {
               ))}
             </SortableContext>
           </DndContext>
-          <AddBookmarkInline groupIndex={groupIndex} />
+          {canShowAddBookmarkInline && <AddBookmarkInline groupIndex={groupIndex} />}
         </div>
       </SortableItem>
     );
