@@ -1,7 +1,7 @@
 import React, { useContext, useState } from 'react';
 
 /* CSS styles */
-import '../styles/AddLinkInline.css';
+import '../styles/AddBookmarkInline.css';
 
 /* Bookmark Storage */
 import {
@@ -20,7 +20,7 @@ import {
   URL_PATTERN
 } from '../scripts/Constants.js'
 
-function AddLinkInline(props) {
+function AddBookmarkInline(props) {
   const { bookmarkGroups, setBookmarkGroups } = useContext(AppContext);
   const [linkBeingEdited, setLinkBeingEdited] = useState(false);
   const bookmarkGroupName = bookmarkGroups[props.groupIndex].groupName;
@@ -105,4 +105,4 @@ function CreateNewBookmark(props) {
 }
 
 
-export { AddLinkInline };
+export { AddBookmarkInline };

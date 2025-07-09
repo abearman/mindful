@@ -9,37 +9,48 @@ import {
 } from "../scripts/BookmarkManagement.js";
 import { AppContext } from '../scripts/AppContext.jsx';
 
+/* Constants */
+import { 
+  EMPTY_GROUP_IDENTIFIER
+} from "../scripts/Constants.js";
+
+const NEW_GROUP_NAME = "Enter group name"; 
+
+
 function EditableBookmarkGroupHeading(props) {
   const { bookmarkGroups, setBookmarkGroups } = useContext(AppContext);
-  const bookmarkGroup = bookmarkGroups[props.groupIndex];
 
-  // 1. State to control when the heading is editable
+  const { bookmarkGroup, groupIndex } = props;
+  
+  const hasTitle = bookmarkGroup && bookmarkGroup.groupName && bookmarkGroup.groupName !== EMPTY_GROUP_IDENTIFIER;
+
+  // State to control when the heading is editable
   const [isEditing, setIsEditing] = useState(false);
+  // State to track if the content is a placeholder
+  const [isPlaceholder, setIsPlaceholder] = useState(!hasTitle);
   const headingRef = useRef(null);
 
-  // 4. Effect to focus the element and select its text when editing starts
+  // Effect to focus the element and select its text when editing starts
   useEffect(() => {
     if (isEditing && headingRef.current) {
       headingRef.current.focus();
-      // Select all text for a better user experience
-      const selection = window.getSelection();
-      const range = document.createRange();
-      range.selectNodeContents(headingRef.current);
-      selection.removeAllRanges();
-      selection.addRange(range);
     }
   }, [isEditing]);
 
-  // 3. Handle blur to save changes and exit edit mode
+  // Handle blur to save changes and exit edit mode
   async function handleBlur(event) {
     setIsEditing(false);
     const newGroupName = event.target.textContent.trim();
-    
-    if (newGroupName) {
-      await editBookmarkGroupHeading(props.groupIndex, newGroupName, setBookmarkGroups);
+
+    if (newGroupName === '') {
+      // If the heading is empty, revert to the original name and bookmark identifier
+      headingRef.current.textContent = hasTitle ? bookmarkGroup.groupName : NEW_GROUP_NAME;
+      bookmarkGroup.groupName = EMPTY_GROUP_IDENTIFIER;
+      setIsPlaceholder(!hasTitle);
     } else {
-      // If the name is cleared, revert to the original name
-      event.target.textContent = bookmarkGroup.groupName;
+      // Otherwise, save the new heading
+      setIsPlaceholder(false);
+      await editBookmarkGroupHeading(groupIndex, newGroupName, setBookmarkGroups);
     }
   }
 
@@ -49,26 +60,42 @@ function EditableBookmarkGroupHeading(props) {
       event.preventDefault(); // prevent creating a new line
       event.target.blur();    // trigger blur to save
     } else if (event.key === 'Escape') {
-      event.target.textContent = bookmarkGroup.groupName; // revert changes
+      // Revert text and placeholder state
+      event.target.textContent = hasTitle ? bookmarkGroup.groupName : NEW_GROUP_NAME;
+      setIsPlaceholder(!hasTitle);
       setIsEditing(false); // exit edit mode
     }
   }
 
+  // NEW: Handle input to dynamically update placeholder state
+  function handleInput(event) {
+    // If there's any text content, it's not a placeholder
+    setIsPlaceholder(event.target.textContent.trim() === '');
+  }
+  
+  // Conditionally set the onClick handler
+  const handleClick = () => {
+    // If the current text is the placeholder, clear it for editing
+    if (headingRef.current && isPlaceholder) {
+      headingRef.current.textContent = '';
+    }
+    setIsEditing(true);
+  };
+
   return (
     <h2
       ref={headingRef}
-      // 2. Make contentEditable conditional on the isEditing state
       contentEditable={isEditing}
       onBlur={handleBlur}
       onKeyDown={isEditing ? handleKeyDown : undefined}
-      // 5. This handler enables edit mode on click
-      onClick={() => setIsEditing(true)}
-      // 6. This stops the click from propagating to dnd-kit's listeners
+      onInput={isEditing ? handleInput : undefined} // Add the onInput handler
+      onClick={handleClick}
       onPointerDown={(e) => e.stopPropagation()}
-      className="editable-heading"
+      // Use the new state to control the class
+      className={`editable-heading ${isPlaceholder ? 'placeholder-text' : ''}`}
       suppressContentEditableWarning={true}
     >
-      {bookmarkGroup.groupName}
+      {hasTitle ? bookmarkGroup.groupName : NEW_GROUP_NAME}
     </h2>
   );
 }
