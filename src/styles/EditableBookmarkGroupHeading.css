@@ -5,6 +5,8 @@
   font-weight: bold;
 }
 
-.editable-heading.placeholder {
+.editable-heading.placeholder-text {
   color: #cccccc;
+  font-weight: normal;
 }
+

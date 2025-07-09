@@ -11,13 +11,17 @@ import { AppContext } from '../scripts/AppContext.jsx';
 
 function EditableBookmarkGroupHeading(props) {
   const { bookmarkGroups, setBookmarkGroups } = useContext(AppContext);
-  const bookmarkGroup = bookmarkGroups[props.groupIndex];
+  const isPlaceholder = props.groupIndex === -1;
 
-  // 1. State to control when the heading is editable
+  const bookmarkGroup = isPlaceholder 
+    ? { groupName: "New Group" } // Placeholder text
+    : bookmarkGroups[props.groupIndex];
+
+  // State to control when the heading is editable
   const [isEditing, setIsEditing] = useState(false);
   const headingRef = useRef(null);
 
-  // 4. Effect to focus the element and select its text when editing starts
+  // Effect to focus the element and select its text when editing starts
   useEffect(() => {
     if (isEditing && headingRef.current) {
       headingRef.current.focus();
@@ -30,7 +34,7 @@ function EditableBookmarkGroupHeading(props) {
     }
   }, [isEditing]);
 
-  // 3. Handle blur to save changes and exit edit mode
+  // Handle blur to save changes and exit edit mode
   async function handleBlur(event) {
     setIsEditing(false);
     const newGroupName = event.target.textContent.trim();
@@ -53,19 +57,26 @@ function EditableBookmarkGroupHeading(props) {
       setIsEditing(false); // exit edit mode
     }
   }
+  
+  // Conditionally set the onClick handler
+  const handleClick = () => {
+    if (!isPlaceholder) {
+      setIsEditing(true);
+    }
+  };
 
   return (
     <h2
       ref={headingRef}
-      // 2. Make contentEditable conditional on the isEditing state
-      contentEditable={isEditing}
+      // Make contentEditable conditional on the isEditing state and not being a placeholder
+      contentEditable={isEditing && !isPlaceholder}
       onBlur={handleBlur}
       onKeyDown={isEditing ? handleKeyDown : undefined}
-      // 5. This handler enables edit mode on click
-      onClick={() => setIsEditing(true)}
-      // 6. This stops the click from propagating to dnd-kit's listeners
-      onPointerDown={(e) => e.stopPropagation()}
-      className="editable-heading"
+      // This handler enables edit mode on click, only if it's not a placeholder
+      onClick={handleClick}
+      // This stops the click from propagating to dnd-kit's listeners
+      onPointerDown={(e) => !isPlaceholder && e.stopPropagation()}
+      className={`editable-heading ${isPlaceholder ? 'placeholder-text' : ''}`}
       suppressContentEditableWarning={true}
     >
       {bookmarkGroup.groupName}
