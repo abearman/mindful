@@ -12,11 +12,17 @@ body {
 
 .bookmark-groups-container {
   display: grid;
-  flex-wrap: wrap;
-  gap: 10px; 
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  min-height: 200px; /* prevents layout collapse while dragging */
-  padding: 10px;  /* Top, right, bottom, left */
+  gap: 10px;
+  padding: 10px;
+
+  /*
+    This is the key change:
+    1. The first column is set to 30% of the container's width.
+    2. The next two columns are '1fr' each, meaning they will take up
+       an equal share of the remaining free space.
+    3. Items will automatically wrap and follow this three-column pattern.
+  */
+  grid-template-columns: 25% 1fr 1fr 1fr;
 }
 
 .bookmark-group-box {
@@ -25,11 +31,13 @@ body {
   border-radius: 10px;
   border: 1px solid #ddd;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  padding: 20px 20px;  /* top/bottom, left/right */
+  padding: 20px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  margin-bottom: auto;
+
+  /* Make sure there is NO width property on the box itself */
+  /* The grid container now controls the width of all items */
 }
 
 .bookmark-group-box:hover {
