@@ -82,6 +82,9 @@ function CreateNewBookmark(props) {
     setBookmarkGroups(await loadBookmarkGroups());    
     setBookmarkName('');
     setBookmarkUrl('');
+
+    // Add this line to hide the form
+    props.setLinkBeingEdited(false); 
   }
 
   function closeForm(event) {
