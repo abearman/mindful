@@ -1,0 +1,33 @@
+.top-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px 10px 20px;  /* Top, right, bottom, left*/
+  background-color: #0f0f42;
+  border-bottom: 1px solid #dee2e6;
+  width: 100%;
+  box-sizing: border-box; 
+}
+
+.logo-text {
+  font-size: 1.5em;
+  font-weight: bold;
+  color: #F0F8FF;
+}
+
+.icon-container {
+  display: flex;
+  gap: 15px;
+}
+
+.icon-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2em;
+  color: #F0F8FF;
+}
+
+.icon-button:hover {
+  color: #007bff;
+}

@@ -10,13 +10,12 @@ import {
 import {
   SortableContext,
   rectSortingStrategy,
-  useSortable,
-  verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
 /* CSS styles */
 import "./styles/NewTab.css";
+import "./styles/TopBanner.css"; // Import the new banner styles
 
 /* Utilities */
 import { createUniqueID } from "./scripts/Utilities.js";
@@ -40,6 +39,7 @@ import { AppContextProvider, AppContext } from "./scripts/AppContext.jsx";
 
 /* Components */
 import { BookmarkGroup } from "./components/BookmarkGroup.jsx"
+import TopBanner from "./components/TopBanner.jsx"; // Import the new banner component
 
 const UserAction = {
   ADD_EMPTY_GROUP: "add_empty_group",
@@ -222,20 +222,11 @@ function NewTabUI() {
 
   return (
     <div>
-      <div className="export-bookmarks-button-container">
-        <button
-          className="export-or-load-bookmarks-button"
-          onClick={exportBookmarksToJSON}
-        >
-          Export Bookmarks
-        </button>
-        <button
-          className="export-or-load-bookmarks-button"
-          onClick={loadBookmarksFromLocalFile}
-        >
-          Load Bookmarks
-        </button>
-      </div>
+      <TopBanner
+        onLoadBookmarks={loadBookmarksFromLocalFile}
+        onExportBookmarks={exportBookmarksToJSON}
+        /*onLogin={handleLogin}*/
+      />
 
       <DndContext
         sensors={sensors}
