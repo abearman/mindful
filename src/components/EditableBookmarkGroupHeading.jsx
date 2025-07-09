@@ -26,7 +26,7 @@ function EditableBookmarkGroupHeading(props) {
 
   // State to control when the heading is editable
   const [isEditing, setIsEditing] = useState(false);
-  // NEW: State to track if the content is a placeholder
+  // State to track if the content is a placeholder
   const [isPlaceholder, setIsPlaceholder] = useState(!hasTitle);
   const headingRef = useRef(null);
 
@@ -41,12 +41,17 @@ function EditableBookmarkGroupHeading(props) {
   async function handleBlur(event) {
     setIsEditing(false);
     const newGroupName = event.target.textContent.trim();
-    
-    // Update placeholder state based on final content
-    setIsPlaceholder(newGroupName === '');
-    
-    // Use the placeholder if the new group name is empty
-    await editBookmarkGroupHeading(groupIndex, newGroupName || NEW_GROUP_NAME, setBookmarkGroups);
+
+    if (newGroupName === '') {
+      // If the heading is empty, revert to the original name and bookmark identifier
+      headingRef.current.textContent = hasTitle ? bookmarkGroup.groupName : NEW_GROUP_NAME;
+      bookmarkGroup.groupName = EMPTY_GROUP_IDENTIFIER;
+      setIsPlaceholder(!hasTitle);
+    } else {
+      // Otherwise, save the new heading
+      setIsPlaceholder(false);
+      await editBookmarkGroupHeading(groupIndex, newGroupName, setBookmarkGroups);
+    }
   }
 
   // Handle Enter and Escape keys for better UX
