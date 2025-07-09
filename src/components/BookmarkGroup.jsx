@@ -17,19 +17,21 @@ class BookmarkGroup extends React.Component {
       handleDeleteBookmarkGroup,
     } = this.props;
 
-    const canShowAddBookmarkInline = bookmarkGroup.groupName && bookmarkGroup.groupName !== EMPTY_GROUP_IDENTIFIER;
+    const headingIsEntered = bookmarkGroup.groupName && bookmarkGroup.groupName !== EMPTY_GROUP_IDENTIFIER;
 
     return (
       <SortableItem key={bookmarkGroup.id} id={bookmarkGroup.id}>
         <div className="bookmark-group-box">
-          <button
-            className="delete-bookmark-group-button"
-            onClick={(event) =>
-              handleDeleteBookmarkGroup(event, groupIndex)
-            }
-          >
-            <img src="./assets/delete-icon.svg" alt="Delete Group" />
-          </button>
+          {headingIsEntered && (
+            <button
+              className="delete-bookmark-group-button"
+              onClick={(event) =>
+                handleDeleteBookmarkGroup(event, groupIndex)
+              }
+            >
+              <img src="./assets/delete-icon.svg" alt="Delete Group" />
+            </button>
+          )}
           <EditableBookmarkGroupHeading
             key={"heading-" + bookmarkGroup.id}
             bookmarkGroup={bookmarkGroup}
@@ -56,7 +58,7 @@ class BookmarkGroup extends React.Component {
               ))}
             </SortableContext>
           </DndContext>
-          {canShowAddBookmarkInline && <AddBookmarkInline groupIndex={groupIndex} />}
+          {headingIsEntered && <AddBookmarkInline groupIndex={groupIndex} />}
         </div>
       </SortableItem>
     );
