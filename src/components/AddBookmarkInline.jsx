@@ -46,7 +46,7 @@ function AddLinkButton(props) {
   return (
     <div>
       <button className="add-bookmark-button-1" onClick={props.onClick}> 
-        + Add Link
+        + Add a link 
       </button>
     </div>
   );
@@ -95,11 +95,11 @@ function CreateNewBookmark(props) {
     <div className="create-new-bookmark-component"> 
       <div className="form-container">
         <form onKeyDown={handleKeyDown}>
-          <input type="text" placeholder="Enter a bookmark name ..." autoFocus value={bookmarkName} onChange={handleBookmarkNameChange} required />
-          <input type="text" placeholder="Enter a bookmark URL ..." value={bookmarkUrl} onChange={handleBookmarkUrlChange} pattern={URL_PATTERN} required></input>
+          <input type="text" placeholder="Enter a link name" autoFocus value={bookmarkName} onChange={handleBookmarkNameChange} required />
+          <input type="text" placeholder="Enter a link URL" value={bookmarkUrl} onChange={handleBookmarkUrlChange} pattern={URL_PATTERN} required></input>
         </form>
       </div>
-      <button type="submit" className="add-bookmark-button-2" onClick={handleSubmit}>Add Bookmark</button>
+      <button type="submit" className="add-bookmark-button-2" onClick={handleSubmit}>Add link</button>
       <button className="close-form-button" onClick={(event) => closeForm(event)}>
         <img src="./assets/delete-icon.svg" />
       </button>

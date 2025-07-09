@@ -14,7 +14,7 @@ import {
   EMPTY_GROUP_IDENTIFIER
 } from "../scripts/Constants.js";
 
-const NEW_GROUP_NAME = "Enter group name"; 
+const NEW_GROUP_NAME = "+ Add a group"; 
 
 
 function EditableBookmarkGroupHeading(props) {
