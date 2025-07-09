@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { CHROME_NEW_TAB, STORAGE_KEY_BOOKMARK_GROUPS, EMPTY_GROUP_NAME } from './Constants.js';
+import { CHROME_NEW_TAB, STORAGE_KEY_BOOKMARK_GROUPS, EMPTY_GROUP_IDENTIFIER } from './Constants.js';
 import { arrayMove } from '@dnd-kit/sortable';
 
 
@@ -87,7 +87,7 @@ export async function addEmptyBookmarkGroup(setBookmarkGroups) {
   let bookmarkGroups = await loadBookmarkGroups();
   bookmarkGroups.push(
     { 
-      groupName: EMPTY_GROUP_NAME, 
+      groupName: EMPTY_GROUP_IDENTIFIER, 
       bookmarks: [],
       id: uuidv4(), 
     }

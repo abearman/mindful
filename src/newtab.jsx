@@ -24,7 +24,7 @@ import { createUniqueID } from "./scripts/Utilities.js";
 /* Constants */
 import { 
   STORAGE_KEY_BOOKMARK_GROUPS,
-  EMPTY_GROUP_NAME
+  EMPTY_GROUP_IDENTIFIER
 } from "./scripts/Constants.js";
 
 /* Bookmark Storage */
@@ -76,7 +76,7 @@ function NewTabUI() {
       return;
     }
     const alreadyHasEmptyGroup = bookmarkGroups.some(
-      (group) => group.groupName === EMPTY_GROUP_NAME
+      (group) => (group.groupName === EMPTY_GROUP_IDENTIFIER) && (group.bookmarks.length == 0)
     );
     if (!alreadyHasEmptyGroup) {
       addEmptyBookmarkGroup(setBookmarkGroups);
