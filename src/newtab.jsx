@@ -15,7 +15,7 @@ import { CSS } from "@dnd-kit/utilities";
 
 // Import Amplify and the Authenticator UI component
 import { Amplify } from 'aws-amplify';
-import { Authenticator } from '@aws-amplify/ui-react';
+import { Authenticator, Flex } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
 
 // Import Amplify configuration
@@ -27,6 +27,7 @@ Amplify.configure(config);
 /* CSS styles */
 import "./styles/NewTab.css";
 import "./styles/TopBanner.css"; // Import the new banner styles
+import "./styles/Login.css";
 
 /* Utilities */
 import { createUniqueID } from "./scripts/Utilities.js";
@@ -308,7 +309,9 @@ const formFields = {
 ReactDOM.render(
   <React.StrictMode>
     <AppContextProvider>
-      <Authenticator formFields={formFields}>
+      <Authenticator 
+        formFields={formFields} 
+      >
         {({ signIn, signOut, user }) => (
           <NewTabUI user={user} signIn={signIn} signOut={signOut} />
         )}
