@@ -13,6 +13,17 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
+// Import Amplify and the Authenticator UI component
+import { Amplify } from 'aws-amplify';
+import { Authenticator } from '@aws-amplify/ui-react';
+import '@aws-amplify/ui-react/styles.css';
+
+// Import Amplify configuration
+import config from '../amplify_outputs.json';
+
+// Configure Amplify
+Amplify.configure(config);
+
 /* CSS styles */
 import "./styles/NewTab.css";
 import "./styles/TopBanner.css"; // Import the new banner styles
@@ -47,7 +58,7 @@ const UserAction = {
   NONE: "none",
 };
 
-function NewTabUI() {
+function NewTabUI({ user, signOut }) {
   const { bookmarkGroups, setBookmarkGroups } = useContext(AppContext);
   const [isLoading, setIsLoading] = useState(true); // 1. Add loading state
 
@@ -63,11 +74,15 @@ function NewTabUI() {
   
   // Add this useEffect to load data on initial component mount
   useEffect(() => {
-    loadBookmarkGroups().then(initialGroups => {
-      setBookmarkGroups(initialGroups);
-      setIsLoading(false); // Mark loading as complete
-    });
-  }, []); // Empty dependency array [] ensures this runs only once
+    // Only try to load data if we have a valid user object
+    // TODO: Update this to have optional logins and cloud storage
+    if (user) {
+      loadBookmarkGroups().then(initialGroups => {
+        setBookmarkGroups(initialGroups);
+        setIsLoading(false); // Mark loading as complete
+      });
+    }
+  }, [user]); // Empty dependency array [] ensures this runs only once
 
   // Modify your original useEffect to respect the loading state
   useEffect(() => {
@@ -225,6 +240,8 @@ function NewTabUI() {
       <TopBanner
         onLoadBookmarks={loadBookmarksFromLocalFile}
         onExportBookmarks={exportBookmarksToJSON}
+        onSignOut={signOut}
+        isLoggedIn={!!user} // Let the banner know a user is logged in
         /*onLogin={handleLogin}*/
       />
 
@@ -256,8 +273,14 @@ function NewTabUI() {
 }
 
 ReactDOM.render(
-  <AppContextProvider>
-    <NewTabUI />
-  </AppContextProvider>,
+  <React.StrictMode>
+    <AppContextProvider>
+      <Authenticator>
+        {({ signOut, user }) => (
+          <NewTabUI user={user} signOut={signOut} />
+        )}
+      </Authenticator>
+    </AppContextProvider>
+  </React.StrictMode>,
   document.getElementById("root")
 );
