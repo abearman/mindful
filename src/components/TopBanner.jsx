@@ -3,7 +3,7 @@ import '../styles/TopBanner.css';
 import logoIcon from '../../public/assets/icon-32.png'
 // <img src={logoIcon} alt="Mindful Logo" className='logo-image'></img>
 
-const TopBanner = ({ onLoadBookmarks, onExportBookmarks, onLogin }) => {
+const TopBanner = ({ onLoadBookmarks, onExportBookmarks, onSignIn, onSignOut, isSignedIn}) => {
   return (
     <div className="top-banner">
       <div className="logo-container">
@@ -16,9 +16,18 @@ const TopBanner = ({ onLoadBookmarks, onExportBookmarks, onLogin }) => {
         <button onClick={onExportBookmarks} className="icon-button" title="Export Bookmarks">
           <i className="fas fa-download"></i>
         </button>
-        <button onClick={onLogin} className="icon-button" title="Login">
-          <i className="fas fa-user"></i>
-        </button>
+
+        {/* Conditional rendering for SignIn/SignOut Button */}
+        {console.log("isSignedIn: ", isSignedIn)}
+        {isSignedIn ? (
+          <button onClick={onSignOut} className="icon-button" title="Logout">
+            <i className="fas fa-sign-out-alt"></i> {/* Icon for Logout */}
+          </button>
+        ) : (
+          <button onClick={onSignIn} className="icon-button" title="Login">
+            <i className="fas fa-user"></i> {/* Icon for Login */}
+          </button>
+        )}
       </div>
     </div>
   );
