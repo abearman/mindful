@@ -58,7 +58,7 @@ const UserAction = {
   NONE: "none",
 };
 
-function NewTabUI({ user, signOut }) {
+function NewTabUI({ user, signIn, signOut}) {
   const { bookmarkGroups, setBookmarkGroups } = useContext(AppContext);
   const [isLoading, setIsLoading] = useState(true); // 1. Add loading state
 
@@ -240,9 +240,9 @@ function NewTabUI({ user, signOut }) {
       <TopBanner
         onLoadBookmarks={loadBookmarksFromLocalFile}
         onExportBookmarks={exportBookmarksToJSON}
+        onSignIn={signIn}
         onSignOut={signOut}
-        isLoggedIn={!!user} // Let the banner know a user is logged in
-        /*onLogin={handleLogin}*/
+        isSignedIn={!!user} // Let the banner know a user is sign in
       />
 
       <DndContext
@@ -276,8 +276,8 @@ ReactDOM.render(
   <React.StrictMode>
     <AppContextProvider>
       <Authenticator>
-        {({ signOut, user }) => (
-          <NewTabUI user={user} signOut={signOut} />
+        {({ signIn, signOut, user }) => (
+          <NewTabUI user={user} signIn={signIn} signOut={signOut} />
         )}
       </Authenticator>
     </AppContextProvider>
