@@ -1,16 +1,5 @@
 import React, { useContext, useRef, useEffect, useState } from "react";
 import ReactDOM from "react-dom";
-import {
-  DndContext,
-  closestCenter,
-  useSensor,
-  useSensors,
-  PointerSensor,
-} from "@dnd-kit/core";
-import {
-  SortableContext,
-  rectSortingStrategy,
-} from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
 // Import Amplify and the Authenticator UI component
@@ -37,17 +26,14 @@ import {
 /* Bookmark Storage */
 import {
   addEmptyBookmarkGroup,
-  deleteBookmarkGroup,
   loadBookmarkGroups,
-  reorderBookmarks,
-  reorderBookmarkGroups,
-  overwriteBookmarkGroupsToStorage,
 } from "./scripts/BookmarkManagement.js";
 import { AppContextProvider, AppContext } from "./scripts/AppContext.jsx";
 
 /* Components */
 import { BookmarkGroup } from "./components/BookmarkGroup.jsx"
-import TopBanner from "./components/TopBanner.jsx"; // Import the new banner component
+import TopBanner from "./components/TopBanner.jsx"; 
+import DraggableGrid from './components/DraggableGrid.jsx'; 
 
 const UserAction = {
   ADD_EMPTY_GROUP: "add_empty_group",
@@ -61,13 +47,6 @@ function NewTabUI({ user, signIn, signOut}) {
   const [userAttributes, setUserAttributes] = useState(null); 
 
   const lastBookmarkGroupRef = useRef(null);
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8, // Only start dragging if the pointer moves 8px
-      },
-    })
-  );
   const lastActionRef = useRef(UserAction.NONE);
   
   // Add this useEffect to load data on initial component mount
@@ -111,83 +90,9 @@ function NewTabUI({ user, signIn, signOut}) {
     fetchAttributes();
   }, [user]);
 
-  async function handleDeleteBookmarkGroup(event, groupIndex) {
-    const shouldDelete = window.confirm(
-      "Are you sure you want to delete the entire group " +
-        bookmarkGroups[groupIndex].groupName +
-        "?"
-    );
-    if (shouldDelete) {
-      lastActionRef.current = UserAction.DELETE_GROUP;
-      await deleteBookmarkGroup(groupIndex, setBookmarkGroups);
-    }
-  }
-
   async function handleAddEmptyBookmarkGroup() {
     lastActionRef.current = UserAction.ADD_EMPTY_GROUP;
     addEmptyBookmarkGroup(setBookmarkGroups);
-  }
-
-  async function handleDragEnd(event) {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
-
-    const activeGroup = bookmarkGroups.find((group) => group.id === active.id);
-    const overGroup = bookmarkGroups.find((group) => group.id === over.id);
-
-    if (activeGroup && overGroup) {
-      const sourceGroupIndex = bookmarkGroups.findIndex(
-        (group) => group.id === active.id
-      );
-      const destinationGroupIndex = bookmarkGroups.findIndex(
-        (group) => group.id === over.id
-      );
-      reorderBookmarkGroups(
-        sourceGroupIndex,
-        destinationGroupIndex,
-        setBookmarkGroups
-      );
-    } else {
-      let sourceGroupIndex = -1;
-      let sourceBookmarkIndex = -1;
-      let destinationGroupIndex = -1;
-      let destinationBookmarkIndex = -1;
-
-      bookmarkGroups.forEach((group, gIndex) => {
-        const bIndex = group.bookmarks.findIndex(
-          (bookmark) => bookmark.id === active.id
-        );
-        if (bIndex !== -1) {
-          sourceGroupIndex = gIndex;
-          sourceBookmarkIndex = bIndex;
-        }
-      });
-
-      bookmarkGroups.forEach((group, gIndex) => {
-        const bIndex = group.bookmarks.findIndex(
-          (bookmark) => bookmark.id === over.id
-        );
-        if (bIndex !== -1) {
-          destinationGroupIndex = gIndex;
-          destinationBookmarkIndex = bIndex;
-        }
-      });
-      if (
-        sourceGroupIndex !== -1 &&
-        sourceBookmarkIndex !== -1 &&
-        destinationGroupIndex !== -1 &&
-        destinationBookmarkIndex !== -1 &&
-        sourceGroupIndex === destinationGroupIndex
-      ) {
-        reorderBookmarks(
-          sourceBookmarkIndex,
-          destinationBookmarkIndex,
-          sourceGroupIndex,
-          destinationGroupIndex,
-          setBookmarkGroups
-        );
-      }
-    }
   }
 
   async function exportBookmarksToJSON() {
@@ -258,30 +163,9 @@ function NewTabUI({ user, signIn, signOut}) {
         onSignOut={signOut}
         isSignedIn={!!user} // Let the banner know a user is sign in
       />
-
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
-      >
-        <SortableContext
-          items={bookmarkGroups.map((group) => group.id)}
-          strategy={rectSortingStrategy}
-        >
-          <div className="bookmark-groups-container">
-            {bookmarkGroups.map((bookmarkGroup, groupIndex) => (
-              <BookmarkGroup
-                key={bookmarkGroup.id}
-                bookmarkGroup={bookmarkGroup}
-                groupIndex={groupIndex}
-                sensors={sensors}
-                handleDragEnd={handleDragEnd}
-                handleDeleteBookmarkGroup={handleDeleteBookmarkGroup}
-              />
-            ))}
-          </div>
-        </SortableContext>
-      </DndContext>
+      <DraggableGrid
+        bookmarkGroups={bookmarkGroups}
+      />
     </div>
   );
 }
