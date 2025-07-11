@@ -1,14 +1,35 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import '../styles/TopBanner.css';
-import logoIcon from '../../public/assets/icon-32.png'
-// <img src={logoIcon} alt="Mindful Logo" className='logo-image'></img>
+import logoIcon from '../../public/assets/icon-32.png';
 
-const TopBanner = ({ onLoadBookmarks, onExportBookmarks, onSignIn, onSignOut, isSignedIn}) => {
+const TopBanner = ({ onLoadBookmarks, onExportBookmarks, userAttributes, onSignIn, onSignOut, isSignedIn }) => {
+  const [isDropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const handleLogout = () => {
+    onSignOut();
+    setDropdownOpen(false);
+  };
+
   return (
     <div className="top-banner">
       <div className="logo-container">
         <div className="logo-text">Mindful</div>
-      </div> 
+      </div>
       <div className="icon-container">
         <button onClick={onLoadBookmarks} className="icon-button" title="Load Bookmarks">
           <i className="fas fa-upload"></i>
@@ -17,15 +38,25 @@ const TopBanner = ({ onLoadBookmarks, onExportBookmarks, onSignIn, onSignOut, is
           <i className="fas fa-download"></i>
         </button>
 
-        {/* Conditional rendering for SignIn/SignOut Button */}
-        {console.log("isSignedIn: ", isSignedIn)}
-        {isSignedIn ? (
-          <button onClick={onSignOut} className="icon-button" title="Logout">
-            <i className="fas fa-sign-out-alt"></i> {/* Icon for Logout */}
-          </button>
+        {/* Conditional rendering for User Avatar / SignIn Button */}
+        {isSignedIn && userAttributes ? (
+          <div className="avatar-container" ref={dropdownRef}>
+            <button onClick={() => setDropdownOpen(!isDropdownOpen)} className="avatar-button" title="User Menu">
+              <div className="avatar-icon">
+                {userAttributes.given_name[0] + userAttributes.family_name[0]}
+              </div>
+            </button>
+            {isDropdownOpen && (
+              <div className="dropdown-menu">
+                <button onClick={handleLogout} className="dropdown-item">
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
         ) : (
           <button onClick={onSignIn} className="icon-button" title="Login">
-            <i className="fas fa-user"></i> {/* Icon for Login */}
+            <i className="fas fa-user"></i>
           </button>
         )}
       </div>

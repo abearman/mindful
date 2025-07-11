@@ -15,22 +15,18 @@ import { CSS } from "@dnd-kit/utilities";
 
 // Import Amplify and the Authenticator UI component
 import { Amplify } from 'aws-amplify';
+import { fetchUserAttributes } from 'aws-amplify/auth';
 import { Authenticator, Flex } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
 
-// Import Amplify configuration
+// Import Amplify configuration and configure Amplify
 import config from '../amplify_outputs.json';
-
-// Configure Amplify
 Amplify.configure(config);
 
 /* CSS styles */
 import "./styles/NewTab.css";
 import "./styles/TopBanner.css"; // Import the new banner styles
 import "./styles/Login.css";
-
-/* Utilities */
-import { createUniqueID } from "./scripts/Utilities.js";
 
 /* Constants */
 import { 
@@ -61,7 +57,8 @@ const UserAction = {
 
 function NewTabUI({ user, signIn, signOut}) {
   const { bookmarkGroups, setBookmarkGroups } = useContext(AppContext);
-  const [isLoading, setIsLoading] = useState(true); // 1. Add loading state
+  const [isLoading, setIsLoading] = useState(true);
+  const [userAttributes, setUserAttributes] = useState(null); 
 
   const lastBookmarkGroupRef = useRef(null);
   const sensors = useSensors(
@@ -83,9 +80,9 @@ function NewTabUI({ user, signIn, signOut}) {
         setIsLoading(false); // Mark loading as complete
       });
     }
-  }, [user]); // Empty dependency array [] ensures this runs only once
+  }, [user]); 
 
-  // Modify your original useEffect to respect the loading state
+  // *Only once*, add an empty bookmarkGroup on the end of the user-provided list.
   useEffect(() => {
     // Don't do anything until the initial data has been loaded
     if (isLoading) {
@@ -97,7 +94,22 @@ function NewTabUI({ user, signIn, signOut}) {
     if (!alreadyHasEmptyGroup) {
       addEmptyBookmarkGroup(setBookmarkGroups);
     }
-  }, [bookmarkGroups, isLoading]); // Add isLoading to the dependency array
+  }, [bookmarkGroups, isLoading]);
+
+  // Fetch the userAttributes, but don't block any other rendering code on this 
+  useEffect(() => {
+    const fetchAttributes = async () => {
+      if (user) {
+        try {
+          const attributes = await fetchUserAttributes();
+          setUserAttributes(attributes);
+        } catch (error) {
+          console.error("Error fetching user attributes:", error);
+        }
+      }
+    };
+    fetchAttributes();
+  }, [user]);
 
   async function handleDeleteBookmarkGroup(event, groupIndex) {
     const shouldDelete = window.confirm(
@@ -241,6 +253,7 @@ function NewTabUI({ user, signIn, signOut}) {
       <TopBanner
         onLoadBookmarks={loadBookmarksFromLocalFile}
         onExportBookmarks={exportBookmarksToJSON}
+        userAttributes={userAttributes}
         onSignIn={signIn}
         onSignOut={signOut}
         isSignedIn={!!user} // Let the banner know a user is sign in
