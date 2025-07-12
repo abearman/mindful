@@ -17,6 +17,9 @@ import "./styles/NewTab.css";
 import "./styles/TopBanner.css"; // Import the new banner styles
 import "./styles/Login.css";
 
+/* Configs */
+import formFields from "./config/formFields.js";
+
 /* Constants */
 import { 
   STORAGE_KEY_BOOKMARK_GROUPS,
@@ -27,6 +30,7 @@ import {
 import {
   addEmptyBookmarkGroup,
   loadBookmarkGroups,
+  overwriteBookmarkGroupsToStorage
 } from "./scripts/BookmarkManagement.js";
 import { AppContextProvider, AppContext } from "./scripts/AppContext.jsx";
 
@@ -35,11 +39,6 @@ import { BookmarkGroup } from "./components/BookmarkGroup.jsx"
 import TopBanner from "./components/TopBanner.jsx"; 
 import DraggableGrid from './components/DraggableGrid.jsx'; 
 
-const UserAction = {
-  ADD_EMPTY_GROUP: "add_empty_group",
-  DELETE_GROUP: "delete_group",
-  NONE: "none",
-};
 
 function NewTabUI({ user, signIn, signOut}) {
   const { bookmarkGroups, setBookmarkGroups } = useContext(AppContext);
@@ -47,7 +46,6 @@ function NewTabUI({ user, signIn, signOut}) {
   const [userAttributes, setUserAttributes] = useState(null); 
 
   const lastBookmarkGroupRef = useRef(null);
-  const lastActionRef = useRef(UserAction.NONE);
   
   // Add this useEffect to load data on initial component mount
   useEffect(() => {
@@ -91,7 +89,6 @@ function NewTabUI({ user, signIn, signOut}) {
   }, [user]);
 
   async function handleAddEmptyBookmarkGroup() {
-    lastActionRef.current = UserAction.ADD_EMPTY_GROUP;
     addEmptyBookmarkGroup(setBookmarkGroups);
   }
 
@@ -145,10 +142,7 @@ function NewTabUI({ user, signIn, signOut}) {
   }, []);
 
   useEffect(() => {
-    if (
-      lastBookmarkGroupRef.current &&
-      lastActionRef.current == UserAction.ADD_EMPTY_GROUP
-    ) {
+    if (lastBookmarkGroupRef.current) {
       lastBookmarkGroupRef.current.querySelector(".editable-heading").focus();
     }
   }, [bookmarkGroups]);
@@ -170,38 +164,6 @@ function NewTabUI({ user, signIn, signOut}) {
   );
 }
 
-// Define the custom form fields object
-const formFields = {
-  signUp: {
-    given_name: {
-      label: "First Name",
-      placeholder: "Enter your first name",
-      isRequired: true,
-      order: 1,
-    },
-    family_name: {
-      label: "Last Name",
-      placeholder: "Enter your last name",
-      isRequired: true,
-      order: 2,
-    },
-    email: {
-      order: 3,
-    },
-    phone_number: {
-      label: "Phone Number",
-      placeholder: "Enter your phone number",
-      isRequired: true,
-      order: 4,
-    },
-    password: {
-      order: 5
-    },
-    confirm_password: {
-      order: 6
-    },
-  },
-};
 
 ReactDOM.render(
   <React.StrictMode>
