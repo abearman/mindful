@@ -92,7 +92,6 @@ const DraggableGrid = () => {
         "?"
     );
     if (shouldDelete) {
-      lastActionRef.current = UserAction.DELETE_GROUP;
       await deleteBookmarkGroup(groupIndex, setBookmarkGroups);
     }
   }
