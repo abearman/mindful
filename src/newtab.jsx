@@ -1,5 +1,5 @@
 import React, { useContext, useRef, useEffect, useState } from "react";
-import { createRoot } from "react-dom/client"; // Change the import
+import { createRoot } from "react-dom/client"; 
 import { CSS } from "@dnd-kit/utilities";
 
 // Import Amplify and the Authenticator UI component
@@ -13,7 +13,7 @@ import config from '../amplify_outputs.json';
 Amplify.configure(config);
 
 /* CSS styles */
-import "./styles/NewTab.css";
+import "./styles/Index.css";
 import "./styles/TopBanner.css"; // Import the new banner styles
 import "./styles/Login.css";
 
@@ -128,21 +128,3 @@ export function NewTabUI({ user, signIn, signOut}) {
     </div>
   );
 }
-
-// Get the root container and create a root
-const container = document.getElementById("root");
-const root = createRoot(container);
-
-root.render(
-  <React.StrictMode>
-    <AppContextProvider>
-      <Authenticator 
-        formFields={formFields} 
-      >
-        {({ signIn, signOut, user }) => (
-          <NewTabUI user={user} signIn={signIn} signOut={signOut} />
-        )}
-      </Authenticator>
-    </AppContextProvider>
-  </React.StrictMode>
-);

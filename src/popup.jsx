@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from "react-dom/client"; 
 
 import './styles/PopUp.css';
 import { constructValidURL } from './scripts/Utilities.js';
@@ -151,9 +151,11 @@ function PopUp() {
   );
 }
 
-ReactDOM.render(
+const container = document.getElementById("root");
+const root = createRoot(container);
+
+root.render(
   <AppContextProvider>
     <PopUp />
-  </AppContextProvider>,
-  document.getElementById('root')
+  </AppContextProvider>
 );

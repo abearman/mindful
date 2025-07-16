@@ -1,7 +1,7 @@
 import React, { useState, useRef, useContext } from 'react';
 
 /* CSS styles */
-import '../styles/NewTab.css';
+import '../styles/Index.css';
 
 /* Utilities */
 import {

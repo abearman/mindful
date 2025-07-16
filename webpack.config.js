@@ -6,7 +6,7 @@ module.exports = {
   mode: 'development', // or 'production'
   entry: {
     PopUp: './src/pages/PopUp.js',
-    NewTab: './src/pages/NewTab.js',
+    Index: './src/pages/Index.js',
   },
   output: {
     filename: '[name].js',
@@ -17,7 +17,7 @@ module.exports = {
       patterns: [
         { from: 'public', to: '.' },
         { from: 'public/PopUp.html', to: '.' },
-        { from: 'public/NewTab.html', to: '.' },
+        { from: 'public/Index.html', to: '.' },
         { from: 'src/scripts', to: 'src/scripts' },
         { from: 'src/styles', to: 'src/styles' },
         { from: 'src/pages', to: 'src/pages' },
