@@ -30,6 +30,8 @@ import {
 import {
   addEmptyBookmarkGroup,
   loadBookmarkGroups,
+  exportBookmarksToJSON,
+  loadBookmarksFromLocalFile,
   overwriteBookmarkGroupsToStorage
 } from "./scripts/BookmarkManagement.js";
 import { AppContextProvider, AppContext } from "./scripts/AppContext.jsx";
@@ -92,43 +94,6 @@ function NewTabUI({ user, signIn, signOut}) {
     addEmptyBookmarkGroup(setBookmarkGroups);
   }
 
-  async function exportBookmarksToJSON() {
-    let bookmarkGroupsData = await loadBookmarkGroups();
-
-    const jsonData = JSON.stringify(bookmarkGroupsData);
-
-    const blob = new Blob([jsonData], { type: "application/json" });
-
-    const anchor = document.createElement("a");
-    anchor.href = URL.createObjectURL(blob);
-    anchor.download = "bookmarks.json";
-
-    anchor.click();
-  }
-
-  async function handleFileSelection(event) {
-    const file = event.target.files[0];
-    const reader = new FileReader();
-
-    reader.onload = async function (event) {
-      const contents = event.target.result;
-      const data = JSON.parse(contents);
-      await overwriteBookmarkGroupsToStorage(data, setBookmarkGroups);
-      console.log("Bookmarks saved to local storage:", data);
-    };
-
-    reader.readAsText(file);
-  }
-
-  function loadBookmarksFromLocalFile() {
-    const input = document.createElement("input");
-    input.type = "file";
-
-    input.addEventListener("change", handleFileSelection);
-
-    input.click();
-  }
-
   useEffect(() => {
     function handleStorageChange(changes, area) {
       console.log("Handling storage change");
@@ -150,7 +115,7 @@ function NewTabUI({ user, signIn, signOut}) {
   return (
     <div>
       <TopBanner
-        onLoadBookmarks={loadBookmarksFromLocalFile}
+        onLoadBookmarks={() => loadBookmarksFromLocalFile(setBookmarkGroups)}
         onExportBookmarks={exportBookmarksToJSON}
         userAttributes={userAttributes}
         onSignIn={signIn}

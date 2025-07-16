@@ -203,3 +203,38 @@ export async function reorderBookmarkGroups(sourceGroupIndex, destinationGroupIn
     return newGroups;
   });
 }
+
+export function loadBookmarksFromLocalFile(setBookmarkGroups) {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.addEventListener("change", (event) => handleFileSelection(event, setBookmarkGroups));
+  input.click();
+}
+
+async function handleFileSelection(event, setBookmarkGroups) {
+  const file = event.target.files[0];
+  const reader = new FileReader();
+
+  reader.onload = async function (event) {
+    const contents = event.target.result;
+    const data = JSON.parse(contents);
+    await overwriteBookmarkGroupsToStorage(data, setBookmarkGroups);
+    console.log("Bookmarks saved to local storage:", data);
+  };
+
+  reader.readAsText(file);
+}
+
+export async function exportBookmarksToJSON() {
+  let bookmarkGroupsData = await loadBookmarkGroups();
+
+  const jsonData = JSON.stringify(bookmarkGroupsData);
+
+  const blob = new Blob([jsonData], { type: "application/json" });
+
+  const anchor = document.createElement("a");
+  anchor.href = URL.createObjectURL(blob);
+  anchor.download = "bookmarks.json";
+
+  anchor.click();
+}
