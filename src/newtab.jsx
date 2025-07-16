@@ -1,5 +1,5 @@
 import React, { useContext, useRef, useEffect, useState } from "react";
-import ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client"; // Change the import
 import { CSS } from "@dnd-kit/utilities";
 
 // Import Amplify and the Authenticator UI component
@@ -42,7 +42,7 @@ import TopBanner from "./components/TopBanner.jsx";
 import DraggableGrid from './components/DraggableGrid.jsx'; 
 
 
-function NewTabUI({ user, signIn, signOut}) {
+export function NewTabUI({ user, signIn, signOut}) {
   const { bookmarkGroups, setBookmarkGroups } = useContext(AppContext);
   const [isLoading, setIsLoading] = useState(true);
   const [userAttributes, setUserAttributes] = useState(null); 
@@ -129,8 +129,11 @@ function NewTabUI({ user, signIn, signOut}) {
   );
 }
 
+// Get the root container and create a root
+const container = document.getElementById("root");
+const root = createRoot(container);
 
-ReactDOM.render(
+root.render(
   <React.StrictMode>
     <AppContextProvider>
       <Authenticator 
@@ -141,6 +144,5 @@ ReactDOM.render(
         )}
       </Authenticator>
     </AppContextProvider>
-  </React.StrictMode>,
-  document.getElementById("root")
+  </React.StrictMode>
 );
