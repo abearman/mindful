@@ -8,7 +8,7 @@ export default defineConfig({
     build: {
         rollupOptions: {
             input: {
-                newtab: './src/newtab.jsx', // Entry point for the new tab page
+                index: './src/index.jsx', // Entry point for the new tab page
                 popup: './src/popup.jsx',   // Entry point for the popup window
             },
             output: {

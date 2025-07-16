@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import Modal from 'react-modal';
 
 /* CSS styles */
-import '../styles/NewTab.css';
+import '../styles/Index.css';
 
 /* Utilities */
 import {
