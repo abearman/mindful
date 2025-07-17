@@ -17,12 +17,12 @@ import "./styles/Login.css";
 
 /* Constants */
 import { 
-  STORAGE_KEY_BOOKMARK_GROUPS,
   EMPTY_GROUP_IDENTIFIER
 } from "./scripts/Constants.js";
 
 /* Bookmark Storage */
 import {
+  getUserStorageKey,
   addEmptyBookmarkGroup,
   loadBookmarkGroups,
   exportBookmarksToJSON,
@@ -43,32 +43,46 @@ export function NewTabUI({ user, signIn, signOut}) {
 
   const lastBookmarkGroupRef = useRef(null);
   
-  // Add this useEffect to load data on initial component mount
   useEffect(() => {
-    // Only try to load data if we have a valid user object
     if (!user) {
+      setUserAttributes(null);
       setIsLoading(false);
       return;
     }
 
+    // Fetch the userAttributes
+    const fetchAttributes = async () => {
+      try {
+        const attributes = await fetchUserAttributes();
+        setUserAttributes(attributes);
+      } catch (error) {
+        console.error("Error fetching user attributes:", error);
+      }
+    };
+    fetchAttributes();
+    console.log("got here1");
+  
+    // Fetch the bookmarks data
     const loadInitialData = async () => {
       setIsLoading(true);
       try {
-        const loadedGroups = await loadBookmarkGroups();
+        const loadedGroups = await loadBookmarkGroups(user.userId);
+        console.log("loadedGroups: ", loadedGroups);
 
         if (loadedGroups) {
-          // 1. Check if an empty group already exists in the fetched data.
+          // Check if an empty group already exists in the fetched data.
           const hasEmptyGroup = loadedGroups.some(
             (group) => group.groupName === EMPTY_GROUP_IDENTIFIER
           );
+          console.log("hasEmptyGroup: ", hasEmptyGroup);
 
-          // 2. If not, add one directly to the array before setting state.
+          // If not, add one directly to the array before setting state.
           if (!hasEmptyGroup) {
-            addEmptyBookmarkGroup(setBookmarkGroups);
+            addEmptyBookmarkGroup(user.userId, setBookmarkGroups);
           }
         }
         
-        // 3. Set the final, corrected array in state once.
+        // Set the final, corrected array in state once.
         setBookmarkGroups(loadedGroups || []);
 
       } catch (error) {
@@ -80,36 +94,22 @@ export function NewTabUI({ user, signIn, signOut}) {
     };
 
     loadInitialData();
+    console.log("got here2");
   }, [user]); // This effect runs only when the user object changes.
 
-  // Fetch the userAttributes, but don't block any other rendering code on this
-  useEffect(() => {
-    if (!user) {
-      setUserAttributes(null);
-      return;
-    }
-    const fetchAttributes = async () => {
-      try {
-        const attributes = await fetchUserAttributes();
-        setUserAttributes(attributes);
-      } catch (error) {
-        console.error("Error fetching user attributes:", error);
-      }
-    };
-    fetchAttributes();
-  }, [user]);
+  console.log("bookmarkGroups: ", bookmarkGroups);
 
   // This effect listens for external changes to Chrome storage.
   useEffect(() => {
     function handleStorageChange(changes, area) {
-      if (area === "local" && changes[STORAGE_KEY_BOOKMARK_GROUPS]) {
+      if (area === "local" && changes[getUserStorageKey(user.userId)]) {
         console.log("Storage change detected, reloading bookmarks.");
         // We re-run the full logic to ensure the empty group is handled correctly.
-        loadBookmarkGroups().then(groups => {
+        loadBookmarkGroups(useruserId).then(groups => {
           if (groups) {
             const hasEmptyGroup = groups.some(g => g.groupName === EMPTY_GROUP_IDENTIFIER);
             if (!hasEmptyGroup) {
-              addEmptyBookmarkGroup(setBookmarkGroups)
+              addEmptyBookmarkGroup(user.userId, setBookmarkGroups)
             }
             setBookmarkGroups(groups);
           }
@@ -132,7 +132,7 @@ export function NewTabUI({ user, signIn, signOut}) {
     <div>
       <TopBanner
         onLoadBookmarks={() => loadBookmarksFromLocalFile(setBookmarkGroups)}
-        onExportBookmarks={exportBookmarksToJSON}
+        onExportBookmarks={() => exportBookmarksToJSON(user.userId)}
         userAttributes={userAttributes}
         onSignIn={signIn}
         onSignOut={signOut}

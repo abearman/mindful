@@ -14,6 +14,8 @@ import {
 
 const DraggableGrid = () => {
   const { bookmarkGroups, setBookmarkGroups } = useContext(AppContext);
+  console.log("[DraggableGrid] got here1");
+  console.log("[DraggableGrid] bookmarkGroups: ", bookmarkGroups);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {

@@ -1,47 +1,55 @@
 import { v4 as uuidv4 } from 'uuid';
-import { CHROME_NEW_TAB, STORAGE_KEY_BOOKMARK_GROUPS, EMPTY_GROUP_IDENTIFIER } from './Constants.js';
+import { CHROME_NEW_TAB, EMPTY_GROUP_IDENTIFIER } from './Constants.js';
 import { arrayMove } from '@dnd-kit/sortable';
 
 
-export function clearBookmarkGroups() {
-  chrome.storage.local.remove(STORAGE_KEY_BOOKMARK_GROUPS, function() {
+export const getUserStorageKey = (userId) => `bookmarks_${userId}`;
+
+export function clearBookmarkGroups(userId) {
+  // Return early if no user ID is provided.
+  if (!userId) return null;
+
+  // Generate the user-specific key.
+  const userStorageKey = getUserStorageKey(userId);
+
+  chrome.storage.local.remove(userStorageKey, function() {
     console.log('Cleared bookmarks');
   });
 }
 
-export async function loadBookmarkGroups() {
-  const result = await chrome.storage.local.get(STORAGE_KEY_BOOKMARK_GROUPS);
-  return result[STORAGE_KEY_BOOKMARK_GROUPS] || [];
+export async function loadBookmarkGroups(userId) {
+  // Return early if no user ID is provided
+  if (!userId) return null;
+
+  // Generate the user-specific key
+  const userStorageKey = getUserStorageKey(userId);
+
+  // Fetch data using the user's key
+  const result = await chrome.storage.local.get(userStorageKey);
+  return result[userStorageKey] || [];
 }
 
-export async function addMissingBookmarkIDs(setBookmarkGroups) {
-  let bookmarkGroups = await loadBookmarkGroups();
-  bookmarkGroups.forEach(function(bookmarkGroup) {
-    // If missing, add an ID to the overall bookmark group
-    if (!('id' in bookmarkGroup)) {
-      bookmarkGroup['id'] = uuidv4(); 
-    }
-    // If missing, add an ID to the individual bookmark
-    bookmarkGroup.bookmarks.forEach(function(bookmark) {
-      if (!('id' in bookmark)) {
-        bookmark['id'] = uuidv4(); 
-      }
-    });
-  }); 
-  await overwriteBookmarkGroupsToStorage(bookmarkGroups, setBookmarkGroups); 
-}
+export async function overwriteBookmarkGroupsToStorage(userId, bookmarkGroups, setBookmarkGroups) {
+  // Guard against saving without a user ID.
+  if (!userId) {
+    console.error("Cannot save bookmarks without a userId.");
+    return;
+  }
 
-export async function overwriteBookmarkGroupsToStorage(bookmarkGroups, setBookmarkGroups) {
+  // Generate the user key
+  const userStorageKey = getUserStorageKey(userId);
+
+  // Save the data
   return new Promise((resolve, reject) => {
     chrome.storage.local.set(
-      { [STORAGE_KEY_BOOKMARK_GROUPS]: bookmarkGroups },
+      { [userStorageKey]: bookmarkGroups },
       async () => {
         if (chrome.runtime.lastError) {
           return reject(chrome.runtime.lastError);
         }
 
         // Refresh React state with the latest stored value
-        const freshGroups = await loadBookmarkGroups();
+        const freshGroups = await loadBookmarkGroups(userId);
         setBookmarkGroups(freshGroups);
 
         refreshOtherMindfulTabs();
@@ -74,8 +82,8 @@ export function refreshActiveMindfulTab() {
 }
 
 /* Function to delete an entire bookmark group by index */
-export async function deleteBookmarkGroup(groupIndex, setBookmarkGroups) {
-  let bookmarkGroups = await loadBookmarkGroups();
+export async function deleteBookmarkGroup(userId, groupIndex, setBookmarkGroups) {
+  let bookmarkGroups = await loadBookmarkGroups(userId);
   if (groupIndex !== -1) {
     bookmarkGroups.splice(groupIndex, 1);
     await overwriteBookmarkGroupsToStorage(bookmarkGroups, setBookmarkGroups); 
@@ -83,8 +91,8 @@ export async function deleteBookmarkGroup(groupIndex, setBookmarkGroups) {
 }
 
 /* Function to add a new empty bookmark group to the end */
-export async function addEmptyBookmarkGroup(setBookmarkGroups) {
-  let bookmarkGroups = await loadBookmarkGroups();
+export async function addEmptyBookmarkGroup(userId, setBookmarkGroups) {
+  let bookmarkGroups = await loadBookmarkGroups(userId);
   bookmarkGroups.push(
     { 
       groupName: EMPTY_GROUP_IDENTIFIER, 
@@ -92,11 +100,11 @@ export async function addEmptyBookmarkGroup(setBookmarkGroups) {
       id: uuidv4(), 
     }
   );
-  await overwriteBookmarkGroupsToStorage(bookmarkGroups, setBookmarkGroups); 
+  await overwriteBookmarkGroupsToStorage(userId, bookmarkGroups, setBookmarkGroups); 
 }
 
-export async function addBookmarkGroup(groupName, setBookmarkGroups) {
-  let bookmarkGroups = await loadBookmarkGroups();
+export async function addBookmarkGroup(userId, groupName, setBookmarkGroups) {
+  let bookmarkGroups = await loadBookmarkGroups(userId);
   bookmarkGroups.push(
     { 
       groupName: groupName, 
@@ -108,8 +116,8 @@ export async function addBookmarkGroup(groupName, setBookmarkGroups) {
 }
 
 /* Function to save a bookmark to local storage */
-export async function saveBookmark(bookmarkName, url, groupName, setBookmarkGroups) {
-  let bookmarkGroups = await loadBookmarkGroups();
+export async function saveBookmark(userId, bookmarkName, url, groupName, setBookmarkGroups) {
+  let bookmarkGroups = await loadBookmarkGroups(userId);
   let bookmark = { 
     name: bookmarkName, 
     url: url,
@@ -139,8 +147,8 @@ export async function saveBookmark(bookmarkName, url, groupName, setBookmarkGrou
 
 
 /* Function to delete a bookmark by name from a group */
-export async function deleteBookmark(bookmarkIndex, groupIndex, setBookmarkGroups) {
-  let bookmarkGroups = await loadBookmarkGroups();
+export async function deleteBookmark(userId, bookmarkIndex, groupIndex, setBookmarkGroups) {
+  let bookmarkGroups = await loadBookmarkGroups(userId);
   if (groupIndex !== -1) {
     let bookmarkGroup = bookmarkGroups[groupIndex];
     let bookmarks = bookmarkGroup.bookmarks;
@@ -154,16 +162,16 @@ export async function deleteBookmark(bookmarkIndex, groupIndex, setBookmarkGroup
 }
 
 /* Function to edit a bookmark group's heading */
-export async function editBookmarkGroupHeading(bookmarkGroupIndex, newHeadingName, setBookmarkGroups) {
-  const bookmarkGroups = await loadBookmarkGroups();
+export async function editBookmarkGroupHeading(userId, bookmarkGroupIndex, newHeadingName, setBookmarkGroups) {
+  const bookmarkGroups = await loadBookmarkGroups(userId);
   let updatedGroups = [...bookmarkGroups];  // Create a shallow copy
   updatedGroups[bookmarkGroupIndex].groupName = newHeadingName;
   await overwriteBookmarkGroupsToStorage(updatedGroups, setBookmarkGroups); 
 }
 
 /* Function to edit a bookmark's name */
-export async function editBookmarkName(bookmarkGroupIndex, bookmarkIndex, newBookmarkName, setBookmarkGroups) {
-  let bookmarkGroups = await loadBookmarkGroups();
+export async function editBookmarkName(userId, bookmarkGroupIndex, bookmarkIndex, newBookmarkName, setBookmarkGroups) {
+  let bookmarkGroups = await loadBookmarkGroups(userId);
 
   // Create a deep copy to guarantee that React sees a new reference at both groups array and bookmarks array
   const updatedGroups = bookmarkGroups.map(group => ({
@@ -177,9 +185,9 @@ export async function editBookmarkName(bookmarkGroupIndex, bookmarkIndex, newBoo
 }
 
 /* Function to reorder bookmarks within a list or between groups */
-export async function reorderBookmarks(sourceBookmarkIndex, destinationBookmarkIndex, sourceGroupIndex, destinationGroupIndex, setBookmarkGroups) {
+export async function reorderBookmarks(userId, sourceBookmarkIndex, destinationBookmarkIndex, sourceGroupIndex, destinationGroupIndex, setBookmarkGroups) {
   // Copy the source group and remove the bookmark from its original position
-  let bookmarkGroups = await loadBookmarkGroups();
+  let bookmarkGroups = await loadBookmarkGroups(userId);
   const sourceGroup = { ...bookmarkGroups[sourceGroupIndex] };
   const [removedBookmark] = sourceGroup.bookmarks.splice(sourceBookmarkIndex, 1);
 
@@ -225,8 +233,8 @@ async function handleFileSelection(event, setBookmarkGroups) {
   reader.readAsText(file);
 }
 
-export async function exportBookmarksToJSON() {
-  let bookmarkGroupsData = await loadBookmarkGroups();
+export async function exportBookmarksToJSON(userId) {
+  let bookmarkGroupsData = await loadBookmarkGroups(userId);
 
   const jsonData = JSON.stringify(bookmarkGroupsData);
 
