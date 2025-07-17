@@ -1,11 +1,9 @@
 import React, { useContext, useRef, useEffect, useState } from "react";
-import { createRoot } from "react-dom/client"; 
 import { CSS } from "@dnd-kit/utilities";
 
 // Import Amplify and the Authenticator UI component
 import { Amplify } from 'aws-amplify';
 import { fetchUserAttributes } from 'aws-amplify/auth';
-import { Authenticator, Flex } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
 
 // Import Amplify configuration and configure Amplify
@@ -16,9 +14,6 @@ Amplify.configure(config);
 import "./styles/Index.css";
 import "./styles/TopBanner.css"; // Import the new banner styles
 import "./styles/Login.css";
-
-/* Configs */
-import formFields from "./config/formFields.js";
 
 /* Constants */
 import { 
@@ -32,7 +27,6 @@ import {
   loadBookmarkGroups,
   exportBookmarksToJSON,
   loadBookmarksFromLocalFile,
-  overwriteBookmarkGroupsToStorage
 } from "./scripts/BookmarkManagement.js";
 import { AppContextProvider, AppContext } from "./scripts/AppContext.jsx";
 
