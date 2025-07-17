@@ -52,60 +52,82 @@ export function NewTabUI({ user, signIn, signOut}) {
   // Add this useEffect to load data on initial component mount
   useEffect(() => {
     // Only try to load data if we have a valid user object
-    // TODO: Update this to have optional logins and cloud storage
-    if (user) {
-      loadBookmarkGroups().then(initialGroups => {
-        setBookmarkGroups(initialGroups);
-        setIsLoading(false); // Mark loading as complete
-      });
-    }
-  }, [user]); 
-
-  // *Only once*, add an empty bookmarkGroup on the end of the user-provided list.
-  useEffect(() => {
-    // Don't do anything until the initial data has been loaded
-    if (isLoading) {
+    if (!user) {
+      setIsLoading(false);
       return;
     }
-    const alreadyHasEmptyGroup = bookmarkGroups.some(
-      (group) => (group.groupName === EMPTY_GROUP_IDENTIFIER) && (group.bookmarks.length == 0)
-    );
-    if (!alreadyHasEmptyGroup) {
-      addEmptyBookmarkGroup(setBookmarkGroups);
-    }
-  }, [bookmarkGroups, isLoading]);
 
-  // Fetch the userAttributes, but don't block any other rendering code on this 
-  useEffect(() => {
-    const fetchAttributes = async () => {
-      if (user) {
-        try {
-          const attributes = await fetchUserAttributes();
-          setUserAttributes(attributes);
-        } catch (error) {
-          console.error("Error fetching user attributes:", error);
+    const loadInitialData = async () => {
+      setIsLoading(true);
+      try {
+        const loadedGroups = await loadBookmarkGroups();
+
+        if (loadedGroups) {
+          // 1. Check if an empty group already exists in the fetched data.
+          const hasEmptyGroup = loadedGroups.some(
+            (group) => group.groupName === EMPTY_GROUP_IDENTIFIER
+          );
+
+          // 2. If not, add one directly to the array before setting state.
+          if (!hasEmptyGroup) {
+            addEmptyBookmarkGroup(setBookmarkGroups);
+          }
         }
+        
+        // 3. Set the final, corrected array in state once.
+        setBookmarkGroups(loadedGroups || []);
+
+      } catch (error) {
+        console.error("Error loading initial bookmark data:", error);
+        setBookmarkGroups([]); // Set to empty array on error
+      } finally {
+        setIsLoading(false); // Mark loading as complete
+      }
+    };
+
+    loadInitialData();
+  }, [user]); // This effect runs only when the user object changes.
+
+  // Fetch the userAttributes, but don't block any other rendering code on this
+  useEffect(() => {
+    if (!user) {
+      setUserAttributes(null);
+      return;
+    }
+    const fetchAttributes = async () => {
+      try {
+        const attributes = await fetchUserAttributes();
+        setUserAttributes(attributes);
+      } catch (error) {
+        console.error("Error fetching user attributes:", error);
       }
     };
     fetchAttributes();
   }, [user]);
 
-  async function handleAddEmptyBookmarkGroup() {
-    addEmptyBookmarkGroup(setBookmarkGroups);
-  }
-
+  // This effect listens for external changes to Chrome storage.
   useEffect(() => {
     function handleStorageChange(changes, area) {
-      console.log("Handling storage change");
       if (area === "local" && changes[STORAGE_KEY_BOOKMARK_GROUPS]) {
-        loadBookmarkGroups().then(setBookmarkGroups);
+        console.log("Storage change detected, reloading bookmarks.");
+        // We re-run the full logic to ensure the empty group is handled correctly.
+        loadBookmarkGroups().then(groups => {
+          if (groups) {
+            const hasEmptyGroup = groups.some(g => g.groupName === EMPTY_GROUP_IDENTIFIER);
+            if (!hasEmptyGroup) {
+              addEmptyBookmarkGroup(setBookmarkGroups)
+            }
+            setBookmarkGroups(groups);
+          }
+        });
       }
     }
 
     chrome.storage.onChanged.addListener(handleStorageChange);
     return () => chrome.storage.onChanged.removeListener(handleStorageChange);
-  }, []);
+  }, [setBookmarkGroups]); // Add dependency to satisfy linter
 
+  // This effect focuses the heading of a newly added group.
   useEffect(() => {
     if (lastBookmarkGroupRef.current) {
       lastBookmarkGroupRef.current.querySelector(".editable-heading").focus();
@@ -120,7 +142,7 @@ export function NewTabUI({ user, signIn, signOut}) {
         userAttributes={userAttributes}
         onSignIn={signIn}
         onSignOut={signOut}
-        isSignedIn={!!user} // Let the banner know a user is sign in
+        isSignedIn={!!user} // Let the banner know a user is signed in
       />
       <DraggableGrid
         bookmarkGroups={bookmarkGroups}

@@ -155,8 +155,8 @@ export async function deleteBookmark(bookmarkIndex, groupIndex, setBookmarkGroup
 
 /* Function to edit a bookmark group's heading */
 export async function editBookmarkGroupHeading(bookmarkGroupIndex, newHeadingName, setBookmarkGroups) {
-  let bookmarkGroups = await loadBookmarkGroups();
-  const updatedGroups = [...bookmarkGroups];  // Create a shallow copy
+  const bookmarkGroups = await loadBookmarkGroups();
+  let updatedGroups = [...bookmarkGroups];  // Create a shallow copy
   updatedGroups[bookmarkGroupIndex].groupName = newHeadingName;
   await overwriteBookmarkGroupsToStorage(updatedGroups, setBookmarkGroups); 
 }
