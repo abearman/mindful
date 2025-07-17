@@ -6,10 +6,10 @@ import '@testing-library/jest-dom';
 import { NewTabUI } from '../NewTab'; 
 
 // Mock dependencies
-import { AppContext } from '../scripts/AppContext.jsx';
+import { AppContextProvider, AppContext } from '../scripts/AppContext.jsx'; 
 import * as BookmarkManagement from '../scripts/BookmarkManagement.js';
 import { fetchUserAttributes } from 'aws-amplify/auth';
-import { EMPTY_GROUP_IDENTIFIER } from '../scripts/Constants.js';
+import { EMPTY_GROUP_IDENTIFIER, STORAGE_KEY_BOOKMARK_GROUPS } from '../scripts/Constants.js';
 
 // Mock child components for isolation
 jest.mock('../components/TopBanner.jsx', () => (props) => (
@@ -47,15 +47,6 @@ global.chrome = {
   },
 };
 
-// Helper function to render the component with a mock context
-const renderWithContext = (component, providerProps) => {
-  return render(
-    <AppContext.Provider value={providerProps}>
-      {component}
-    </AppContext.Provider>
-  );
-};
-
 // --- Test Data ---
 const mockUser = { id: '123', username: 'testuser' };
 const mockUserAttributes = { email: 'test@example.com' };
@@ -70,7 +61,6 @@ const mockBookmarkGroupsWithEmpty = [
 
 // --- Test Suite ---
 describe('NewTabUI Component', () => {
-  let mockSetBookmarkGroups;
   let mockSignOut;
   let consoleErrorSpy;
 
@@ -79,7 +69,6 @@ describe('NewTabUI Component', () => {
     jest.clearAllMocks();
 
     // Setup common mocks
-    mockSetBookmarkGroups = jest.fn();
     mockSignOut = jest.fn();
     BookmarkManagement.loadBookmarkGroups.mockResolvedValue(mockBookmarkGroups);
     fetchUserAttributes.mockResolvedValue(mockUserAttributes);
@@ -94,9 +83,10 @@ describe('NewTabUI Component', () => {
   });
 
   it('should load bookmarks and user attributes when a user is present', async () => {
-    renderWithContext(
-      <NewTabUI user={mockUser} signOut={mockSignOut} />,
-      { bookmarkGroups: [], setBookmarkGroups: mockSetBookmarkGroups }
+    render(
+      <AppContextProvider>
+        <NewTabUI user={mockUser} signOut={mockSignOut} />
+      </AppContextProvider>
     );
     
     expect(BookmarkManagement.loadBookmarkGroups).toHaveBeenCalledTimes(1);
@@ -104,7 +94,8 @@ describe('NewTabUI Component', () => {
 
     // Wait for asynchronous operations and state updates to complete
     await waitFor(() => {
-      expect(mockSetBookmarkGroups).toHaveBeenCalledWith(mockBookmarkGroups);
+      expect(screen.getByText('Work')).toBeInTheDocument();
+      expect(screen.getByText('Personal')).toBeInTheDocument();
     });
 
     // Check if TopBanner receives the correct props after data loading
@@ -117,9 +108,10 @@ describe('NewTabUI Component', () => {
   });
 
   it('should not load data if no user is present', () => {
-    renderWithContext(
-      <NewTabUI user={null} />,
-      { bookmarkGroups: [], setBookmarkGroups: mockSetBookmarkGroups }
+    render(
+      <AppContextProvider>
+        <NewTabUI user={null} /> 
+      </AppContextProvider>
     );
 
     expect(BookmarkManagement.loadBookmarkGroups).not.toHaveBeenCalled();
@@ -128,29 +120,42 @@ describe('NewTabUI Component', () => {
   });
 
   it('should add an empty bookmark group if one does not exist after loading', async () => {
+    // Create a mock setter function for the test to track
+    const mockSetBookmarkGroups = jest.fn();
     BookmarkManagement.loadBookmarkGroups.mockResolvedValue(mockBookmarkGroups);
-    
-    // The component starts with loading=true, so the effect to add a group won't run.
-    // After load completes, loading becomes false and bookmarkGroups updates, triggering the effect.
-    renderWithContext(<NewTabUI user={mockUser} />, {
-      bookmarkGroups: mockBookmarkGroups, 
-      setBookmarkGroups: mockSetBookmarkGroups
-    });
-    
+  
+    // Use the real Context.Provider to supply a mocked value
+    render(
+      <AppContext.Provider value={{ bookmarkGroups: mockBookmarkGroups, setBookmarkGroups: mockSetBookmarkGroups }}>
+        <NewTabUI user={mockUser} />
+      </AppContext.Provider>
+    );
+  
     await waitFor(() => {
-      // This effect runs after the initial load is complete.
-      expect(BookmarkManagement.addEmptyBookmarkGroup).toHaveBeenCalledWith(mockSetBookmarkGroups);
+      // Assert that the management function was called with the state and the mock setter
+      expect(BookmarkManagement.addEmptyBookmarkGroup).toHaveBeenCalledWith(
+        mockSetBookmarkGroups
+      );
     });
   });
 
   it('should NOT add an empty bookmark group if one already exists', async () => {
+    // Create a mock setter function for the test to track
+    const mockSetBookmarkGroups = jest.fn();
+
     BookmarkManagement.loadBookmarkGroups.mockResolvedValue(mockBookmarkGroupsWithEmpty);
     
-    renderWithContext(<NewTabUI user={mockUser} />, { 
-      bookmarkGroups: mockBookmarkGroupsWithEmpty, 
-      setBookmarkGroups: mockSetBookmarkGroups
-    });
-
+    render(
+      <AppContext.Provider 
+        value={{ 
+          bookmarkGroups: [], // Start with an empty array before data loads
+          setBookmarkGroups: mockSetBookmarkGroups 
+        }}
+      >
+        <NewTabUI user={mockUser} />
+      </AppContext.Provider>
+    );
+  
     // Wait for all async effects to settle
     await waitFor(() => {
       expect(mockSetBookmarkGroups).toHaveBeenCalledWith(mockBookmarkGroupsWithEmpty);
@@ -161,7 +166,11 @@ describe('NewTabUI Component', () => {
   });
   
   it('should listen for storage changes and reload data accordingly', async () => {
-    renderWithContext(<NewTabUI user={mockUser} />, { bookmarkGroups: [], setBookmarkGroups: mockSetBookmarkGroups });
+    render(
+      <AppContextProvider>
+        <NewTabUI user={mockUser} />
+      </AppContextProvider>
+    );
 
     expect(chrome.storage.onChanged.addListener).toHaveBeenCalledTimes(1);
 
@@ -184,15 +193,24 @@ describe('NewTabUI Component', () => {
   });
   
   it('should clean up the storage listener on unmount', () => {
-    const { unmount } = renderWithContext(<NewTabUI user={mockUser} />, { bookmarkGroups: [], setBookmarkGroups: mockSetBookmarkGroups });
-    
+    const { unmount } = render(
+      <AppContextProvider>
+        <NewTabUI user={mockUser} />
+      </AppContextProvider>
+    );    
     unmount();
 
     expect(chrome.storage.onChanged.removeListener).toHaveBeenCalledTimes(1);
   });
 
   it('should handle interactions from the TopBanner component', async () => {
-    renderWithContext(<NewTabUI user={mockUser} signOut={mockSignOut} />, { bookmarkGroups: mockBookmarkGroups, setBookmarkGroups: mockSetBookmarkGroups });
+    const mockSetBookmarkGroups = jest.fn();
+
+    render(
+      <AppContext.Provider value={{ bookmarkGroups: mockBookmarkGroups, setBookmarkGroups: mockSetBookmarkGroups }}>
+        <NewTabUI user={mockUser} signOut={mockSignOut} />
+      </AppContext.Provider>
+    );
 
     await waitFor(() => {
       expect(screen.getByText('Signed In: true')).toBeInTheDocument();
@@ -213,7 +231,11 @@ describe('NewTabUI Component', () => {
     const fetchError = new Error('Failed to fetch attributes');
     fetchUserAttributes.mockRejectedValue(fetchError);
     
-    renderWithContext(<NewTabUI user={mockUser} />, { bookmarkGroups: [], setBookmarkGroups: mockSetBookmarkGroups });
+    render(
+      <AppContextProvider>
+        <NewTabUI user={mockUser} />
+      </AppContextProvider>
+    );
 
     await waitFor(() => {
       expect(consoleErrorSpy).toHaveBeenCalledWith("Error fetching user attributes:", fetchError);
