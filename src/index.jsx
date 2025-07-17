@@ -11,12 +11,12 @@ const root = createRoot(container);
 
 root.render(
   <React.StrictMode>
-    <AppContextProvider>
-      <Authenticator formFields={formFields}>
-        {({ signIn, signOut, user }) => (
+    <Authenticator formFields={formFields}>
+      {({ signIn, signOut, user }) => (
+        <AppContextProvider user={user}>
           <NewTabUI user={user} signIn={signIn} signOut={signOut} />
-        )}
-      </Authenticator>
-    </AppContextProvider>
+        </AppContextProvider>
+      )}
+    </Authenticator>
   </React.StrictMode>
 );

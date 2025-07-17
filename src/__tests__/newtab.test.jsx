@@ -10,6 +10,7 @@ import { AppContextProvider, AppContext } from '../scripts/AppContext.jsx';
 import * as BookmarkManagement from '../scripts/BookmarkManagement.js';
 import { fetchUserAttributes } from 'aws-amplify/auth';
 import { EMPTY_GROUP_IDENTIFIER, STORAGE_KEY_BOOKMARK_GROUPS } from '../scripts/Constants.js';
+// TODO: Mock STORAGE_KEY_BOOKMARK_GROUPS with a mock userId
 
 // Mock child components for isolation
 jest.mock('../components/TopBanner.jsx', () => (props) => (
