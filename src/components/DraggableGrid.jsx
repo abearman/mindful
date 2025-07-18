@@ -6,14 +6,18 @@ import { SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
 
 import { BookmarkGroup } from './BookmarkGroup';
 import { AppContext } from "../scripts/AppContext.jsx";
-import {
-  deleteBookmarkGroup,
-  reorderBookmarks,
-  reorderBookmarkGroups,
-} from "../scripts/BookmarkManagement.js";
+import { useBookmarkManager } from '../scripts/useBookmarkManager.js';
 
 const DraggableGrid = () => {
+  // Consume state from the context 
   const { bookmarkGroups, setBookmarkGroups, userId } = useContext(AppContext);
+
+  // Get all actions from the custom bookmarks hook
+  const { 
+    deleteBookmarkGroup,
+    reorderBookmarkGroups,
+    reorderBookmarks,
+  } = useBookmarkManager();
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -38,10 +42,8 @@ const DraggableGrid = () => {
         (group) => group.id === over.id
       );
       reorderBookmarkGroups(
-        userId,
         sourceGroupIndex,
         destinationGroupIndex,
-        setBookmarkGroups
       );
     } else {
       let sourceGroupIndex = -1;
@@ -76,12 +78,10 @@ const DraggableGrid = () => {
         sourceGroupIndex === destinationGroupIndex
       ) {
         reorderBookmarks(
-          userId,
           sourceBookmarkIndex,
           destinationBookmarkIndex,
           sourceGroupIndex,
           destinationGroupIndex,
-          setBookmarkGroups
         );
       }
     }
@@ -94,7 +94,7 @@ const DraggableGrid = () => {
         "?"
     );
     if (shouldDelete) {
-      await deleteBookmarkGroup(userId, groupIndex, setBookmarkGroups);
+      await deleteBookmarkGroup(groupIndex);
     }
   }
 

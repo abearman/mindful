@@ -3,21 +3,22 @@ import React, { useState, useRef, useContext } from 'react';
 /* CSS styles */
 import '../styles/Index.css';
 
-/* Utilities */
-import {
-  createUniqueID,
-} from "../scripts/Utilities.js";
-
-/* Bookmark Storage */
-import {
-  deleteBookmark,
-  editBookmarkName,
-} from "../scripts/BookmarkManagement.js";
+/* Hooks and Utilities */
+import { useBookmarkManager } from '../scripts/useBookmarkManager.js';
 import { AppContext } from '../scripts/AppContext.jsx';
+import { createUniqueID } from "../scripts/Utilities.js";
 
 
 function EditableBookmark(props) {
-  const { userId, bookmarkGroups, setBookmarkGroups } = useContext(AppContext);
+  // Consume state from the context 
+  const { bookmarkGroups, setBookmarkGroups, userId } = useContext(AppContext);
+
+  // Get all actions from the custom bookmarks hook
+  const { 
+    deleteBookmark,
+    editBookmarkName, 
+  } = useBookmarkManager();  
+  
   const [text, setText] = useState(props.bookmark.name);
   const [url, setUrl] = useState(props.bookmark.url);
 
@@ -48,7 +49,7 @@ function EditableBookmark(props) {
     aElement.addEventListener('blur', async (event) => {
       const newBookmarkName = event.target.textContent.trim();
       setText(newBookmarkName);
-      await editBookmarkName(groupIndex, bookmarkIndex, newBookmarkName, setBookmarkGroups);
+      await editBookmarkName(groupIndex, bookmarkIndex, newBookmarkName);
       aElement.setAttribute('contenteditable', 'false'); 
     });
   }
@@ -60,7 +61,7 @@ function EditableBookmark(props) {
       "Are you sure you want to delete the " + bookmark.name + " bookmark from " + bookmarkGroup.groupName + "?"
     ); 
     if (shouldDelete) {
-      await deleteBookmark(userId, bookmarkIndex, groupIndex, setBookmarkGroups);
+      await deleteBookmark(bookmarkIndex, groupIndex);
     }
   }
 

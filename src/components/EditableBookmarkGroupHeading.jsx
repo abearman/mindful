@@ -3,22 +3,24 @@ import React, { useContext, useState, useRef, useEffect } from 'react';
 /* CSS styles */
 import '../styles/EditableBookmarkGroupHeading.css';
 
-/* Bookmark Storage */
-import {
-  editBookmarkGroupHeading,
-} from "../scripts/BookmarkManagement.js";
-import { AppContext } from '../scripts/AppContext.jsx';
-
 /* Constants */
-import { 
-  EMPTY_GROUP_IDENTIFIER
-} from "../scripts/Constants.js";
+import { EMPTY_GROUP_IDENTIFIER } from "../scripts/Constants.js";
+
+/* Hooks and Utilities */
+import { useBookmarkManager } from '../scripts/useBookmarkManager';
+import { AppContext } from '../scripts/AppContext.jsx';
 
 const NEW_GROUP_NAME = "+ Add a group"; 
 
 
 function EditableBookmarkGroupHeading(props) {
+  // Consume state from the context 
   const { bookmarkGroups, setBookmarkGroups, userId } = useContext(AppContext);
+
+  // Get all actions from the custom bookmarks hook
+  const { 
+    editBookmarkGroupHeading,
+  } = useBookmarkManager();  
 
   const { bookmarkGroup, groupIndex } = props;
   
@@ -50,7 +52,7 @@ function EditableBookmarkGroupHeading(props) {
     } else {
       // Otherwise, save the new heading
       setIsPlaceholder(false);
-      await editBookmarkGroupHeading(userId, groupIndex, newGroupName, setBookmarkGroups);
+      await editBookmarkGroupHeading(groupIndex, newGroupName);
     }
   }
 

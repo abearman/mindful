@@ -1,34 +1,34 @@
 import React, { createContext, useState, useEffect } from 'react';
 
 import {
-    loadBookmarkGroups,
-} from "./BookmarkManagement.js";
+  loadInitialBookmarks,
+} from "./useBookmarkManager.js";
 
 
 export const AppContext = createContext();
 
 export function AppContextProvider({ children, user }) {
   const [bookmarkGroups, setBookmarkGroups] = useState([]);
+  const [userId, setUserId] = useState(user?.userId); 
 
   useEffect(() => {
-    async function fetchGroups() {
+    async function fetchData() {
       // Only fetch if a user is logged in
-      if (user) {
-        const groups = await loadBookmarkGroups(user.userId);
-       setBookmarkGroups(groups || []);
+      if (userId) {
+        const groups = await loadInitialBookmarks(userId);
+       setBookmarkGroups(groups); 
       // If no user, clear the bookmarks
       } else {
         setBookmarkGroups([]);
       }
     }
-
-    fetchGroups();
-  }, [user]);
+    fetchData();
+  }, [userId]);
 
   const contextValue = {
     bookmarkGroups, 
     setBookmarkGroups,
-    userId: user?.userId
+    userId,
   }
 
   return (

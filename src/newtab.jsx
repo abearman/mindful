@@ -16,33 +16,41 @@ import "./styles/TopBanner.css"; // Import the new banner styles
 import "./styles/Login.css";
 
 /* Constants */
-import { 
-  EMPTY_GROUP_IDENTIFIER
-} from "./scripts/Constants.js";
+import { EMPTY_GROUP_IDENTIFIER } from "./scripts/Constants.js";
 
-/* Bookmark Storage */
-import {
-  getUserStorageKey,
-  addEmptyBookmarkGroup,
-  loadBookmarkGroups,
-  exportBookmarksToJSON,
-  loadBookmarksFromLocalFile,
-} from "./scripts/BookmarkManagement.js";
+/* Hooks and Utilities */
+import { getUserStorageKey } from './scripts/Utilities.js';
+import { loadInitialBookmarks, useBookmarkManager } from './scripts/useBookmarkManager.js';
 import { AppContext } from "./scripts/AppContext.jsx";
 
 /* Components */
-import { BookmarkGroup } from "./components/BookmarkGroup.jsx"
 import TopBanner from "./components/TopBanner.jsx"; 
 import DraggableGrid from './components/DraggableGrid.jsx'; 
 
 
 export function NewTabUI({ user, signIn, signOut}) {
-  const { bookmarkGroups, setBookmarkGroups } = useContext(AppContext);
+  // Consume state from the context 
+  const { bookmarkGroups, setBookmarkGroups, userId } = useContext(AppContext);
+  
+  // Get all actions from the custom bookmarks hook
+  const { 
+    addEmptyBookmarkGroup, 
+    exportBookmarksToJSON,
+    importBookmarksFromJSON,
+  } = useBookmarkManager();
+
+  // Create a new handler function that calls the importBookmarksFromJSON with no arguments,
+  // to discard the unwanted event object.
+  const handleLoadBookmarks = () => {
+    importBookmarksFromJSON();
+  };
+
   const [isLoading, setIsLoading] = useState(true);
   const [userAttributes, setUserAttributes] = useState(null); 
 
   const lastBookmarkGroupRef = useRef(null);
   
+  // Effect to fetch user attributes when the user logs in
   useEffect(() => {
     if (!user) {
       setUserAttributes(null);
@@ -50,71 +58,50 @@ export function NewTabUI({ user, signIn, signOut}) {
       return;
     }
 
-    // Fetch the userAttributes
     const fetchAttributes = async () => {
+      setIsLoading(true);
       try {
         const attributes = await fetchUserAttributes();
         setUserAttributes(attributes);
       } catch (error) {
         console.error("Error fetching user attributes:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchAttributes();
+  }, [user]);
+
+  // Effect to ensure an empty group for adding new bookmarks always exists.
+  // This runs after the initial data is loaded into the context by the AppProvider.
+  useEffect(() => {
+    if (bookmarkGroups && bookmarkGroups.length > 0) {
+      const hasEmptyGroup = bookmarkGroups.some(
+        (group) => group.groupName === EMPTY_GROUP_IDENTIFIER
+      );
+      if (!hasEmptyGroup) {
+        addEmptyBookmarkGroup();
+      }
+    }
+  }, [bookmarkGroups]); // Runs whenever the bookmark groups change.
   
-    // Fetch the bookmarks data
-    const loadInitialData = async () => {
-      setIsLoading(true);
-      try {
-        const loadedGroups = await loadBookmarkGroups(user.userId);
+  // Effect to listen for external changes to Chrome storage (e.g., from another tab)
+  useEffect(() => {
+    if (!userId) return; // Don't listen if there's no user
 
-        if (loadedGroups) {
-          // Check if an empty group already exists in the fetched data.
-          const hasEmptyGroup = loadedGroups.some(
-            (group) => group.groupName === EMPTY_GROUP_IDENTIFIER
-          );
-
-          // If not, add one directly to the array before setting state.
-          if (!hasEmptyGroup) {
-            addEmptyBookmarkGroup(user.userId, setBookmarkGroups);
-          }
-        }
-        
-        // Set the final, corrected array in state once.
-        setBookmarkGroups(loadedGroups || []);
-
-      } catch (error) {
-        console.error("Error loading initial bookmark data:", error);
-        setBookmarkGroups([]); // Set to empty array on error
-      } finally {
-        setIsLoading(false); // Mark loading as complete
+    const handleStorageChange = async (changes, area) => {
+      const userStorageKey = getUserStorageKey(userId);
+      if (area === "local" && changes[userStorageKey]) {
+        console.log("Storage change detected, reloading bookmarks.");
+        // When storage changes, reload the data and update the context.
+        const freshGroups = await loadInitialBookmarks(userId);
+        setBookmarkGroups(freshGroups || []);
       }
     };
 
-    loadInitialData();
-  }, [user]); // This effect runs only when the user object changes.
-
-
-  // This effect listens for external changes to Chrome storage.
-  useEffect(() => {
-    function handleStorageChange(changes, area) {
-      if (area === "local" && changes[getUserStorageKey(user.userId)]) {
-        console.log("Storage change detected, reloading bookmarks.");
-        // We re-run the full logic to ensure the empty group is handled correctly.
-        loadBookmarkGroups(user.userId).then(groups => {
-          if (groups) {
-            const hasEmptyGroup = groups.some(g => g.groupName === EMPTY_GROUP_IDENTIFIER);
-            if (!hasEmptyGroup) {
-              addEmptyBookmarkGroup(user.userId, setBookmarkGroups)
-            }
-            setBookmarkGroups(groups);
-          }
-        });
-      }
-    }
-
     chrome.storage.onChanged.addListener(handleStorageChange);
     return () => chrome.storage.onChanged.removeListener(handleStorageChange);
-  }, [setBookmarkGroups]); // Add dependency to satisfy linter
+  }, [userId, setBookmarkGroups]); // Re-attach listener if userId changes
 
   // This effect focuses the heading of a newly added group.
   useEffect(() => {
@@ -126,8 +113,8 @@ export function NewTabUI({ user, signIn, signOut}) {
   return (
     <div>
       <TopBanner
-        onLoadBookmarks={() => loadBookmarksFromLocalFile(user.userId, setBookmarkGroups)}
-        onExportBookmarks={() => exportBookmarksToJSON(user.userId)}
+        onLoadBookmarks={handleLoadBookmarks}
+        onExportBookmarks={exportBookmarksToJSON}
         userAttributes={userAttributes}
         onSignIn={signIn}
         onSignOut={signOut}
