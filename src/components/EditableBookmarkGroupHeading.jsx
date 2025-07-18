@@ -18,7 +18,7 @@ const NEW_GROUP_NAME = "+ Add a group";
 
 
 function EditableBookmarkGroupHeading(props) {
-  const { bookmarkGroups, setBookmarkGroups } = useContext(AppContext);
+  const { bookmarkGroups, setBookmarkGroups, userId } = useContext(AppContext);
 
   const { bookmarkGroup, groupIndex } = props;
   
@@ -50,7 +50,7 @@ function EditableBookmarkGroupHeading(props) {
     } else {
       // Otherwise, save the new heading
       setIsPlaceholder(false);
-      await editBookmarkGroupHeading(groupIndex, newGroupName, setBookmarkGroups);
+      await editBookmarkGroupHeading(userId, groupIndex, newGroupName, setBookmarkGroups);
     }
   }
 

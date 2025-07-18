@@ -86,7 +86,7 @@ export async function deleteBookmarkGroup(userId, groupIndex, setBookmarkGroups)
   let bookmarkGroups = await loadBookmarkGroups(userId);
   if (groupIndex !== -1) {
     bookmarkGroups.splice(groupIndex, 1);
-    await overwriteBookmarkGroupsToStorage(bookmarkGroups, setBookmarkGroups); 
+    await overwriteBookmarkGroupsToStorage(userId, bookmarkGroups, setBookmarkGroups); 
   }
 }
 
@@ -112,7 +112,7 @@ export async function addBookmarkGroup(userId, groupName, setBookmarkGroups) {
       id: uuidv4(), 
     }
   );
-  await overwriteBookmarkGroupsToStorage(bookmarkGroups, setBookmarkGroups); 
+  await overwriteBookmarkGroupsToStorage(userId, bookmarkGroups, setBookmarkGroups); 
 }
 
 /* Function to save a bookmark to local storage */
@@ -142,7 +142,7 @@ export async function saveBookmark(userId, bookmarkName, url, groupName, setBook
       });
   }
   
-  await overwriteBookmarkGroupsToStorage(bookmarkGroups, setBookmarkGroups);
+  await overwriteBookmarkGroupsToStorage(userId, bookmarkGroups, setBookmarkGroups);
 }
 
 
@@ -156,7 +156,7 @@ export async function deleteBookmark(userId, bookmarkIndex, groupIndex, setBookm
     // If the bookmark was found, remove it from the array and update local storage
     if (bookmarkIndex !== -1) {
       bookmarks.splice(bookmarkIndex, 1);
-      await overwriteBookmarkGroupsToStorage(bookmarkGroups, setBookmarkGroups); 
+      await overwriteBookmarkGroupsToStorage(userId, bookmarkGroups, setBookmarkGroups); 
     }
   }
 }
@@ -166,7 +166,7 @@ export async function editBookmarkGroupHeading(userId, bookmarkGroupIndex, newHe
   const bookmarkGroups = await loadBookmarkGroups(userId);
   let updatedGroups = [...bookmarkGroups];  // Create a shallow copy
   updatedGroups[bookmarkGroupIndex].groupName = newHeadingName;
-  await overwriteBookmarkGroupsToStorage(updatedGroups, setBookmarkGroups); 
+  await overwriteBookmarkGroupsToStorage(userId, updatedGroups, setBookmarkGroups); 
 }
 
 /* Function to edit a bookmark's name */
@@ -180,8 +180,7 @@ export async function editBookmarkName(userId, bookmarkGroupIndex, bookmarkIndex
   })); 
 
   updatedGroups[bookmarkGroupIndex].bookmarks[bookmarkIndex].name = newBookmarkName;
-  console.log('Updated groups in editBookmarkName: ', updatedGroups);
-  await overwriteBookmarkGroupsToStorage(updatedGroups, setBookmarkGroups); 
+  await overwriteBookmarkGroupsToStorage(userId, updatedGroups, setBookmarkGroups); 
 }
 
 /* Function to reorder bookmarks within a list or between groups */
@@ -200,33 +199,33 @@ export async function reorderBookmarks(userId, sourceBookmarkIndex, destinationB
   updatedGroups[sourceGroupIndex] = sourceGroup;
   updatedGroups[destinationGroupIndex] = destinationGroup;
 
-  await overwriteBookmarkGroupsToStorage(bookmarkGroups, setBookmarkGroups); 
+  await overwriteBookmarkGroupsToStorage(userId, bookmarkGroups, setBookmarkGroups); 
 }
 
-export async function reorderBookmarkGroups(sourceGroupIndex, destinationGroupIndex, setBookmarkGroups) {
+export async function reorderBookmarkGroups(userId, sourceGroupIndex, destinationGroupIndex, setBookmarkGroups) {
   setBookmarkGroups((prev) => {
     const newGroups = arrayMove(prev, sourceGroupIndex, destinationGroupIndex);
     // write to storage in the background — don't block UI update
-    overwriteBookmarkGroupsToStorage(newGroups, () => {}); 
+    overwriteBookmarkGroupsToStorage(userId, newGroups, () => {}); 
     return newGroups;
   });
 }
 
-export function loadBookmarksFromLocalFile(setBookmarkGroups) {
+export function loadBookmarksFromLocalFile(userId, setBookmarkGroups) {
   const input = document.createElement("input");
   input.type = "file";
-  input.addEventListener("change", (event) => handleFileSelection(event, setBookmarkGroups));
+  input.addEventListener("change", (event) => handleFileSelection(userId, event, setBookmarkGroups));
   input.click();
 }
 
-async function handleFileSelection(event, setBookmarkGroups) {
+async function handleFileSelection(userId, event, setBookmarkGroups) {
   const file = event.target.files[0];
   const reader = new FileReader();
 
   reader.onload = async function (event) {
     const contents = event.target.result;
     const data = JSON.parse(contents);
-    await overwriteBookmarkGroupsToStorage(data, setBookmarkGroups);
+    await overwriteBookmarkGroupsToStorage(userId, data, setBookmarkGroups);
     console.log("Bookmarks saved to local storage:", data);
   };
 

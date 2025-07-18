@@ -15,7 +15,7 @@ export function AppContextProvider({ children, user }) {
       // Only fetch if a user is logged in
       if (user) {
         const groups = await loadBookmarkGroups(user.userId);
-       setBookmarkGroups(groups);
+       setBookmarkGroups(groups || []);
       // If no user, clear the bookmarks
       } else {
         setBookmarkGroups([]);
@@ -23,11 +23,16 @@ export function AppContextProvider({ children, user }) {
     }
 
     fetchGroups();
-    console.log("[AppContextProvider] bookmarkGroups: ", bookmarkGroups);
   }, [user]);
 
+  const contextValue = {
+    bookmarkGroups, 
+    setBookmarkGroups,
+    userId: user?.userId
+  }
+
   return (
-    <AppContext.Provider value={{ bookmarkGroups, setBookmarkGroups }}>
+    <AppContext.Provider value={contextValue}>
       {children}
     </AppContext.Provider>
   );
