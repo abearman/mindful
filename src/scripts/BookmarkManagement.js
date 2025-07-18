@@ -3,7 +3,9 @@ import { CHROME_NEW_TAB, EMPTY_GROUP_IDENTIFIER } from './Constants.js';
 import { arrayMove } from '@dnd-kit/sortable';
 
 
-export const getUserStorageKey = (userId) => `bookmarks_${userId}`;
+export function getUserStorageKey(userId) {
+  return `bookmarks_${userId}`;
+}
 
 export function clearBookmarkGroups(userId) {
   // Return early if no user ID is provided.

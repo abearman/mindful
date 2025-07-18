@@ -9,8 +9,7 @@ import { NewTabUI } from '../NewTab';
 import { AppContextProvider, AppContext } from '../scripts/AppContext.jsx'; 
 import * as BookmarkManagement from '../scripts/BookmarkManagement.js';
 import { fetchUserAttributes } from 'aws-amplify/auth';
-import { EMPTY_GROUP_IDENTIFIER, STORAGE_KEY_BOOKMARK_GROUPS } from '../scripts/Constants.js';
-// TODO: Mock STORAGE_KEY_BOOKMARK_GROUPS with a mock userId
+import { EMPTY_GROUP_IDENTIFIER } from '../scripts/Constants.js';
 
 // Mock child components for isolation
 jest.mock('../components/TopBanner.jsx', () => (props) => (
@@ -32,6 +31,7 @@ jest.mock('../components/DraggableGrid.jsx', () => ({ bookmarkGroups }) => (
 // Mock external modules
 jest.mock('aws-amplify/auth');
 jest.mock('../scripts/BookmarkManagement.js', () => ({
+  getUserStorageKey: jest.fn(),
   loadBookmarkGroups: jest.fn(),
   addEmptyBookmarkGroup: jest.fn(),
   loadBookmarksFromLocalFile: jest.fn(),
@@ -49,7 +49,8 @@ global.chrome = {
 };
 
 // --- Test Data ---
-const mockUser = { id: '123', username: 'testuser' };
+const mockUserId = '123';
+const mockUser = { userId: mockUserId, username: 'testuser' };
 const mockUserAttributes = { email: 'test@example.com' };
 const mockBookmarkGroups = [
   { groupName: 'Work', bookmarks: [{ id: 'b1', title: 'Doc', url: 'https://docs.com' }] },
@@ -127,7 +128,7 @@ describe('NewTabUI Component', () => {
   
     // Use the real Context.Provider to supply a mocked value
     render(
-      <AppContext.Provider value={{ bookmarkGroups: mockBookmarkGroups, setBookmarkGroups: mockSetBookmarkGroups }}>
+      <AppContext.Provider value={{ userId: mockUserId, bookmarkGroups: mockBookmarkGroups, setBookmarkGroups: mockSetBookmarkGroups }}>
         <NewTabUI user={mockUser} />
       </AppContext.Provider>
     );
@@ -135,6 +136,7 @@ describe('NewTabUI Component', () => {
     await waitFor(() => {
       // Assert that the management function was called with the state and the mock setter
       expect(BookmarkManagement.addEmptyBookmarkGroup).toHaveBeenCalledWith(
+        mockUserId,
         mockSetBookmarkGroups
       );
     });
@@ -149,6 +151,7 @@ describe('NewTabUI Component', () => {
     render(
       <AppContext.Provider 
         value={{ 
+          userId: mockUserId,
           bookmarkGroups: [], // Start with an empty array before data loads
           setBookmarkGroups: mockSetBookmarkGroups 
         }}
@@ -179,7 +182,8 @@ describe('NewTabUI Component', () => {
     const storageChangeHandler = chrome.storage.onChanged.addListener.mock.calls[0][0];
     
     // Simulate a storage change event for the relevant key
-    const changes = { [STORAGE_KEY_BOOKMARK_GROUPS]: { oldValue: [], newValue: [] } };
+    const storageKey = BookmarkManagement.getUserStorageKey(mockUserId);
+    const changes = { [storageKey]: { oldValue: [], newValue: [] } };
     const area = 'local';
     
     BookmarkManagement.loadBookmarkGroups.mockClear(); // Reset mock for this check
@@ -208,7 +212,7 @@ describe('NewTabUI Component', () => {
     const mockSetBookmarkGroups = jest.fn();
 
     render(
-      <AppContext.Provider value={{ bookmarkGroups: mockBookmarkGroups, setBookmarkGroups: mockSetBookmarkGroups }}>
+      <AppContext.Provider value={{ userId: mockUserId, bookmarkGroups: mockBookmarkGroups, setBookmarkGroups: mockSetBookmarkGroups }}>
         <NewTabUI user={mockUser} signOut={mockSignOut} />
       </AppContext.Provider>
     );
@@ -219,7 +223,7 @@ describe('NewTabUI Component', () => {
 
     // Simulate user clicks on the mocked buttons
     fireEvent.click(screen.getByText('Load Bookmarks'));
-    expect(BookmarkManagement.loadBookmarksFromLocalFile).toHaveBeenCalledWith(mockSetBookmarkGroups);
+    expect(BookmarkManagement.loadBookmarksFromLocalFile).toHaveBeenCalledWith(mockUserId, mockSetBookmarkGroups);
 
     fireEvent.click(screen.getByText('Export Bookmarks'));
     expect(BookmarkManagement.exportBookmarksToJSON).toHaveBeenCalledTimes(1);
