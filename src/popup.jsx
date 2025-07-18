@@ -1,15 +1,26 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { createRoot } from "react-dom/client"; 
 
+/* CSS styles */
 import './styles/PopUp.css';
-import { constructValidURL } from './scripts/Utilities.js';
-import { loadBookmarkGroups, saveBookmark, refreshActiveMindfulTab } from './scripts/BookmarkManagement.js';
+
+/* Constants */
 import { URL_PATTERN } from './scripts/Constants.js';
+
+/* Hooks and Utilities */
+import { constructValidURL } from './scripts/Utilities.js';
+import { loadInitialBookmarks, useBookmarkManager } from './scripts/useBookmarkManager.js';
 import { AppContextProvider, AppContext } from './scripts/AppContext.jsx';
 
 function PopUp() {
-  const { userId, bookmarkGroups, setBookmarkGroups } = useContext(AppContext);
-  const [groups, setGroups] = useState([]);
+  // Consume state from the context 
+  const { bookmarkGroups, setBookmarkGroups, userId } = useContext(AppContext);
+    
+  // Get all actions from the custom bookmarks hook
+  const { 
+    addNamedBookmark, 
+  } = useBookmarkManager();  
+  
   const [selectedGroup, setSelectedGroup] = useState('');
   const [newGroupInput, setNewGroupInput] = useState('');
   const [name, setName] = useState('');
@@ -72,7 +83,7 @@ function PopUp() {
     event.preventDefault();
     const group = newGroupInput === '' ? selectedGroup : newGroupInput;
     const urlWithProtocol = constructValidURL(url);
-    saveBookmark(name, urlWithProtocol, group, setBookmarkGroups);
+    addNamedBookmark(name, urlWithProtocol, group, setBookmarkGroups);
 
     // Update the group dropdown with the new group name
     refreshGroupsDropdown();
@@ -84,7 +95,7 @@ function PopUp() {
   }
 
   async function loadGroupDropdown() {
-    const bookmarkGroups = await loadBookmarkGroups(userId);
+    const bookmarkGroups = await loadInitialBookmarks(userId);
 
     let options = bookmarkGroups.map((group) => {
       return (

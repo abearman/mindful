@@ -10,18 +10,22 @@ import {
 } from "../scripts/Utilities.js";
 
 /* Bookmark Storage */
-import {
-  loadBookmarkGroups,
-  saveBookmark,
-} from "../scripts/BookmarkManagement.js";
-import { AppContextProvider, AppContext } from '../scripts/AppContext';
+import { useBookmarkManager } from '../scripts/useBookmarkManager.js';
+import { AppContextProvider, AppContext } from '../scripts/AppContext.jsx';
 
 /* Constants */
 import { URL_PATTERN } from '../scripts/Constants.js';
 
 
 function CreateNewGroupPopUp(props) {
-  const { bookmarkGroups, setBookmarkGroups } = useContext(AppContext);
+  // Consume state from the context 
+  const { bookmarkGroups, setBookmarkGroups, userId } = useContext(AppContext);  
+  
+  // Get all actions from the custom bookmarks hook
+  const { 
+    addNamedBookmark, 
+  } = useBookmarkManager();   
+
   const [modalIsOpen, setIsOpen] = React.useState(false);
   const [bookmarkName, setBookmarkName] = React.useState('')
   const [bookmarkUrl, setBookmarkUrl] = React.useState('')
@@ -61,9 +65,8 @@ function CreateNewGroupPopUp(props) {
 
   async function handleSubmit(event) {
     event.preventDefault(); // prevent the form from submitting normally
-    saveBookmark(bookmarkName, constructValidURL(bookmarkUrl), props.groupName);
+    addNamedBookmark(bookmarkName, constructValidURL(bookmarkUrl), props.groupName);
     
-    setBookmarkGroups(await loadBookmarkGroups());    
     setBookmarkName('');
     setBookmarkUrl('');
     event.target.reset();  

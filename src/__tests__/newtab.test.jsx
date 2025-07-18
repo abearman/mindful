@@ -7,7 +7,8 @@ import { NewTabUI } from '../NewTab';
 
 // Mock dependencies
 import { AppContextProvider, AppContext } from '../scripts/AppContext.jsx'; 
-import * as BookmarkManagement from '../scripts/BookmarkManagement.js';
+import * as useBookmarkManager from '../scripts/useBookmarkManager.js';
+import * as Utilities from '../scripts/Utilities.js';
 import { fetchUserAttributes } from 'aws-amplify/auth';
 import { EMPTY_GROUP_IDENTIFIER } from '../scripts/Constants.js';
 
@@ -30,12 +31,12 @@ jest.mock('../components/DraggableGrid.jsx', () => ({ bookmarkGroups }) => (
 
 // Mock external modules
 jest.mock('aws-amplify/auth');
-jest.mock('../scripts/BookmarkManagement.js', () => ({
+jest.mock('../scripts/useBookmarkManager.js', () => ({
+  loadInitialBookmarks: jest.fn(),
+  useBookmarkManager: jest.fn(),
+}));
+jest.mock('../scripts/Utilities.js', () => ({
   getUserStorageKey: jest.fn(),
-  loadBookmarkGroups: jest.fn(),
-  addEmptyBookmarkGroup: jest.fn(),
-  loadBookmarksFromLocalFile: jest.fn(),
-  exportBookmarksToJSON: jest.fn(),
 }));
 
 // Mock the Chrome browser API
@@ -66,15 +67,36 @@ describe('NewTabUI Component', () => {
   let mockSignOut;
   let consoleErrorSpy;
 
+  // Define variables for the useBookmarkManager mock functions 
+  let mockAddEmptyBookmarkGroup;
+  let mockExportBookmarksToJSON;
+  let mockImportBookmarksFromJSON;
+
   beforeEach(() => {
     // Reset mocks before each test
     jest.clearAllMocks();
 
+    // Create new mock useBookmarkManager functions for each test run
+    mockAddEmptyBookmarkGroup = jest.fn();
+    mockExportBookmarksToJSON = jest.fn();
+    mockImportBookmarksFromJSON = jest.fn();
+
+    // Tell the mocked hook what to return when it's called
+    useBookmarkManager.useBookmarkManager.mockReturnValue({
+      addEmptyBookmarkGroup: mockAddEmptyBookmarkGroup,
+      exportBookmarksToJSON: mockExportBookmarksToJSON,
+      importBookmarksFromJSON: mockImportBookmarksFromJSON,
+    });
+
     // Setup common mocks
     mockSignOut = jest.fn();
-    BookmarkManagement.loadBookmarkGroups.mockResolvedValue(mockBookmarkGroups);
+    useBookmarkManager.loadInitialBookmarks.mockResolvedValue(mockBookmarkGroups);
     fetchUserAttributes.mockResolvedValue(mockUserAttributes);
     
+    // Mock the user storage key 
+    const mockStorageKey = `bookmarks_${mockUserId}`;
+    Utilities.getUserStorageKey.mockReturnValue(mockStorageKey);
+
     // Spy on console.error to check for logged errors
     consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
   });
@@ -86,12 +108,12 @@ describe('NewTabUI Component', () => {
 
   it('should load bookmarks and user attributes when a user is present', async () => {
     render(
-      <AppContextProvider>
+      <AppContextProvider user={mockUser}>
         <NewTabUI user={mockUser} signOut={mockSignOut} />
       </AppContextProvider>
     );
     
-    expect(BookmarkManagement.loadBookmarkGroups).toHaveBeenCalledTimes(1);
+    expect(useBookmarkManager.loadInitialBookmarks).toHaveBeenCalledTimes(1);
     expect(fetchUserAttributes).toHaveBeenCalledTimes(1);
 
     // Wait for asynchronous operations and state updates to complete
@@ -111,12 +133,12 @@ describe('NewTabUI Component', () => {
 
   it('should not load data if no user is present', () => {
     render(
-      <AppContextProvider>
+      <AppContextProvider user={null}>
         <NewTabUI user={null} /> 
       </AppContextProvider>
     );
 
-    expect(BookmarkManagement.loadBookmarkGroups).not.toHaveBeenCalled();
+    expect(useBookmarkManager.loadInitialBookmarks).not.toHaveBeenCalled();
     expect(fetchUserAttributes).not.toHaveBeenCalled();
     expect(screen.getByText('Signed In: false')).toBeInTheDocument();
   });
@@ -124,7 +146,7 @@ describe('NewTabUI Component', () => {
   it('should add an empty bookmark group if one does not exist after loading', async () => {
     // Create a mock setter function for the test to track
     const mockSetBookmarkGroups = jest.fn();
-    BookmarkManagement.loadBookmarkGroups.mockResolvedValue(mockBookmarkGroups);
+    useBookmarkManager.loadInitialBookmarks.mockResolvedValue(mockBookmarkGroups);
   
     // Use the real Context.Provider to supply a mocked value
     render(
@@ -135,10 +157,7 @@ describe('NewTabUI Component', () => {
   
     await waitFor(() => {
       // Assert that the management function was called with the state and the mock setter
-      expect(BookmarkManagement.addEmptyBookmarkGroup).toHaveBeenCalledWith(
-        mockUserId,
-        mockSetBookmarkGroups
-      );
+      expect(mockAddEmptyBookmarkGroup).toHaveBeenCalledWith();
     });
   });
 
@@ -146,32 +165,28 @@ describe('NewTabUI Component', () => {
     // Create a mock setter function for the test to track
     const mockSetBookmarkGroups = jest.fn();
 
-    BookmarkManagement.loadBookmarkGroups.mockResolvedValue(mockBookmarkGroupsWithEmpty);
+    useBookmarkManager.loadInitialBookmarks.mockResolvedValue(mockBookmarkGroupsWithEmpty);
     
     render(
-      <AppContext.Provider 
-        value={{ 
-          userId: mockUserId,
-          bookmarkGroups: [], // Start with an empty array before data loads
-          setBookmarkGroups: mockSetBookmarkGroups 
-        }}
-      >
+      <AppContextProvider user={mockUser}>
         <NewTabUI user={mockUser} />
-      </AppContext.Provider>
+      </AppContextProvider>
     );
-  
-    // Wait for all async effects to settle
+
+    // Wait for the UI to update based on the fetched data.
+    // This confirms the provider's useEffect and setState have completed.
     await waitFor(() => {
-      expect(mockSetBookmarkGroups).toHaveBeenCalledWith(mockBookmarkGroupsWithEmpty);
+      expect(screen.getByText('Work')).toBeInTheDocument();
+      expect(screen.getByText('Personal')).toBeInTheDocument();
     });
-    
-    // Assert that the function was never called because an empty group was found
-    expect(BookmarkManagement.addEmptyBookmarkGroup).not.toHaveBeenCalled();
+  
+    // Assert that the function to add a new empty group was NOT called.
+    expect(mockAddEmptyBookmarkGroup).not.toHaveBeenCalled();
   });
   
   it('should listen for storage changes and reload data accordingly', async () => {
     render(
-      <AppContextProvider>
+      <AppContextProvider user={mockUser}>
         <NewTabUI user={mockUser} />
       </AppContextProvider>
     );
@@ -182,24 +197,24 @@ describe('NewTabUI Component', () => {
     const storageChangeHandler = chrome.storage.onChanged.addListener.mock.calls[0][0];
     
     // Simulate a storage change event for the relevant key
-    const storageKey = BookmarkManagement.getUserStorageKey(mockUserId);
+    const storageKey = Utilities.getUserStorageKey(mockUserId);
     const changes = { [storageKey]: { oldValue: [], newValue: [] } };
     const area = 'local';
     
-    BookmarkManagement.loadBookmarkGroups.mockClear(); // Reset mock for this check
+    useBookmarkManager.loadInitialBookmarks.mockClear(); // Reset mock for this check
 
     await act(async () => {
-      storageChangeHandler(changes, area);
+      await storageChangeHandler(changes, area);
     });
 
     await waitFor(() => {
-      expect(BookmarkManagement.loadBookmarkGroups).toHaveBeenCalledTimes(1);
+      expect(useBookmarkManager.loadInitialBookmarks).toHaveBeenCalledTimes(1);
     });
   });
   
   it('should clean up the storage listener on unmount', () => {
     const { unmount } = render(
-      <AppContextProvider>
+      <AppContextProvider user={mockUser}>
         <NewTabUI user={mockUser} />
       </AppContextProvider>
     );    
@@ -223,10 +238,10 @@ describe('NewTabUI Component', () => {
 
     // Simulate user clicks on the mocked buttons
     fireEvent.click(screen.getByText('Load Bookmarks'));
-    expect(BookmarkManagement.loadBookmarksFromLocalFile).toHaveBeenCalledWith(mockUserId, mockSetBookmarkGroups);
+    expect(mockImportBookmarksFromJSON).toHaveBeenCalledWith();
 
     fireEvent.click(screen.getByText('Export Bookmarks'));
-    expect(BookmarkManagement.exportBookmarksToJSON).toHaveBeenCalledTimes(1);
+    expect(mockExportBookmarksToJSON).toHaveBeenCalledTimes(1);
     
     fireEvent.click(screen.getByText('Sign Out'));
     expect(mockSignOut).toHaveBeenCalledTimes(1);
@@ -237,7 +252,7 @@ describe('NewTabUI Component', () => {
     fetchUserAttributes.mockRejectedValue(fetchError);
     
     render(
-      <AppContextProvider>
+      <AppContextProvider user={mockUser}>
         <NewTabUI user={mockUser} />
       </AppContextProvider>
     );

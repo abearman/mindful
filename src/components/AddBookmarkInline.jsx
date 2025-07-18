@@ -3,25 +3,19 @@ import React, { useContext, useState } from 'react';
 /* CSS styles */
 import '../styles/AddBookmarkInline.css';
 
-/* Bookmark Storage */
-import {
-  loadBookmarkGroups,
-  saveBookmark,
-} from "../scripts/BookmarkManagement.js";
-import { AppContext } from '../scripts/AppContext.jsx';
-
-/* Utilities */
-import {
-  constructValidURL
-} from "../scripts/Utilities.js";
-
 /* Constants */
-import {
-  URL_PATTERN
-} from '../scripts/Constants.js'
+import { URL_PATTERN } from '../scripts/Constants.js'
+
+/* Hooks and Utilities */
+import { useBookmarkManager } from '../scripts/useBookmarkManager.js';
+import { AppContext } from '../scripts/AppContext.jsx';
+import { constructValidURL } from "../scripts/Utilities.js";
+
 
 function AddBookmarkInline(props) {
-  const { userId, bookmarkGroups, setBookmarkGroups } = useContext(AppContext);
+  // Consume state from the context 
+  const { bookmarkGroups, setBookmarkGroups, userId } = useContext(AppContext);
+
   const [linkBeingEdited, setLinkBeingEdited] = useState(false);
   const bookmarkGroupName = bookmarkGroups[props.groupIndex].groupName;
 
@@ -54,7 +48,14 @@ function AddLinkButton(props) {
 
 
 function CreateNewBookmark(props) {
-  const { userId, bookmarkGroups, setBookmarkGroups } = useContext(AppContext);
+  // Consume state from the context 
+  const { bookmarkGroups, setBookmarkGroups, userId } = useContext(AppContext);
+
+  // Get all actions from the custom bookmarks hook
+  const { 
+    addNamedBookmark, 
+  } = useBookmarkManager();    
+  
   const [bookmarkName, setBookmarkName] = React.useState('')
   const [bookmarkUrl, setBookmarkUrl] = React.useState('') 
 
@@ -76,9 +77,8 @@ function CreateNewBookmark(props) {
   async function handleSubmit(event) {
     event.preventDefault(); // prevent the form from submitting normally
     const urlWithProtocol = constructValidURL(bookmarkUrl);
-    saveBookmark(userId, bookmarkName, urlWithProtocol, props.groupName, setBookmarkGroups);
+    addNamedBookmark(bookmarkName, urlWithProtocol, props.groupName);
 
-    setBookmarkGroups(await loadBookmarkGroups(userId));    
     setBookmarkName('');
     setBookmarkUrl('');
 
