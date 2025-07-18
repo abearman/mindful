@@ -8,7 +8,7 @@ import { URL_PATTERN } from './scripts/Constants.js';
 import { AppContextProvider, AppContext } from './scripts/AppContext.jsx';
 
 function PopUp() {
-  const { bookmarkGroups, setBookmarkGroups } = useContext(AppContext);
+  const { userId, bookmarkGroups, setBookmarkGroups } = useContext(AppContext);
   const [groups, setGroups] = useState([]);
   const [selectedGroup, setSelectedGroup] = useState('');
   const [newGroupInput, setNewGroupInput] = useState('');
@@ -84,7 +84,7 @@ function PopUp() {
   }
 
   async function loadGroupDropdown() {
-    const bookmarkGroups = await loadBookmarkGroups();
+    const bookmarkGroups = await loadBookmarkGroups(userId);
 
     let options = bookmarkGroups.map((group) => {
       return (

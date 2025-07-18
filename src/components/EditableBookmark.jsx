@@ -17,7 +17,7 @@ import { AppContext } from '../scripts/AppContext.jsx';
 
 
 function EditableBookmark(props) {
-  const { bookmarkGroups, setBookmarkGroups } = useContext(AppContext);
+  const { userId, bookmarkGroups, setBookmarkGroups } = useContext(AppContext);
   const [text, setText] = useState(props.bookmark.name);
   const [url, setUrl] = useState(props.bookmark.url);
 
@@ -60,7 +60,7 @@ function EditableBookmark(props) {
       "Are you sure you want to delete the " + bookmark.name + " bookmark from " + bookmarkGroup.groupName + "?"
     ); 
     if (shouldDelete) {
-      await deleteBookmark(bookmarkIndex, groupIndex, setBookmarkGroups);
+      await deleteBookmark(userId, bookmarkIndex, groupIndex, setBookmarkGroups);
     }
   }
 

@@ -28,7 +28,7 @@ import {
   exportBookmarksToJSON,
   loadBookmarksFromLocalFile,
 } from "./scripts/BookmarkManagement.js";
-import { AppContextProvider, AppContext } from "./scripts/AppContext.jsx";
+import { AppContext } from "./scripts/AppContext.jsx";
 
 /* Components */
 import { BookmarkGroup } from "./components/BookmarkGroup.jsx"
@@ -60,21 +60,18 @@ export function NewTabUI({ user, signIn, signOut}) {
       }
     };
     fetchAttributes();
-    console.log("got here1");
   
     // Fetch the bookmarks data
     const loadInitialData = async () => {
       setIsLoading(true);
       try {
         const loadedGroups = await loadBookmarkGroups(user.userId);
-        console.log("loadedGroups: ", loadedGroups);
 
         if (loadedGroups) {
           // Check if an empty group already exists in the fetched data.
           const hasEmptyGroup = loadedGroups.some(
             (group) => group.groupName === EMPTY_GROUP_IDENTIFIER
           );
-          console.log("hasEmptyGroup: ", hasEmptyGroup);
 
           // If not, add one directly to the array before setting state.
           if (!hasEmptyGroup) {
@@ -94,10 +91,8 @@ export function NewTabUI({ user, signIn, signOut}) {
     };
 
     loadInitialData();
-    console.log("got here2");
   }, [user]); // This effect runs only when the user object changes.
 
-  console.log("bookmarkGroups: ", bookmarkGroups);
 
   // This effect listens for external changes to Chrome storage.
   useEffect(() => {
@@ -105,7 +100,7 @@ export function NewTabUI({ user, signIn, signOut}) {
       if (area === "local" && changes[getUserStorageKey(user.userId)]) {
         console.log("Storage change detected, reloading bookmarks.");
         // We re-run the full logic to ensure the empty group is handled correctly.
-        loadBookmarkGroups(useruserId).then(groups => {
+        loadBookmarkGroups(user.userId).then(groups => {
           if (groups) {
             const hasEmptyGroup = groups.some(g => g.groupName === EMPTY_GROUP_IDENTIFIER);
             if (!hasEmptyGroup) {
@@ -131,7 +126,7 @@ export function NewTabUI({ user, signIn, signOut}) {
   return (
     <div>
       <TopBanner
-        onLoadBookmarks={() => loadBookmarksFromLocalFile(setBookmarkGroups)}
+        onLoadBookmarks={() => loadBookmarksFromLocalFile(user.userId, setBookmarkGroups)}
         onExportBookmarks={() => exportBookmarksToJSON(user.userId)}
         userAttributes={userAttributes}
         onSignIn={signIn}
@@ -139,6 +134,7 @@ export function NewTabUI({ user, signIn, signOut}) {
         isSignedIn={!!user} // Let the banner know a user is signed in
       />
       <DraggableGrid
+        user={user}
         bookmarkGroups={bookmarkGroups}
       />
     </div>

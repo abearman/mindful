@@ -21,7 +21,7 @@ import {
 } from '../scripts/Constants.js'
 
 function AddBookmarkInline(props) {
-  const { bookmarkGroups, setBookmarkGroups } = useContext(AppContext);
+  const { userId, bookmarkGroups, setBookmarkGroups } = useContext(AppContext);
   const [linkBeingEdited, setLinkBeingEdited] = useState(false);
   const bookmarkGroupName = bookmarkGroups[props.groupIndex].groupName;
 
@@ -54,7 +54,7 @@ function AddLinkButton(props) {
 
 
 function CreateNewBookmark(props) {
-  const { bookmarkGroups, setBookmarkGroups } = useContext(AppContext);
+  const { userId, bookmarkGroups, setBookmarkGroups } = useContext(AppContext);
   const [bookmarkName, setBookmarkName] = React.useState('')
   const [bookmarkUrl, setBookmarkUrl] = React.useState('') 
 
@@ -76,10 +76,9 @@ function CreateNewBookmark(props) {
   async function handleSubmit(event) {
     event.preventDefault(); // prevent the form from submitting normally
     const urlWithProtocol = constructValidURL(bookmarkUrl);
-    console.log("props.groupName: ", props.groupName);
-    saveBookmark(bookmarkName, urlWithProtocol, props.groupName, setBookmarkGroups);
+    saveBookmark(userId, bookmarkName, urlWithProtocol, props.groupName, setBookmarkGroups);
 
-    setBookmarkGroups(await loadBookmarkGroups());    
+    setBookmarkGroups(await loadBookmarkGroups(userId));    
     setBookmarkName('');
     setBookmarkUrl('');
 

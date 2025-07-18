@@ -13,9 +13,7 @@ import {
 } from "../scripts/BookmarkManagement.js";
 
 const DraggableGrid = () => {
-  const { bookmarkGroups, setBookmarkGroups } = useContext(AppContext);
-  console.log("[DraggableGrid] got here1");
-  console.log("[DraggableGrid] bookmarkGroups: ", bookmarkGroups);
+  const { bookmarkGroups, setBookmarkGroups, userId } = useContext(AppContext);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -40,6 +38,7 @@ const DraggableGrid = () => {
         (group) => group.id === over.id
       );
       reorderBookmarkGroups(
+        userId,
         sourceGroupIndex,
         destinationGroupIndex,
         setBookmarkGroups
@@ -77,6 +76,7 @@ const DraggableGrid = () => {
         sourceGroupIndex === destinationGroupIndex
       ) {
         reorderBookmarks(
+          userId,
           sourceBookmarkIndex,
           destinationBookmarkIndex,
           sourceGroupIndex,
@@ -94,7 +94,7 @@ const DraggableGrid = () => {
         "?"
     );
     if (shouldDelete) {
-      await deleteBookmarkGroup(groupIndex, setBookmarkGroups);
+      await deleteBookmarkGroup(userId, groupIndex, setBookmarkGroups);
     }
   }
 
