@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import TopBanner from '../../components/TopBanner.jsx'; 
+import TopBanner from '../../components/TopBanner'; 
 
 // Mock CSS imports for Jest
 jest.mock('../styles/TopBanner.css', () => ({}));

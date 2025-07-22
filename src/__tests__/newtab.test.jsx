@@ -3,7 +3,7 @@ import { render, screen, act, waitFor, fireEvent, cleanup } from '@testing-libra
 import '@testing-library/jest-dom';
 
 // The component to test (must be exported from its file)
-import { NewTabUI } from '../NewTab'; 
+import { NewTabUI } from '../newtab.jsx' 
 
 // Mock dependencies
 import { AppContextProvider, AppContext } from '../scripts/AppContext.jsx'; 
