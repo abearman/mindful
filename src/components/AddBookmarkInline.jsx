@@ -94,12 +94,28 @@ function CreateNewBookmark(props) {
     <div className="create-new-bookmark-component"> 
       <div className="form-container">
         <form onKeyDown={handleKeyDown}>
-          <input type="text" placeholder="Enter a link name" autoFocus value={bookmarkName} onChange={handleBookmarkNameChange} required />
-          <input type="text" placeholder="Enter a link URL" value={bookmarkUrl} onChange={handleBookmarkUrlChange} pattern={URL_PATTERN} required></input>
+          <input 
+            type="text" 
+            placeholder="Enter a link name" 
+            autoFocus 
+            value={bookmarkName} 
+            onChange={handleBookmarkNameChange} 
+            required 
+            aria-label="Link Name"
+          />
+          <input 
+            type="text" 
+            placeholder="Enter a link URL" 
+            value={bookmarkUrl} 
+            onChange={handleBookmarkUrlChange} 
+            pattern={URL_PATTERN} 
+            required
+            aria-label="Link URL"
+          />
         </form>
       </div>
-      <button type="submit" className="add-bookmark-button-2" onClick={handleSubmit}>Add link</button>
-      <button className="close-form-button" onClick={(event) => closeForm(event)}>
+      <button type="submit" className="add-bookmark-button-2" onClick={handleSubmit} aria-label="Submit Form">Add link</button>
+      <button className="close-form-button" onClick={(event) => closeForm(event)} aria-label="Close Form">
         <img src="./assets/delete-icon.svg" />
       </button>
     </div>

@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import '../styles/TopBanner.css';
-import logoIcon from '../../public/assets/icon-32.png';
 
 const TopBanner = ({ onLoadBookmarks, onExportBookmarks, userAttributes, onSignIn, onSignOut, isSignedIn }) => {
   const [isDropdownOpen, setDropdownOpen] = useState(false);

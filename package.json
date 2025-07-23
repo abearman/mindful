@@ -2,25 +2,23 @@
 	"name": "mindful",
 	"version": "1.0.0",
 	"description": "Store lists of bookmarks in separate categories",
-	"main": "Index.js",
+	"main": "NewTab.js",
 	"scripts": {
 		"dev": "vite",
 		"build": "vite build",
 		"preview": "vite preview",
 		"test": "jest"
 	},
-  "jest": {
-    "testEnvironment": "jsdom",
-    "moduleNameMapper": {
-      "\\.(css|less|scss|sass)$": "identity-obj-proxy"
-    },
-    "setupFilesAfterEnv": [
-      "<rootDir>/src/setupTests.js"
-    ]
-  },
-	"keywords": [
-			
-	],
+	"jest": {
+		"testEnvironment": "jsdom",
+		"moduleNameMapper": {
+			"\\.(css|less|scss|sass)$": "identity-obj-proxy"
+		},
+		"setupFilesAfterEnv": [
+			"<rootDir>/src/setupTests.js"
+		]
+	},
+	"keywords": [],
 	"type": "module",
 	"author": "Amy Bearman",
 	"license": "MIT",
@@ -51,6 +49,7 @@
 		"@babel/preset-react": "^7.26.3",
 		"@testing-library/jest-dom": "^6.6.3",
 		"@testing-library/react": "^16.3.0",
+		"@testing-library/user-event": "^14.6.1",
 		"@vitejs/plugin-react": "^4.6.0",
 		"aws-cdk-lib": "^2.189.1",
 		"babel-loader": "^9.2.1",
@@ -60,8 +59,8 @@
 		"esbuild": "^0.25.6",
 		"html-webpack-plugin": "^5.4.0",
 		"identity-obj-proxy": "^3.0.0",
-		"jest": "^30.0.4",
-		"jest-environment-jsdom": "^30.0.4",
+		"jest": "^30.0.5",
+		"jest-environment-jsdom": "^30.0.5",
 		"style-loader": "^3.3.2",
 		"terser-webpack-plugin": "^5.3.11",
 		"tsx": "^4.20.3",

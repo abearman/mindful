@@ -1,7 +1,7 @@
 import React, { useState, useRef, useContext } from 'react';
 
 /* CSS styles */
-import '../styles/Index.css';
+import '../styles/NewTab.css';
 
 /* Hooks and Utilities */
 import { useBookmarkManager } from '../scripts/useBookmarkManager.js';
@@ -71,7 +71,7 @@ function EditableBookmark(props) {
       <img
         className="favicon"
         src={getFaviconUrl(props.bookmark.url)}
-        alt=""
+        alt={`${props.bookmark.name} favicon`} 
       />
       
       <a
@@ -86,10 +86,12 @@ function EditableBookmark(props) {
       <ModifyBookmarkButton 
         imagePath="assets/edit-icon.svg" 
         onClick={(event) => handleBookmarkNameEdit(event, props.groupIndex, props.bookmarkIndex, aRef)} 
+        aria-label="Edit bookmark"
       />
       <ModifyBookmarkButton 
         imagePath="assets/delete-icon.svg" 
         onClick={(event) => handleBookmarkDelete(event, props.groupIndex, props.bookmarkIndex)}  
+        aria-label="Delete bookmark"
       />
       
     </div>
@@ -98,7 +100,11 @@ function EditableBookmark(props) {
 
 function ModifyBookmarkButton(props) {
   return (
-    <button className='modify-link-button' onClick={props.onClick}>
+    <button 
+      className='modify-link-button' 
+      onClick={props.onClick}
+      aria-label={props['aria-label']}
+    >
       <img src={props.imagePath} className='modify-link-button-img'/>
     </button>
   );
