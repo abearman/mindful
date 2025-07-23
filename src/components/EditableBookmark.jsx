@@ -1,7 +1,7 @@
 import React, { useState, useRef, useContext } from 'react';
 
 /* CSS styles */
-import '../styles/Index.css';
+import '../styles/NewTab.css';
 
 /* Hooks and Utilities */
 import { useBookmarkManager } from '../scripts/useBookmarkManager.js';

@@ -3,17 +3,17 @@ import { render, screen, act, waitFor, fireEvent, cleanup } from '@testing-libra
 import '@testing-library/jest-dom';
 
 // The component to test (must be exported from its file)
-import { NewTabUI } from '../newtab.jsx' 
+import { NewTabUI } from '../../components/NewTabComponent' 
 
 // Mock dependencies
-import { AppContextProvider, AppContext } from '../scripts/AppContext.jsx'; 
-import * as useBookmarkManager from '../scripts/useBookmarkManager.js';
-import * as Utilities from '../scripts/Utilities.js';
+import { AppContextProvider, AppContext } from '../../scripts/AppContext'; 
+import * as useBookmarkManager from '../../scripts/useBookmarkManager';
+import * as Utilities from '../../scripts/Utilities';
 import { fetchUserAttributes } from 'aws-amplify/auth';
-import { EMPTY_GROUP_IDENTIFIER } from '../scripts/Constants.js';
+import { EMPTY_GROUP_IDENTIFIER } from '../../scripts/Constants';
 
 // Mock child components for isolation
-jest.mock('../components/TopBanner.jsx', () => (props) => (
+jest.mock('../../components/TopBanner.jsx', () => (props) => (
   <div data-testid="top-banner">
     <button onClick={props.onLoadBookmarks}>Load Bookmarks</button>
     <button onClick={props.onExportBookmarks}>Export Bookmarks</button>
@@ -23,7 +23,7 @@ jest.mock('../components/TopBanner.jsx', () => (props) => (
   </div>
 ));
 
-jest.mock('../components/DraggableGrid.jsx', () => ({ bookmarkGroups }) => (
+jest.mock('../../components/DraggableGrid.jsx', () => ({ bookmarkGroups }) => (
   <div data-testid="draggable-grid">
     {bookmarkGroups.map(group => <div key={group.groupName}>{group.groupName}</div>)}
   </div>
@@ -31,11 +31,11 @@ jest.mock('../components/DraggableGrid.jsx', () => ({ bookmarkGroups }) => (
 
 // Mock external modules
 jest.mock('aws-amplify/auth');
-jest.mock('../scripts/useBookmarkManager.js', () => ({
+jest.mock('../../scripts/useBookmarkManager.js', () => ({
   loadInitialBookmarks: jest.fn(),
   useBookmarkManager: jest.fn(),
 }));
-jest.mock('../scripts/Utilities.js', () => ({
+jest.mock('../../scripts/Utilities.js', () => ({
   getUserStorageKey: jest.fn(),
 }));
 
