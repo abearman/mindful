@@ -29,8 +29,10 @@ jobs:
       - name: Install dependencies
         run: npm ci 
 
-      - name: Build project 
-        run: npm run build
-
+      # Run these first as they're faster (unless using an e2e test)
       - name: Run tests
         run: npm test
+      
+      # Fails if the build process is broken
+      - name: Build project 
+        run: npm run build  
