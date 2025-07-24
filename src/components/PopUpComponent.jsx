@@ -142,7 +142,13 @@ function PopUpComponent() {
         id: newGroupInput, // Use the name as a unique ID
         groupName: newGroupInput 
       };
-      setBookmarkGroups((currentGroups) => [...currentGroups, newGroup]);
+      //setBookmarkGroups((currentGroups) => [...currentGroups, newGroup]);
+      setBookmarkGroups((currentGroups) => {
+        const emptyGroupIndex = currentGroups.findIndex(g => g.groupName === EMPTY_GROUP_IDENTIFIER);
+        return emptyGroupIndex === -1 
+          ? [...currentGroups, newGroup] 
+          : [...currentGroups.slice(0, emptyGroupIndex), newGroup, ...currentGroups.slice(emptyGroupIndex)];
+      });
     }
   }
 

@@ -6,8 +6,7 @@ import { CHROME_NEW_TAB, EMPTY_GROUP_IDENTIFIER } from './Constants.js';
 import { getUserStorageKey, refreshOtherMindfulTabs } from './Utilities.js'
 
 
-// This function is still needed for the initial load in your AppProvider
-// TODO: Was loadInitialBookmarks
+// This function is still needed for the initial load in the AppProvider
 export async function loadInitialBookmarks(userId) {
   if (!userId) return [];
   const userStorageKey = getUserStorageKey(userId);
@@ -117,10 +116,24 @@ export const useBookmarkManager = () => {
     const updatedGroups = JSON.parse(JSON.stringify(bookmarkGroups)); 
     
     const groupIndex = updatedGroups.findIndex((g) => g.groupName === groupName);
+
     if (groupIndex !== -1) {
       updatedGroups[groupIndex].bookmarks.push(newBookmark);
     } else {
-      updatedGroups.push({ groupName: groupName, id: uuidv4(), bookmarks: [newBookmark] });
+      const newGroup = { groupName: groupName, id: uuidv4(), bookmarks: [newBookmark] };
+      
+      // Find the position of the empty placeholder group.
+      const emptyGroupIndex = updatedGroups.findIndex(
+        (g) => g.groupName === EMPTY_GROUP_IDENTIFIER
+      );
+
+      if (emptyGroupIndex !== -1) {
+        // If the empty group exists, insert the new group right before it.
+        updatedGroups.splice(emptyGroupIndex, 0, newGroup);
+      } else {
+        // As a fallback, if no empty group exists, add the new group to the end.
+        updatedGroups.push(newGroup);
+      }
     }
     
     await updateAndPersistGroups(updatedGroups);
