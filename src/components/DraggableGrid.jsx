@@ -1,7 +1,7 @@
 /* components/DraggableGrid.jsx */
 
 import React, { useContext } from "react";
-import { DndContext, closestCenter, useSensor, useSensors, PointerSensor } from '@dnd-kit/core';
+import { DndContext, closestCorners, useSensor, useSensors, PointerSensor } from '@dnd-kit/core';
 import { SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
 
 import { BookmarkGroup } from './BookmarkGroup';
@@ -9,14 +9,14 @@ import { AppContext } from "../scripts/AppContext.jsx";
 import { useBookmarkManager } from '../scripts/useBookmarkManager.js';
 
 const DraggableGrid = () => {
-  // Consume state from the context 
   const { bookmarkGroups, setBookmarkGroups, userId } = useContext(AppContext);
 
   // Get all actions from the custom bookmarks hook
-  const { 
+  const {
     deleteBookmarkGroup,
     reorderBookmarkGroups,
     reorderBookmarks,
+    moveBookmark, 
   } = useBookmarkManager();
 
   const sensors = useSensors(
@@ -31,59 +31,64 @@ const DraggableGrid = () => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
-    const activeGroup = bookmarkGroups.find((group) => group.id === active.id);
-    const overGroup = bookmarkGroups.find((group) => group.id === over.id);
+    const isDraggingGroup = bookmarkGroups.some((group) => group.id === active.id);
 
-    if (activeGroup && overGroup) {
-      const sourceGroupIndex = bookmarkGroups.findIndex(
-        (group) => group.id === active.id
-      );
-      const destinationGroupIndex = bookmarkGroups.findIndex(
-        (group) => group.id === over.id
-      );
-      reorderBookmarkGroups(
-        sourceGroupIndex,
-        destinationGroupIndex,
-      );
-    } else {
-      let sourceGroupIndex = -1;
-      let sourceBookmarkIndex = -1;
-      let destinationGroupIndex = -1;
-      let destinationBookmarkIndex = -1;
+    // Scenario 1: Reordering bookmark groups
+    if (isDraggingGroup) {
+      const sourceGroupIndex = bookmarkGroups.findIndex((group) => group.id === active.id);
+      // Ensure the drop target is also a group
+      const destinationGroupIndex = bookmarkGroups.findIndex((group) => group.id === over.id);
 
-      bookmarkGroups.forEach((group, gIndex) => {
-        const bIndex = group.bookmarks.findIndex(
-          (bookmark) => bookmark.id === active.id
-        );
-        if (bIndex !== -1) {
-          sourceGroupIndex = gIndex;
-          sourceBookmarkIndex = bIndex;
-        }
-      });
-
-      bookmarkGroups.forEach((group, gIndex) => {
-        const bIndex = group.bookmarks.findIndex(
-          (bookmark) => bookmark.id === over.id
-        );
-        if (bIndex !== -1) {
-          destinationGroupIndex = gIndex;
-          destinationBookmarkIndex = bIndex;
-        }
-      });
-      if (
-        sourceGroupIndex !== -1 &&
-        sourceBookmarkIndex !== -1 &&
-        destinationGroupIndex !== -1 &&
-        destinationBookmarkIndex !== -1 &&
-        sourceGroupIndex === destinationGroupIndex
-      ) {
-        reorderBookmarks(
-          sourceBookmarkIndex,
-          destinationBookmarkIndex,
-          sourceGroupIndex,
-          destinationGroupIndex,
-        );
+      if (sourceGroupIndex !== -1 && destinationGroupIndex !== -1) {
+        reorderBookmarkGroups(sourceGroupIndex, destinationGroupIndex);
       }
+      return;
+    }
+
+    // Scenario 2: Moving a bookmark
+    const source = { groupIndex: -1, bookmarkIndex: -1 };
+    const destination = { groupIndex: -1, bookmarkIndex: -1 };
+
+    // Find the source group and bookmark index
+    for (let i = 0; i < bookmarkGroups.length; i++) {
+      const bookmarkIndex = bookmarkGroups[i].bookmarks.findIndex((bm) => bm.id === active.id);
+      if (bookmarkIndex !== -1) {
+        source.groupIndex = i;
+        source.bookmarkIndex = bookmarkIndex;
+        break;
+      }
+    }
+
+    // Find the destination group and bookmark index
+    const overIsGroupContainer = bookmarkGroups.some((group) => group.id === over.id);
+    
+    if (overIsGroupContainer) {
+      // Dropped on a group container
+      destination.groupIndex = bookmarkGroups.findIndex((group) => group.id === over.id);
+      destination.bookmarkIndex = bookmarkGroups[destination.groupIndex].bookmarks.length; // Add to the end
+    } else {
+      // Dropped on another bookmark
+      for (let i = 0; i < bookmarkGroups.length; i++) {
+        const bookmarkIndex = bookmarkGroups[i].bookmarks.findIndex((bm) => bm.id === over.id);
+        if (bookmarkIndex !== -1) {
+          destination.groupIndex = i;
+          destination.bookmarkIndex = bookmarkIndex;
+          break;
+        }
+      }
+    }
+
+    // If we couldn't find a valid source or destination, bail out
+    if (source.groupIndex === -1 || destination.groupIndex === -1) {
+      return;
+    }
+
+    // If dragging within the same group, reorder bookmarks
+    if (source.groupIndex === destination.groupIndex) {
+      reorderBookmarks(source.bookmarkIndex, destination.bookmarkIndex, source.groupIndex);
+    } else {
+      // If dragging to a different group, move the bookmark
+      moveBookmark(source, destination);
     }
   }
 
@@ -101,7 +106,7 @@ const DraggableGrid = () => {
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCenter}
+      collisionDetection={closestCorners}
       onDragEnd={handleDragEnd}
     >
       <SortableContext

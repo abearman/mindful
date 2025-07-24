@@ -1,8 +1,8 @@
 import { useContext } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { arrayMove } from '@dnd-kit/sortable';
-import { AppContext } from './AppContext.jsx'; 
-import { CHROME_NEW_TAB, EMPTY_GROUP_IDENTIFIER } from './Constants.js';
+import { AppContext } from './AppContext.jsx';
+import { EMPTY_GROUP_IDENTIFIER } from './Constants.js';
 import { getUserStorageKey, refreshOtherMindfulTabs } from './Utilities.js'
 
 
@@ -41,7 +41,7 @@ export const useBookmarkManager = () => {
       // Optional: Implement error handling, e.g., revert state
     }
   };
-  
+
   const addEmptyBookmarkGroup = async () => {
     const newGroup = {
       groupName: EMPTY_GROUP_IDENTIFIER,
@@ -51,7 +51,7 @@ export const useBookmarkManager = () => {
     await updateAndPersistGroups([...bookmarkGroups, newGroup]);
   };
 
-  const addNamedBookmarkGroup = async (groupName) => { 
+  const addNamedBookmarkGroup = async (groupName) => {
     const newGroup = {
       groupName: groupName,
       bookmarks: [],
@@ -59,7 +59,7 @@ export const useBookmarkManager = () => {
     };
     // Create a mutable copy of the current groups
     const updatedGroups = [...bookmarkGroups];
-    
+
     // Find the position of the empty placeholder group
     const emptyGroupIndex = updatedGroups.findIndex(
       (g) => g.groupName === EMPTY_GROUP_IDENTIFIER
@@ -101,7 +101,7 @@ export const useBookmarkManager = () => {
     if (updatedGroups[groupIndex] && updatedGroups[groupIndex].bookmarks[bookmarkIndex]) {
       // Remove the bookmark using splice.
       updatedGroups[groupIndex].bookmarks.splice(bookmarkIndex, 1);
-      
+
       // Save the updated array to state and storage.
       await updateAndPersistGroups(updatedGroups);
     } else {
@@ -117,7 +117,7 @@ export const useBookmarkManager = () => {
     if (updatedGroups[groupIndex] && updatedGroups[groupIndex].bookmarks[bookmarkIndex]) {
       // Update the name of the specific bookmark.
       updatedGroups[groupIndex].bookmarks[bookmarkIndex].name = newBookmarkName;
-      
+
       // Persist the changes.
       await updateAndPersistGroups(updatedGroups);
     } else {
@@ -129,15 +129,15 @@ export const useBookmarkManager = () => {
     const newBookmark = { name: bookmarkName, url: url, id: uuidv4() };
 
     // Deep copy to prevent state mutation issues
-    const updatedGroups = JSON.parse(JSON.stringify(bookmarkGroups)); 
-    
+    const updatedGroups = JSON.parse(JSON.stringify(bookmarkGroups));
+
     const groupIndex = updatedGroups.findIndex((g) => g.groupName === groupName);
 
     if (groupIndex !== -1) {
       updatedGroups[groupIndex].bookmarks.push(newBookmark);
     } else {
       const newGroup = { groupName: groupName, id: uuidv4(), bookmarks: [newBookmark] };
-      
+
       // Find the position of the empty placeholder group.
       const emptyGroupIndex = updatedGroups.findIndex(
         (g) => g.groupName === EMPTY_GROUP_IDENTIFIER
@@ -151,30 +151,44 @@ export const useBookmarkManager = () => {
         updatedGroups.push(newGroup);
       }
     }
-    
+
     await updateAndPersistGroups(updatedGroups);
   };
 
-  const reorderBookmarks = async (oldBookmarkIndex, newBookmarkIndex, oldGroupIndex, newGroupIndex) => {
-    // Deep copy to prevent state mutation issues
+  const reorderBookmarks = async (oldBookmarkIndex, newBookmarkIndex, groupIndex) => {
+    console.log("Calling reorderBookmarks");
     const updatedGroups = JSON.parse(JSON.stringify(bookmarkGroups));
+    const group = updatedGroups[groupIndex];
 
-    // Find the source group and remove the bookmark from its original position.
-    const sourceGroup = updatedGroups[oldGroupIndex];
-    const [removedBookmark] = sourceGroup.bookmarks.splice(oldBookmarkIndex, 1);
+    if (group) {
+        group.bookmarks = arrayMove(group.bookmarks, oldBookmarkIndex, newBookmarkIndex);
+        await updateAndPersistGroups(updatedGroups);
+    } else {
+        console.error("Reorder failed: could not find the group.");
+    }
+  }
 
-    // If for some reason the bookmark wasn't found, exit to prevent errors.
-    if (!removedBookmark) {
-      console.error("Reorder failed: could not find the source bookmark.");
-      return;
+  const moveBookmark = async (source, destination) => {
+    console.log("Calling moveBookmark");
+    const updatedGroups = JSON.parse(JSON.stringify(bookmarkGroups));
+    const sourceGroup = updatedGroups[source.groupIndex];
+    const destinationGroup = updatedGroups[destination.groupIndex];
+
+    // Ensure both groups and the source bookmark exist
+    if (!sourceGroup || !destinationGroup || !sourceGroup.bookmarks[source.bookmarkIndex]) {
+        console.error("Move failed: invalid source or destination.", { source, destination });
+        return;
     }
 
-    // Find the destination group and add the removed bookmark to its new position.
-    const destinationGroup = updatedGroups[newGroupIndex];
-    destinationGroup.bookmarks.splice(newBookmarkIndex, 0, removedBookmark);
+    // 1. Remove the bookmark from the source group
+    const [movedBookmark] = sourceGroup.bookmarks.splice(source.bookmarkIndex, 1);
+
+    // 2. Add the bookmark to the destination group at the correct index
+    destinationGroup.bookmarks.splice(destination.bookmarkIndex, 0, movedBookmark);
 
     await updateAndPersistGroups(updatedGroups);
   }
+
 
   const exportBookmarksToJSON = () => {
     if (!bookmarkGroups || bookmarkGroups.length === 0) {
@@ -231,8 +245,9 @@ export const useBookmarkManager = () => {
     addNamedBookmark,
     deleteBookmark,
     editBookmarkName,
-    reorderBookmarks,
+    reorderBookmarks, 
+    moveBookmark,     
     exportBookmarksToJSON,
-    importBookmarksFromJSON 
+    importBookmarksFromJSON
   };
 };

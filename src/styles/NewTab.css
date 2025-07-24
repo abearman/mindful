@@ -1,8 +1,6 @@
 body, html {
   margin: 0;
   padding: 0;
-  /*display: block;
-  min-height: auto;*/
 }
 
 body {
@@ -16,14 +14,6 @@ body {
   display: grid;
   gap: 10px;
   padding: 10px;
-
-  /*
-    This is the key change:
-    1. The first column is set to 30% of the container's width.
-    2. The next two columns are '1fr' each, meaning they will take up
-       an equal share of the remaining free space.
-    3. Items will automatically wrap and follow this three-column pattern.
-  */
   grid-template-columns: 25% 1fr 1fr 1fr;
 }
 
@@ -36,43 +26,43 @@ body {
   padding: 20px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-
-  /* Make sure there is NO width property on the box itself */
-  /* The grid container now controls the width of all items */
+  max-height: 500px; 
 }
+
+/* --- MODIFIED --- */
+/* The header is no longer a flex container */
+.bookmark-group-header {
+  flex-shrink: 0; /* Prevents the header from shrinking */
+  margin-bottom: px; /* Add some space below the header */
+}
+
+.bookmark-group-content {
+  flex-grow: 1; 
+  overflow-y: auto; 
+  min-height: 0; 
+  padding-right: 8px; 
+}
+
 
 .bookmark-group-box:hover {
   outline: 2px solid #4897cf;
   outline-offset: 0px;
-  box-shadow: 0 0 20px rgba(72, 151, 207, 0.7); /* subtle glow */
-  /* Add the default cursor for the group itself */
-  cursor: grab; /* Use 'grab' for draggable, or 'pointer' for general interaction */
+  box-shadow: 0 0 20px rgba(72, 151, 207, 0.7);
+  cursor: grab;
 }
 
-/* Reset cursor for all direct children of .bookmark-group-box when hovered */
 .bookmark-group-box > *:hover {
-  cursor: initial; /* Resets to the browser's default cursor for that element */
+  cursor: initial;
 }
 
 .modify-link-button:hover,
 .delete-bookmark-group-button:hover,
-.bookmark-container:hover { 
+.bookmark-container:hover {  
     cursor: pointer;
 }
 
 .editable-heading:hover {
   cursor: text;
-}
-
-/* Ensure specific child cursors override the general reset */
-.bookmark-group-box:hover,
-.bookmark-group-box:focus {
-  /*box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);*/
-  outline: 2px solid #4897cf; 
-  outline-offset: 0px;
-  box-shadow: 0 0 20px rgba(72, 151, 207, 0.7); /* subtle glow */
-  cursor: pointer;
 }
 
 .bookmark-group-box a {
@@ -140,15 +130,10 @@ a {
   height: 16px;
 }
 
-/* Modify link buttons should only appear when their parent single bookmarkContainer is being hovered over*/
-.bookmark-group-box .bookmark-container:hover + .modify-link-button {
-  display: block;
-}
 .bookmark-group-box .bookmark-container:not(:hover) .modify-link-button {
   display: none;
 }
 
-/* Form styles for popup */
 form {
   display: flex;
   flex-direction: column;
@@ -184,12 +169,18 @@ form .add-bookmark-button {
   border-radius: 5px;
 }
 
+/* --- MODIFIED --- */
+/* The button is now positioned absolutely within the group box */
 .delete-bookmark-group-button {
+  position: absolute;
+  top: 20px; /* Aligns with the box's top padding */
+  right: 20px; /* Aligns with the box's right padding */
+  z-index: 10; /* Ensures it sits on top of other content */
+  
   border: none;
-  background-color: #fff;
+  background-color: transparent;
   width: 16px;
   height: 16px;
-  margin-left: auto;
   padding: 0px;
 }
 
@@ -230,7 +221,6 @@ form .add-bookmark-button {
   justify-content: flex-start;
 }
 
-/* TODO: Use SASS to avoid having to duplicate styles */
 .export-or-load-bookmarks-button {
   margin-right: 5px;
   font-size: 14px;
