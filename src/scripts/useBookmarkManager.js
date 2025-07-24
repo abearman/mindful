@@ -57,7 +57,23 @@ export const useBookmarkManager = () => {
       bookmarks: [],
       id: uuidv4(),
     };
-    await updateAndPersistGroups([...bookmarkGroups, newGroup]);
+    // Create a mutable copy of the current groups
+    const updatedGroups = [...bookmarkGroups];
+    
+    // Find the position of the empty placeholder group
+    const emptyGroupIndex = updatedGroups.findIndex(
+      (g) => g.groupName === EMPTY_GROUP_IDENTIFIER
+    );
+
+    if (emptyGroupIndex !== -1) {
+      // If the empty group exists, insert the new group before it
+      updatedGroups.splice(emptyGroupIndex, 0, newGroup);
+    } else {
+      // Fallback: if no empty group, add to the end
+      updatedGroups.push(newGroup);
+    }
+
+    await updateAndPersistGroups(updatedGroups);
   }
 
   const deleteBookmarkGroup = async (groupIndex) => {
