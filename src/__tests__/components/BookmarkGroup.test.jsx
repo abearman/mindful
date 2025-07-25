@@ -5,41 +5,42 @@ import '@testing-library/jest-dom';
 import { BookmarkGroup } from '../../components/BookmarkGroup';
 import { EMPTY_GROUP_IDENTIFIER } from '../../scripts/Constants';
 
+// --- FIXED MOCKS ---
+
 // Mock child components to isolate the BookmarkGroup component for testing.
-// This prevents errors from props that are not relevant to this component's test.
-jest.mock('../../components/SortableItem.jsx', () => ({
-  SortableItem: ({ children }) => <div data-testid="sortable-item">{children}</div>,
+jest.mock('../../components/BookmarkItem.jsx', () => ({
+  // This is the component actually rendered in the loop. The test expects
+  // to find 'editable-bookmark', so our mock should provide it.
+  BookmarkItem: () => <div data-testid="editable-bookmark"></div>,
 }));
 jest.mock('../../components/EditableBookmarkGroupHeading.jsx', () => ({
   EditableBookmarkGroupHeading: () => <div data-testid="editable-heading"></div>,
 }));
-jest.mock('../../components/EditableBookmark.jsx', () => ({
-  EditableBookmark: () => <div data-testid="editable-bookmark"></div>,
-}));
 jest.mock('../../components/AddBookmarkInline.jsx', () => ({
   AddBookmarkInline: () => <div data-testid="add-bookmark-inline"></div>,
 }));
-// We also need to mock dnd-kit components to avoid rendering errors
-jest.mock('@dnd-kit/core', () => ({
-  ...jest.requireActual('@dnd-kit/core'),
-  DndContext: ({ children }) => <div>{children}</div>,
-}));
-jest.mock('@dnd-kit/sortable', () => ({
-  ...jest.requireActual('@dnd-kit/sortable'),
-  SortableContext: ({ children }) => <div>{children}</div>,
-}));
 
+// We must mock the useSortable hook from dnd-kit, as it's called directly
+// by the BookmarkGroup component and will fail without a DndContext provider.
+jest.mock('@dnd-kit/sortable', () => ({
+  ...jest.requireActual('@dnd-kit/sortable'), // Keep other exports like 'verticalListSortingStrategy'
+  SortableContext: ({ children }) => <>{children}</>, // Render children without a wrapper
+  useSortable: () => ({
+    attributes: {},
+    listeners: {},
+    setNodeRef: jest.fn(),
+    transform: null,
+    transition: null,
+    isDragging: false,
+  }),
+}));
 
 describe('BookmarkGroup', () => {
   // Define default props to be used in tests.
-  const mockSensors = [];
-  const mockHandleDragEnd = jest.fn();
   const mockHandleDeleteBookmarkGroup = jest.fn();
 
   const defaultProps = {
     groupIndex: 0,
-    sensors: mockSensors,
-    handleDragEnd: mockHandleDragEnd,
     handleDeleteBookmarkGroup: mockHandleDeleteBookmarkGroup,
   };
 
@@ -70,7 +71,7 @@ describe('BookmarkGroup', () => {
       // Check for the heading component
       expect(screen.getByTestId('editable-heading')).toBeInTheDocument();
 
-      // Check that all bookmarks are rendered
+      // Check that all bookmarks are rendered via our mock
       expect(screen.getAllByTestId('editable-bookmark')).toHaveLength(2);
 
       // Check for the inline "add bookmark" component
@@ -105,7 +106,6 @@ describe('BookmarkGroup', () => {
       render(<BookmarkGroup {...emptyGroupProps} />);
       
       // Use queryByRole for elements that should NOT exist.
-      // getByRole would throw an error, which is not what we want to assert.
       expect(screen.queryByRole('button', { name: /delete group/i })).not.toBeInTheDocument();
       expect(screen.queryByTestId('add-bookmark-inline')).not.toBeInTheDocument();
       

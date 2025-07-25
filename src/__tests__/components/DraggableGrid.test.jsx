@@ -1,49 +1,45 @@
 /* __tests__/DraggableGrid.test.jsx */
 
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
-// Import the component to be tested
 import DraggableGrid from '../../components/DraggableGrid';
-
-// Mocks for dependencies
 import { AppContext } from '../../scripts/AppContext';
 import { useBookmarkManager } from '../../scripts/useBookmarkManager';
 
-// We need to capture the onDragEnd function passed to DndContext.
-// We'll create a variable to hold it and mock the context provider at the top level.
-let capturedOnDragEnd;
+// --- FIXED & EXPANDED MOCKS ---
 
-// Mock the entire @dnd-kit/core module to intercept the DndContext component
+// We need to capture all drag handlers passed to DndContext.
+let capturedOnDragStart, capturedOnDragEnd, capturedOnDragCancel;
+
 jest.mock('@dnd-kit/core', () => ({
-  // Keep the original exports for things we don't want to mock (like useSensor)
   ...jest.requireActual('@dnd-kit/core'),
-  // Mock DndContext specifically
-  DndContext: ({ children, onDragEnd }) => {
-    // When the real DndContext is rendered by DraggableGrid, this mock will be used instead.
-    // We capture the onDragEnd prop so we can call it directly in our tests.
+  // Mock DndContext to capture all its drag-related event handlers.
+  DndContext: ({ children, onDragStart, onDragEnd, onDragCancel }) => {
+    capturedOnDragStart = onDragStart;
     capturedOnDragEnd = onDragEnd;
-    // We must render the children for the rest of the component tree to appear.
+    capturedOnDragCancel = onDragCancel;
+    // Render children to ensure the component tree is built.
     return <div>{children}</div>;
   },
+  // DragOverlay is a portal, so we just render its children for the test.
+  DragOverlay: ({ children }) => <>{children}</>,
 }));
 
-// Mock the custom hook `useBookmarkManager`
+// Mock the custom hook `useBookmarkManager`.
 jest.mock('../../scripts/useBookmarkManager.js', () => ({
   useBookmarkManager: jest.fn(),
 }));
 
-// Mock the BookmarkGroup child component to simplify testing
+// Mock child components to simplify testing.
 jest.mock('../../components/BookmarkGroup', () => ({
   BookmarkGroup: ({ bookmarkGroup, handleDeleteBookmarkGroup, groupIndex }) => (
     <div data-testid={`bookmark-group-${bookmarkGroup.id}`}>
       <h3>{bookmarkGroup.groupName}</h3>
-      {/* Mock a delete button to test the delete functionality */}
       <button onClick={(e) => handleDeleteBookmarkGroup(e, groupIndex)}>
         Delete Group
       </button>
-      {/* Mock bookmarks to test item reordering */}
       {bookmarkGroup.bookmarks.map(bookmark => (
         <div key={bookmark.id} data-testid={`bookmark-${bookmark.id}`}>{bookmark.name}</div>
       ))}
@@ -51,7 +47,13 @@ jest.mock('../../components/BookmarkGroup', () => ({
   ),
 }));
 
-// Mock data for our tests
+// Add a mock for BookmarkItem, which is used by the DragOverlay.
+jest.mock('../../components/BookmarkItem', () => ({
+    BookmarkItem: ({ bookmark }) => <div data-testid={`overlay-bookmark-${bookmark.id}`}>{bookmark.name}</div>,
+}));
+
+// --- TEST SETUP ---
+
 const mockBookmarkGroups = [
   {
     id: 'group-1',
@@ -66,7 +68,6 @@ const mockBookmarkGroups = [
     groupName: 'Work Tools',
     bookmarks: [
       { id: 'bookmark-2-1', name: 'Gmail', url: 'https://gmail.com' },
-      { id: 'bookmark-2-2', name: 'Google Docs', url: 'https://docs.google.com' },
     ],
   },
 ];
@@ -76,34 +77,34 @@ describe('DraggableGrid Component', () => {
   let mockDeleteBookmarkGroup;
   let mockReorderBookmarkGroups;
   let mockReorderBookmarks;
+  let mockMoveBookmark; // Add mock for the new function
 
-  // Before each test, set up the mocks
   beforeEach(() => {
     mockSetBookmarkGroups = jest.fn();
     mockDeleteBookmarkGroup = jest.fn();
     mockReorderBookmarkGroups = jest.fn();
     mockReorderBookmarks = jest.fn();
+    mockMoveBookmark = jest.fn(); // Initialize the new mock
 
-    // Provide the mock implementation for the useBookmarkManager hook
     useBookmarkManager.mockReturnValue({
       deleteBookmarkGroup: mockDeleteBookmarkGroup,
       reorderBookmarkGroups: mockReorderBookmarkGroups,
       reorderBookmarks: mockReorderBookmarks,
+      moveBookmark: mockMoveBookmark, // Provide the new mock function
     });
 
-    // Mock window.confirm
-    window.confirm = jest.fn(() => true); 
+    window.confirm = jest.fn(() => true);
     
-    // Reset the captured function before each test to ensure test isolation
+    // Reset all captured functions before each test.
+    capturedOnDragStart = undefined;
     capturedOnDragEnd = undefined;
+    capturedOnDragCancel = undefined;
   });
 
-  // Clean up mocks after each test
   afterEach(() => {
     jest.clearAllMocks();
   });
 
-  // Simplified helper function to render the component with the necessary context
   const renderComponent = (groups = mockBookmarkGroups) => {
     return render(
       <AppContext.Provider
@@ -118,87 +119,81 @@ describe('DraggableGrid Component', () => {
     );
   };
 
+  // --- TESTS ---
+
   test('renders all bookmark groups from context', () => {
     renderComponent();
-    
-    // Check if both group titles are rendered
     expect(screen.getByText('Social Media')).toBeInTheDocument();
     expect(screen.getByText('Work Tools')).toBeInTheDocument();
-    
-    // Check if the correct number of groups are rendered
     expect(screen.getAllByTestId(/bookmark-group-/)).toHaveLength(2);
   });
 
   test('calls reorderBookmarkGroups when a group is dragged and dropped', () => {
     renderComponent();
+    const dragEvent = { active: { id: 'group-1' }, over: { id: 'group-2' } };
     
-    // Define a mock drag event for reordering groups
-    const dragEvent = {
-      active: { id: 'group-1' },
-      over: { id: 'group-2' },
-    };
-    
-    // Verify that our mock successfully captured the onDragEnd function
-    expect(capturedOnDragEnd).toBeInstanceOf(Function);
-    
-    // Manually call the captured onDragEnd handler to simulate a drag
-    capturedOnDragEnd(dragEvent);
+    // Simulate the full drag-and-drop lifecycle
+    act(() => {
+        capturedOnDragStart(dragEvent);
+        capturedOnDragEnd(dragEvent);
+    });
 
-    // Expect reorderBookmarkGroups to be called with correct indices
     expect(mockReorderBookmarkGroups).toHaveBeenCalledWith(0, 1);
     expect(mockReorderBookmarks).not.toHaveBeenCalled();
+    expect(mockMoveBookmark).not.toHaveBeenCalled();
   });
   
-  test('calls reorderBookmarks when a bookmark is dragged and dropped within the same group', () => {
+  test('calls reorderBookmarks when a bookmark is dragged within the same group', () => {
     renderComponent();
+    const dragEvent = { active: { id: 'bookmark-1-1' }, over: { id: 'bookmark-1-2' } };
 
-    // Mock drag event for reordering bookmarks inside 'group-1'
-    const dragEvent = {
-      active: { id: 'bookmark-1-1' },
-      over: { id: 'bookmark-1-2' },
-    };
+    act(() => {
+        capturedOnDragStart(dragEvent);
+        capturedOnDragEnd(dragEvent);
+    });
 
-    // Verify that our mock successfully captured the onDragEnd function
-    expect(capturedOnDragEnd).toBeInstanceOf(Function);
-
-    // Manually call the captured onDragEnd handler
-    capturedOnDragEnd(dragEvent);
-
-    // Expect reorderBookmarks to be called with correct indices
-    expect(mockReorderBookmarks).toHaveBeenCalledWith(0, 1, 0, 0);
+    // Corrected Assertion: The function takes 3 arguments
+    expect(mockReorderBookmarks).toHaveBeenCalledWith(0, 1, 0);
     expect(mockReorderBookmarkGroups).not.toHaveBeenCalled();
+    expect(mockMoveBookmark).not.toHaveBeenCalled();
+  });
+
+  test('calls moveBookmark when a bookmark is dragged to a different group', () => {
+    renderComponent();
+    const dragEvent = { active: { id: 'bookmark-1-1' }, over: { id: 'bookmark-2-1' } };
+
+    act(() => {
+        capturedOnDragStart(dragEvent);
+        capturedOnDragEnd(dragEvent);
+    });
+
+    const expectedSource = { groupIndex: 0, bookmarkIndex: 0 };
+    const expectedDestination = { groupIndex: 1, bookmarkIndex: 0 };
+
+    expect(mockMoveBookmark).toHaveBeenCalledWith(expectedSource, expectedDestination);
+    expect(mockReorderBookmarkGroups).not.toHaveBeenCalled();
+    expect(mockReorderBookmarks).not.toHaveBeenCalled();
   });
 
   test('calls deleteBookmarkGroup when delete is clicked and confirmed', async () => {
     renderComponent();
-
-    // Find the delete button for the first group and click it
     const deleteButtons = screen.getAllByText('Delete Group');
     fireEvent.click(deleteButtons[0]);
 
-    // Check that window.confirm was called
     expect(window.confirm).toHaveBeenCalledWith(
       "Are you sure you want to delete the entire group Social Media?"
     );
 
-    // Check that deleteBookmarkGroup was called with the correct index
-    // The `await` in the component means we should wait for the mock to be called
     await expect(mockDeleteBookmarkGroup).toHaveBeenCalledWith(0);
   });
 
-  test('does not call deleteBookmarkGroup when delete is clicked and cancelled', async () => {
-    // Mock window.confirm to return false for this specific test
+  test('does not call deleteBookmarkGroup when delete is cancelled', async () => {
     window.confirm.mockReturnValue(false);
-    
     renderComponent();
-
     const deleteButtons = screen.getAllByText('Delete Group');
     fireEvent.click(deleteButtons[0]);
 
-    // Check that window.confirm was called
     expect(window.confirm).toHaveBeenCalled();
-
-    // Check that deleteBookmarkGroup was NOT called
     await expect(mockDeleteBookmarkGroup).not.toHaveBeenCalled();
   });
 });
