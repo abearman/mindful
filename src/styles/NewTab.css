@@ -17,6 +17,23 @@ body {
   grid-template-columns: 25% 1fr 1fr 1fr;
 }
 
+/*
+  This makes the entire component being dragged (the overlay item)
+  slightly transparent for a better visual cue.
+*/
+.drag-overlay-item {
+  opacity: 0.7;
+}
+
+/*
+  This specifically targets links inside the drag overlay,
+  ensuring they keep your custom blue color and have no underline.
+*/
+.drag-overlay-item a {
+  color: #4897cf;
+  text-decoration: none;
+}
+
 .bookmark-group-box {
   position: relative;
   background-color: #fff;
@@ -29,8 +46,6 @@ body {
   max-height: 500px; 
 }
 
-/* --- MODIFIED --- */
-/* The header is no longer a flex container */
 .bookmark-group-header {
   flex-shrink: 0; /* Prevents the header from shrinking */
   margin-bottom: px; /* Add some space below the header */

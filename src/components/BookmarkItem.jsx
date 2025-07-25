@@ -2,7 +2,7 @@
 import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { EditableBookmark } from './EditableBookmark.jsx'; // Your existing component
+import { EditableBookmark } from './EditableBookmark.jsx';
 
 export const BookmarkItem = ({ bookmark, bookmarkIndex, groupIndex }) => {
   const {
@@ -17,7 +17,7 @@ export const BookmarkItem = ({ bookmark, bookmarkIndex, groupIndex }) => {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : 1, // Make it semi-transparent while dragging
+    opacity: isDragging ? 0 : 1,  // Hide the original component when it's being dragged
   };
 
   // The outer div handles all the drag-and-drop logic

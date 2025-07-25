@@ -13,12 +13,14 @@ export const BookmarkGroup = ({ bookmarkGroup, groupIndex, handleDeleteBookmarkG
     setNodeRef,
     transform,
     transition,
+    isDragging, 
   } = useSortable({ id: bookmarkGroup.id });
 
   // Dynamic styles for dnd-kit animations MUST remain inline
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
+    opacity: isDragging ? 0 : 1, // Hide the original component when it's being dragged
   };
 
   const headingIsEntered = bookmarkGroup.groupName && bookmarkGroup.groupName !== EMPTY_GROUP_IDENTIFIER;
