@@ -19,8 +19,8 @@ import { URL_PATTERN } from '../scripts/Constants.js';
 
 function CreateNewGroupPopUp(props) {
   // Consume state from the context 
-  const { bookmarkGroups, setBookmarkGroups, userId } = useContext(AppContext);  
-  
+  const { bookmarkGroups, setBookmarkGroups, userId, storageType, setStorageType } = useContext(AppContext);  
+
   // Get all actions from the custom bookmarks hook
   const { 
     addNamedBookmark, 

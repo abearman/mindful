@@ -30,7 +30,7 @@ import DraggableGrid from './DraggableGrid.jsx';
 
 export function NewTabUI({ user, signIn, signOut}) {
   // Consume state from the context 
-  const { bookmarkGroups, setBookmarkGroups, userId } = useContext(AppContext);
+  const { bookmarkGroups, setBookmarkGroups, userId, storageType, setStorageType } = useContext(AppContext);
   
   // Get all actions from the custom bookmarks hook
   const { 
@@ -50,6 +50,12 @@ export function NewTabUI({ user, signIn, signOut}) {
 
   const lastBookmarkGroupRef = useRef(null);
   
+  const handleStorageChange = (newStorageType) => {
+    console.log(`Storage type changed to: ${newStorageType}`);
+    setStorageType(newStorageType);
+    // TODO: Add logic here to switch data sources, e.g., re-fetch bookmarks
+  };
+
   // Effect to fetch user attributes when the user logs in
   useEffect(() => {
     if (!user) {
@@ -118,6 +124,8 @@ export function NewTabUI({ user, signIn, signOut}) {
         onSignIn={signIn}
         onSignOut={signOut}
         isSignedIn={!!user} // Let the banner know a user is signed in
+        storageType={storageType}
+        onStorageTypeChange={handleStorageChange}
       />
       <DraggableGrid
         user={user}

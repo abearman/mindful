@@ -11,7 +11,7 @@ import { createUniqueID } from "../scripts/Utilities.js";
 
 function EditableBookmark(props) {
   // Consume state from the context 
-  const { bookmarkGroups, setBookmarkGroups, userId } = useContext(AppContext);
+  const { bookmarkGroups, setBookmarkGroups, userId, storageType, setStorageType } = useContext(AppContext);
 
   // Get all actions from the custom bookmarks hook
   const { 

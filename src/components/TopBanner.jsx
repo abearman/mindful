@@ -1,7 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import '../styles/TopBanner.css';
 
-const TopBanner = ({ onLoadBookmarks, onExportBookmarks, userAttributes, onSignIn, onSignOut, isSignedIn }) => {
+const TopBanner = ({ 
+  onLoadBookmarks, 
+  onExportBookmarks, 
+  userAttributes, 
+  onSignIn, 
+  onSignOut, 
+  isSignedIn,
+  storageType, // Added: 'local' or 'remote'
+  onStorageTypeChange // Added: Function to handle toggle change
+}) => {
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -22,6 +31,11 @@ const TopBanner = ({ onLoadBookmarks, onExportBookmarks, userAttributes, onSignI
   const handleLogout = () => {
     onSignOut();
     setDropdownOpen(false);
+  };
+
+  const handleToggleChange = (e) => {
+    const newMode = e.target.checked ? 'remote' : 'local';
+    onStorageTypeChange(newMode);
   };
 
   return (
@@ -47,6 +61,22 @@ const TopBanner = ({ onLoadBookmarks, onExportBookmarks, userAttributes, onSignI
             </button>
             {isDropdownOpen && (
               <div className="dropdown-menu">
+                <div className="dropdown-control-group">
+                  <div className="dropdown-label">Storage type</div> 
+                  <div className="storage-toggle">
+                    <span className={storageType === 'local' ? 'active' : ''}>Local</span>
+                    <label className="switch">
+                      <input
+                        type="checkbox"
+                        checked={storageType === 'remote'}
+                        onChange={handleToggleChange}
+                      />
+                      <span className="slider round"></span>
+                    </label>
+                    <span className={storageType === 'remote' ? 'active' : ''}>Remote</span>
+                  </div>
+                </div> 
+                <hr className="dropdown-divider" />
                 <button onClick={handleLogout} className="dropdown-item">
                   Logout
                 </button>
