@@ -60,7 +60,6 @@ const remoteStorageStrategy = {
    * Encrypts and saves bookmarks to Amplify Storage using the v6 API.
    */
   async save(data, userId) {
-    console.log("In remote storage save() function");
     const jsonString = JSON.stringify(data);
     const encryptedData = CryptoJS.AES.encrypt(jsonString, ENCRYPTION_KEY_SECRET).toString();
     try {

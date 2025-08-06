@@ -9,7 +9,7 @@ import { NewTabUI } from '../../components/NewTabComponent'
 import { AppContextProvider, AppContext } from '../../scripts/AppContext'; 
 import * as useBookmarkManager from '../../scripts/useBookmarkManager';
 import * as Utilities from '../../scripts/Utilities';
-import { fetchUserAttributes } from 'aws-amplify/auth';
+import { fetchUserAttributes, fetchAuthSession } from 'aws-amplify/auth'; 
 import { EMPTY_GROUP_IDENTIFIER } from '../../scripts/Constants';
 
 // Mock child components for isolation
@@ -91,11 +91,16 @@ describe('NewTabUI Component', () => {
     // Setup common mocks
     mockSignOut = jest.fn();
     useBookmarkManager.loadInitialBookmarks.mockResolvedValue(mockBookmarkGroups);
-    fetchUserAttributes.mockResolvedValue(mockUserAttributes);
     
     // Mock the user storage key 
     const mockStorageKey = `bookmarks_${mockUserId}`;
     Utilities.getUserStorageKey.mockReturnValue(mockStorageKey);
+
+    // Mock the session to provide the necessary identityId
+    fetchAuthSession.mockResolvedValue({
+      identityId: 'mock-identity-id-for-testing' 
+    });
+    fetchUserAttributes.mockResolvedValue(mockUserAttributes);
 
     // Spy on console.error to check for logged errors
     consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
@@ -112,32 +117,38 @@ describe('NewTabUI Component', () => {
         <NewTabUI user={mockUser} signOut={mockSignOut} />
       </AppContextProvider>
     );
+  
+    // Wait for the provider to finish loading and render the UI
+    await screen.findByTestId('top-banner');
     
+    // Now that loading is done, these assertions will pass
     expect(useBookmarkManager.loadInitialBookmarks).toHaveBeenCalledTimes(1);
     expect(fetchUserAttributes).toHaveBeenCalledTimes(1);
-
-    // Wait for asynchronous operations and state updates to complete
+  
+    // The rest of the test can now use waitFor or continue as is
     await waitFor(() => {
       expect(screen.getByText('Work')).toBeInTheDocument();
       expect(screen.getByText('Personal')).toBeInTheDocument();
     });
-
-    // Check if TopBanner receives the correct props after data loading
+  
     expect(screen.getByText('Signed In: true')).toBeInTheDocument();
     expect(screen.getByText(mockUserAttributes.email)).toBeInTheDocument();
-
-    // Check if DraggableGrid receives the loaded groups
-    expect(screen.getByText('Work')).toBeInTheDocument();
-    expect(screen.getByText('Personal')).toBeInTheDocument();
   });
 
-  it('should not load data if no user is present', () => {
+  it('should not load data if no user is present', async () => {
+    // For this test, simulate that no user is signed in by having the auth call fail.
+    fetchAuthSession.mockRejectedValue(new Error('No user is signed in.'));
+  
     render(
       <AppContextProvider user={null}>
         <NewTabUI user={null} /> 
       </AppContextProvider>
     );
-
+  
+    // Wait for the component to render after its loading state (which will handle the error)
+    await screen.findByTestId('top-banner');
+  
+    // Now run assertions
     expect(useBookmarkManager.loadInitialBookmarks).not.toHaveBeenCalled();
     expect(fetchUserAttributes).not.toHaveBeenCalled();
     expect(screen.getByText('Signed In: false')).toBeInTheDocument();
@@ -190,6 +201,9 @@ describe('NewTabUI Component', () => {
         <NewTabUI user={mockUser} />
       </AppContextProvider>
     );
+  
+    // Wait for the component and its useEffects to run
+    await screen.findByTestId('top-banner');
 
     expect(chrome.storage.onChanged.addListener).toHaveBeenCalledTimes(1);
 
@@ -212,14 +226,20 @@ describe('NewTabUI Component', () => {
     });
   });
   
-  it('should clean up the storage listener on unmount', () => {
+  it('should clean up the storage listener on unmount', async () => { // <-- make async
     const { unmount } = render(
       <AppContextProvider user={mockUser}>
         <NewTabUI user={mockUser} />
       </AppContextProvider>
-    );    
+    );   
+  
+    // Wait for the component to mount and add the listener
+    await screen.findByTestId('top-banner');
+    
+    // Now unmount it
     unmount();
-
+  
+    // The cleanup function should have been called
     expect(chrome.storage.onChanged.removeListener).toHaveBeenCalledTimes(1);
   });
 

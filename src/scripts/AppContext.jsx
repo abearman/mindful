@@ -25,7 +25,6 @@ export function AppContextProvider({ children, user }) {
         setUserId(identityId);
 
         // Now that we have the userId, load the bookmarks
-        console.log(`Loading bookmarks for user ${identityId} from ${storageType}`);
         const initialBookmarks = await loadInitialBookmarks(identityId, storageType);
         setBookmarkGroups(initialBookmarks);
 

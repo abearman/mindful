@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { arrayMove } from '@dnd-kit/sortable';
 import { AppContext } from './AppContext.jsx';
 import { EMPTY_GROUP_IDENTIFIER, StorageType } from './Constants.js';
-import { getUserStorageKey, refreshOtherMindfulTabs } from './Utilities.js';
+import { refreshOtherMindfulTabs } from './Utilities.js';
 import { Storage } from './storage.js';
 
 export async function loadInitialBookmarks(userId, storageType) {
@@ -15,68 +15,77 @@ export async function loadInitialBookmarks(userId, storageType) {
 // --- The Custom Hook ---
 
 export const useBookmarkManager = () => {
-  const { setBookmarkGroups, userId, storageType, setStorageType } = useContext(AppContext);
+  const { bookmarkGroups, setBookmarkGroups, userId, storageType, setStorageType } = useContext(AppContext);
   const storage = new Storage(storageType);
 
   /**
-   * Internal helper that now uses a functional update to guarantee state consistency.
-   * It takes an "updater" function as an argument, which receives the previous state
-   * and returns the new state.
+   * A robust helper that correctly sequences the state update and async persistence.
+   * It uses the functional `setState` updater to prevent stale state issues.
    */
   const updateAndPersistGroups = (updater) => {
+    // This function must return a promise so that the calling UI can await it.
     return new Promise((resolve, reject) => {
-      if (!userId) {
-        console.error("Cannot save: userId is not available.");
-        return reject(new Error("User ID not available"));
-      }
+      setBookmarkGroups(currentGroups => {
+        // 1. Calculate the new state using the updater function. This is the only
+        //    way to get the guaranteed latest state (`currentGroups`).
+        const newGroups = updater(currentGroups);
 
-      setBookmarkGroups(prevGroups => {
-        // Calculate the new state using the guaranteed latest previous state
-        const newGroups = updater(prevGroups);
+        // 2. Now that we have the new state, trigger the async save operation.
+        //    This ensures we are saving the exact same data that is being set in the UI.
+        if (userId) {
+          storage.save(newGroups, userId)
+            .then(() => {
+              // After a successful save, perform follow-up actions.
+              if (storageType === StorageType.LOCAL) {
+                return refreshOtherMindfulTabs();
+              }
+            })
+            .then(resolve) // Resolve the outer promise when the async chain is complete.
+            .catch(error => {
+              console.error(`Failed to save bookmarks to ${storageType}:`, error);
+              reject(error); // Reject the outer promise on failure.
+            });
+        } else {
+          const error = new Error("Cannot save: userId is not available.");
+          console.error(error.message);
+          reject(error);
+        }
 
-        // Persist the new state to the selected storage
-        storage.save(newGroups, userId)
-          .then(() => {
-            if (storageType === StorageType.LOCAL) {
-              refreshOtherMindfulTabs();
-            }
-            resolve(newGroups); // Resolve the promise after successful save
-          })
-          .catch(error => {
-            console.error(`Failed to save bookmarks to ${storageType}:`, error);
-            reject(error); // Reject the promise if saving fails
-          });
-        
-        // Return the new state for React to render immediately
+        // 3. Finally, return the new state for React to render.
         return newGroups;
       });
     });
   };
 
+  // --- Public API of the Hook ---
+  // All functions that modify data are async and return the persistence promise.
+
   const addEmptyBookmarkGroup = async () => {
-    const newGroup = {
-      groupName: EMPTY_GROUP_IDENTIFIER,
-      bookmarks: [],
-      id: uuidv4(),
-    };
-    await updateAndPersistGroups(prevGroups => [...prevGroups, newGroup]);
+    await updateAndPersistGroups(prevGroups => {
+        const newGroup = {
+            groupName: EMPTY_GROUP_IDENTIFIER,
+            bookmarks: [],
+            id: uuidv4(),
+        };
+        return [...prevGroups, newGroup];
+    });
   };
 
   const addNamedBookmarkGroup = async (groupName) => {
-    const newGroup = {
-      groupName: groupName,
-      bookmarks: [],
-      id: uuidv4(),
-    };
     await updateAndPersistGroups(prevGroups => {
-      const updatedGroups = [...prevGroups];
-      const emptyGroupIndex = updatedGroups.findIndex(g => g.groupName === EMPTY_GROUP_IDENTIFIER);
-      if (emptyGroupIndex !== -1) {
-        updatedGroups.splice(emptyGroupIndex, 0, newGroup);
-      } else {
-        updatedGroups.push(newGroup);
-      }
-      return updatedGroups;
+        const newGroup = {
+            groupName: groupName,
+            bookmarks: [],
+            id: uuidv4(),
+        };
+        const updatedGroups = [...prevGroups];
+        const emptyGroupIndex = updatedGroups.findIndex(g => g.groupName === EMPTY_GROUP_IDENTIFIER);
+        if (emptyGroupIndex !== -1) {
+            updatedGroups.splice(emptyGroupIndex, 0, newGroup);
+        } else {
+            updatedGroups.push(newGroup);
+        }
+        return updatedGroups;
     });
   };
 
@@ -121,10 +130,11 @@ export const useBookmarkManager = () => {
   };
 
   const addNamedBookmark = async (bookmarkName, url, groupName) => {
-    const newBookmark = { name: bookmarkName, url: url, id: uuidv4() };
     await updateAndPersistGroups(prevGroups => {
+      const newBookmark = { name: bookmarkName, url: url, id: uuidv4() };
       const updatedGroups = JSON.parse(JSON.stringify(prevGroups));
       const groupIndex = updatedGroups.findIndex(g => g.groupName === groupName);
+
       if (groupIndex !== -1) {
         updatedGroups[groupIndex].bookmarks.push(newBookmark);
       } else {
@@ -169,11 +179,8 @@ export const useBookmarkManager = () => {
   };
 
   const exportBookmarksToJSON = () => {
-    // This function doesn't modify state, so it doesn't need to be changed.
-    // It relies on the `bookmarkGroups` from context, which will be up-to-date.
-    const { bookmarkGroups } = useContext(AppContext);
     if (!bookmarkGroups || bookmarkGroups.length === 0) {
-        alert("No bookmarks to export.");
+        console.warn("No bookmarks to export.");
         return;
     }
     const jsonData = JSON.stringify(bookmarkGroups, null, 2);
@@ -183,7 +190,7 @@ export const useBookmarkManager = () => {
     a.href = url;
     a.download = "mindful_bookmarks.json";
     document.body.appendChild(a);
-a.click();
+    a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
@@ -196,16 +203,15 @@ a.click();
       const file = event.target.files[0];
       if (!file) return;
       const reader = new FileReader();
-      reader.onload = async (e) => {
+      reader.onload = (e) => {
         try {
           const contents = e.target.result;
           const data = JSON.parse(contents);
-          // For a full import/overwrite, we can pass a function that ignores the previous state.
-          await updateAndPersistGroups(() => data);
+          // Use updateAndPersistGroups to handle the update and save.
+          updateAndPersistGroups(() => data);
           console.log("Bookmarks successfully imported and saved.");
         } catch (error) {
           console.error("Failed to read or parse the bookmarks file:", error);
-          alert("Error: Could not import bookmarks. The file might be corrupted or in the wrong format.");
         }
       };
       reader.readAsText(file);
