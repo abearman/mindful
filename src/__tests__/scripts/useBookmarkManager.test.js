@@ -1,21 +1,13 @@
 import React from 'react';
 import { renderHook, act } from '@testing-library/react';
 import { useBookmarkManager } from '../../scripts/useBookmarkManager';
-// Note: We still import AppContext here, but Jest will swap it with our mock below.
 import { AppContext } from '../../scripts/AppContext';
 import { EMPTY_GROUP_IDENTIFIER, StorageType } from '../../scripts/Constants';
 
 // --- Mocks ---
 
-// THE DEFINITIVE FIX: This mock completely replaces the real `AppContext.jsx`
-// file. It uses `require('react')` inside the factory to avoid the
-// out-of-scope variable error.
-jest.mock('../../scripts/AppContext', () => ({
-  // The test needs an object named `AppContext` to use its `.Provider` property.
-  // We must use `require` here because `jest.mock` is hoisted above `import`.
-  AppContext: require('react').createContext(),
-}));
-
+// NOTE: All mocking and setup for console.error is now handled globally
+// in the jest.setup.js file to ensure it runs before any test files are evaluated.
 
 // Mocking chrome APIs for a Node (Jest) environment
 global.chrome = {
@@ -85,6 +77,7 @@ describe.each([
   };
 
   beforeEach(() => {
+    // We only need to clear mocks here now.
     jest.clearAllMocks();
     mockStorageSave = jest.fn().mockResolvedValue(undefined);
     mockStorageLoad = jest.fn().mockResolvedValue([]);
