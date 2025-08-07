@@ -57,6 +57,43 @@ export const useBookmarkManager = () => {
     });
   };
 
+  const changeStorageType = async (newStorageType) => {
+    if (!userId) {
+      throw new Error("Cannot change storage type: User not signed in.");
+    }
+
+    const oldStorageType = storageType;
+    if (newStorageType === oldStorageType) {
+      return; // No action needed if the type is the same
+    }
+
+    const dataToMigrate = bookmarkGroups;
+    console.log(`Migrating bookmarks from ${oldStorageType} to ${newStorageType}...`);
+
+    try {
+      // 1. Define the old and new storage handlers
+      const oldStorage = new Storage(oldStorageType);
+      const newStorage = new Storage(newStorageType);
+
+      // 2. Save data to the new location
+      console.log(`Saving to ${newStorageType}...`);
+      await newStorage.save(dataToMigrate, userId);
+
+      // 3. Delete data from the old location
+      console.log(`Deleting from ${oldStorageType}...`);
+      await oldStorage.delete(userId);
+
+      // 4. Update the application's context to reflect the change
+      setStorageType(newStorageType);
+
+      console.log("Storage migration completed successfully.");
+    } catch (error) {
+      console.error(`Failed to migrate storage from ${oldStorageType} to ${newStorageType}:`, error);
+      // Re-throw the error so the UI can be notified if needed
+      throw error;
+    }
+  };
+
   // --- Public API of the Hook ---
   // All functions that modify data are async and return the persistence promise.
 
@@ -232,6 +269,6 @@ export const useBookmarkManager = () => {
     moveBookmark,
     exportBookmarksToJSON,
     importBookmarksFromJSON,
-    setStorageType
+    changeStorageType,
   };
 };

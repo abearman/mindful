@@ -1,4 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useContext, useState, useEffect, useRef } from 'react';
+import { AppContext } from "../scripts/AppContext.jsx";
+
 import '../styles/TopBanner.css';
 
 const TopBanner = ({ 
@@ -8,9 +10,11 @@ const TopBanner = ({
   onSignIn, 
   onSignOut, 
   isSignedIn,
-  storageType, // Added: 'local' or 'remote'
   onStorageTypeChange // Added: Function to handle toggle change
 }) => {
+  // Consume state from the context 
+  const { bookmarkGroups, setBookmarkGroups, userId, storageType, setStorageType } = useContext(AppContext);
+
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -34,8 +38,8 @@ const TopBanner = ({
   };
 
   const handleToggleChange = (e) => {
-    const newMode = e.target.checked ? 'remote' : 'local';
-    onStorageTypeChange(newMode);
+    const newStorageType = e.target.checked ? 'remote' : 'local';
+    onStorageTypeChange(newStorageType);
   };
 
   return (

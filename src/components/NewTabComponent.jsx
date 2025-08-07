@@ -1,5 +1,4 @@
-import React, { useContext, useRef, useEffect, useState } from "react";
-import { CSS } from "@dnd-kit/utilities";
+import React, { useContext, useEffect, useState } from "react";
 
 // Import Amplify and the Authenticator UI component
 import { Amplify } from 'aws-amplify';
@@ -12,11 +11,11 @@ Amplify.configure(config);
 
 /* CSS styles */
 import "../styles/NewTab.css";
-import "../styles/TopBanner.css"; 
+import "../styles/TopBanner.css";
 import "../styles/Login.css";
 
 /* Constants */
-import { EMPTY_GROUP_IDENTIFIER } from "../scripts/Constants.js";
+import { EMPTY_GROUP_IDENTIFIER, StorageType } from "../scripts/Constants.js"; // Note: Added StorageType here
 
 /* Hooks and Utilities */
 import { getUserStorageKey } from '../scripts/Utilities.js';
@@ -24,37 +23,28 @@ import { loadInitialBookmarks, useBookmarkManager } from '../scripts/useBookmark
 import { AppContext } from "../scripts/AppContext.jsx";
 
 /* Components */
-import TopBanner from "./TopBanner.jsx"; 
-import DraggableGrid from './DraggableGrid.jsx'; 
+import TopBanner from "./TopBanner.jsx";
+import DraggableGrid from './DraggableGrid.jsx';
 
+export function NewTabUI({ user, signIn, signOut }) {
+  // Consume state from the context
+  const { bookmarkGroups, setBookmarkGroups, userId, storageType } = useContext(AppContext);
 
-export function NewTabUI({ user, signIn, signOut}) {
-  // Consume state from the context 
-  const { bookmarkGroups, setBookmarkGroups, userId, storageType, setStorageType } = useContext(AppContext);
-  
   // Get all actions from the custom bookmarks hook
-  const { 
-    addEmptyBookmarkGroup, 
+  const {
+    addEmptyBookmarkGroup,
     exportBookmarksToJSON,
     importBookmarksFromJSON,
+    changeStorageType,
   } = useBookmarkManager();
 
-  // Create a new handler function that calls the importBookmarksFromJSON with no arguments,
-  // to discard the unwanted event object.
+  // Create a new handler function that calls the importBookmarksFromJSON with no arguments
   const handleLoadBookmarks = () => {
     importBookmarksFromJSON();
   };
 
   const [isLoading, setIsLoading] = useState(true);
-  const [userAttributes, setUserAttributes] = useState(null); 
-
-  const lastBookmarkGroupRef = useRef(null);
-  
-  const handleStorageChange = (newStorageType) => {
-    console.log(`Storage type changed to: ${newStorageType}`);
-    setStorageType(newStorageType);
-    // TODO: Add logic here to switch data sources, e.g., re-fetch bookmarks
-  };
+  const [userAttributes, setUserAttributes] = useState(null);
 
   // Effect to fetch user attributes when the user logs in
   useEffect(() => {
@@ -79,41 +69,46 @@ export function NewTabUI({ user, signIn, signOut}) {
   }, [user]);
 
   // Effect to ensure an empty group for adding new bookmarks always exists.
-  // This runs after the initial data is loaded into the context by the AppProvider.
   useEffect(() => {
-    if (bookmarkGroups && bookmarkGroups.length > 0) {
+    if (isLoading || !bookmarkGroups) return; // Wait for loading to finish
+
+    if (bookmarkGroups.length > 0) {
       const hasEmptyGroup = bookmarkGroups.some(
         (group) => group.groupName === EMPTY_GROUP_IDENTIFIER
       );
       if (!hasEmptyGroup) {
         addEmptyBookmarkGroup();
       }
+    } else if (bookmarkGroups.length === 0) {
+        // If there are no groups at all, add the initial empty one
+        addEmptyBookmarkGroup();
     }
-  }, [bookmarkGroups]); // Runs whenever the bookmark groups change.
-  
-  // Effect to listen for external changes to Chrome storage (e.g., from another tab)
+  }, [bookmarkGroups, isLoading, addEmptyBookmarkGroup]); // Runs when bookmarks or loading state change.
+
   useEffect(() => {
-    if (!userId) return; // Don't listen if there's no user
+    // Only attach this listener if we are in LOCAL storage mode.
+    // It's irrelevant for remote storage.
+    if (storageType !== StorageType.LOCAL || !userId) {
+      return; // Do nothing if in remote mode or not signed in.
+    }
 
     const handleStorageChange = async (changes, area) => {
       const userStorageKey = getUserStorageKey(userId);
       if (area === "local" && changes[userStorageKey]) {
-        // When storage changes, reload the data and update the context.
-        const freshGroups = await loadInitialBookmarks(userId);
+        console.log("Local storage changed in another tab. Reloading bookmarks...");
+        // Pass the correct storageType to the loading function.
+        const freshGroups = await loadInitialBookmarks(userId, storageType);
         setBookmarkGroups(freshGroups || []);
       }
     };
 
     chrome.storage.onChanged.addListener(handleStorageChange);
-    return () => chrome.storage.onChanged.removeListener(handleStorageChange);
-  }, [userId, setBookmarkGroups]); // Re-attach listener if userId changes
 
-  // This effect focuses the heading of a newly added group.
-  useEffect(() => {
-    if (lastBookmarkGroupRef.current) {
-      lastBookmarkGroupRef.current.querySelector(".editable-heading").focus();
-    }
-  }, [bookmarkGroups]);
+    // The cleanup function runs when dependencies change, removing the old listener.
+    return () => {
+      chrome.storage.onChanged.removeListener(handleStorageChange);
+    };
+  }, [userId, storageType, setBookmarkGroups]); // Re-runs if user or storageType changes
 
   return (
     <div>
@@ -123,9 +118,8 @@ export function NewTabUI({ user, signIn, signOut}) {
         userAttributes={userAttributes}
         onSignIn={signIn}
         onSignOut={signOut}
-        isSignedIn={!!user} // Let the banner know a user is signed in
-        storageType={storageType}
-        onStorageTypeChange={handleStorageChange}
+        isSignedIn={!!user}
+        onStorageTypeChange={changeStorageType}
       />
       <DraggableGrid
         user={user}

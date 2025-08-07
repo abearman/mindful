@@ -4,7 +4,7 @@ import CryptoJS from 'crypto-js';
 import { getUserStorageKey } from './Utilities.js';
 import { StorageType } from './Constants.js';
 
-const ENCRYPTION_KEY_SECRET = 'a-very-secret-key-that-you-should-replace';
+const ENCRYPTION_KEY_SECRET = 'a-very-secret-key-that-you-should-replace';  // TODO: Change this encryption key
 const BOOKMARKS_FILE_NAME = 'bookmarks.json.encrypted';
 
 // --- Storage Strategies ---
@@ -18,6 +18,11 @@ const chromeStorageStrategy = {
   async save(data, userId) {
     const userStorageKey = getUserStorageKey(userId);
     await chrome.storage.local.set({ [userStorageKey]: data });
+  },
+  async delete(userId) {
+    const userStorageKey = getUserStorageKey(userId);
+    await chrome.storage.local.remove(userStorageKey);
+    console.log(`Deleted local bookmarks for user: ${userId}`);
   }
 };
 
@@ -26,7 +31,6 @@ const remoteStorageStrategy = {
    * Loads and decrypts bookmarks from Amplify Storage using the v6 API.
    */
   async load(userId) {
-    console.log("In remote storage load() function");
     try {
       const downloadResult = await downloadData({
         path: ({ identityId }) => `private/${identityId}/${BOOKMARKS_FILE_NAME}`,
@@ -75,6 +79,25 @@ const remoteStorageStrategy = {
       console.error("Error saving bookmarks to remote storage:", error);
       throw error; // Re-throw to be caught by the calling function
     }
+  },
+  async delete() {
+    console.log("Attempting to delete from remote storage...");
+    try {
+      await remove({
+        path: ({ identityId }) => `private/${identityId}/${BOOKMARKS_FILE_NAME}`,
+        options: {
+          accessLevel: 'private',
+        },
+      });
+      console.log("Successfully deleted remote bookmarks file.");
+    } catch (error) {
+      if (error.name === 'StorageError' && error.message.includes('not found')) {
+        console.log("No remote bookmarks file to delete (which is okay).");
+        return; // It's not an error if the file was already gone.
+      }
+      console.error("Error deleting bookmarks from remote storage:", error);
+      throw error;
+    }
   }
 };
 
@@ -95,5 +118,9 @@ export class Storage {
 
   save(data, userId) {
     return this.strategy.save(data, userId);
+  }
+
+  delete(userId) {
+    return this.strategy.delete(userId);
   }
 }
