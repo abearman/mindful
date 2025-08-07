@@ -13,7 +13,7 @@ const TopBanner = ({
   onStorageTypeChange // Added: Function to handle toggle change
 }) => {
   // Consume state from the context 
-  const { bookmarkGroups, setBookmarkGroups, userId, storageType, setStorageType } = useContext(AppContext);
+  const { storageType } = useContext(AppContext);
 
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);

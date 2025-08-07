@@ -14,7 +14,7 @@ import { constructValidURL } from "../scripts/Utilities.js";
 
 function AddBookmarkInline(props) {
   // Consume state from the context 
-  const { bookmarkGroups, setBookmarkGroups, userId, storageType, setStorageType } = useContext(AppContext);
+  const { bookmarkGroups } = useContext(AppContext);
 
   const [linkBeingEdited, setLinkBeingEdited] = useState(false);
   const bookmarkGroupName = bookmarkGroups[props.groupIndex].groupName;
