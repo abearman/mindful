@@ -7,9 +7,9 @@ import config from '../amplify_outputs.json';
 Amplify.configure(config);
 import { Authenticator } from '@aws-amplify/ui-react';
 
-import { NewTabUI } from "./components/NewTabComponent"; 
-import { AppContextProvider } from "./scripts/AppContext";
-import formFields from "./config/formFields";
+import { NewTabUI } from "./components/NewTabComponent.jsx"; // Import the component
+import { AppContextProvider } from "./scripts/AppContext.jsx";
+import formFields from "./config/formFields.js";
 
 // All the code you deleted from newtab.jsx goes here
 const container = document.getElementById("root");

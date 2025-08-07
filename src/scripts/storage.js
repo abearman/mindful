@@ -1,10 +1,9 @@
-// --- NEW: Import specific functions from @aws-amplify/storage ---
 import { uploadData, downloadData, remove } from '@aws-amplify/storage';
 import CryptoJS from 'crypto-js';
 import { getUserStorageKey } from './Utilities.js';
 import { StorageType } from './Constants.js';
 
-const ENCRYPTION_KEY_SECRET = 'a-very-secret-key-that-you-should-replace';  // TODO: Change this encryption key
+const ENCRYPTION_KEY_SECRET = 'a-very-secret-key-that-you-should-replace';
 const BOOKMARKS_FILE_NAME = 'bookmarks.json.encrypted';
 
 // --- Storage Strategies ---
@@ -17,6 +16,8 @@ const chromeStorageStrategy = {
   },
   async save(data, userId) {
     const userStorageKey = getUserStorageKey(userId);
+    console.log("[Storage.js] Key being saved: ", userStorageKey);
+    console.log("[Storage.js] Bookmarks being saved: ", data);
     await chrome.storage.local.set({ [userStorageKey]: data });
   },
   async delete(userId) {
@@ -27,19 +28,15 @@ const chromeStorageStrategy = {
 };
 
 const remoteStorageStrategy = {
-  /**
-   * Loads and decrypts bookmarks from Amplify Storage using the v6 API.
-   */
   async load(userId) {
     try {
       const downloadResult = await downloadData({
         path: ({ identityId }) => `private/${identityId}/${BOOKMARKS_FILE_NAME}`,
         options: {
-          accessLevel: 'private', // 'private' is the new accessLevel for user-specific files
+          accessLevel: 'private',
         },
       }).result;
 
-      // The result body is a Blob, which needs to be converted to text
       const encryptedText = await downloadResult.body.text();
 
       if (!encryptedText) {
@@ -51,18 +48,20 @@ const remoteStorageStrategy = {
       return decryptedData;
 
     } catch (error) {
-      // A "key not found" error is expected on first load for a user.
-      if (error.name === 'StorageError' && error.message.includes('not found')) {
+      // --- MODIFIED: More robust error check for "not found" scenarios ---
+      const isNoSuchKeyError = error.name === 'NoSuchKey';
+      const isNotFoundError = error.name === 'StorageError' && error.message.includes('not found');
+
+      if (isNoSuchKeyError || isNotFoundError) {
         console.log("No remote bookmarks file found. Starting fresh.");
-        return [];
+        return []; // Gracefully handle and return an empty array
       }
+      
+      // Log any other unexpected errors
       console.error("Error loading bookmarks from remote storage:", error);
       return []; // Fallback to an empty array to prevent app crash
     }
   },
-  /**
-   * Encrypts and saves bookmarks to Amplify Storage using the v6 API.
-   */
   async save(data, userId) {
     const jsonString = JSON.stringify(data);
     const encryptedData = CryptoJS.AES.encrypt(jsonString, ENCRYPTION_KEY_SECRET).toString();
@@ -77,7 +76,7 @@ const remoteStorageStrategy = {
       }).result;
     } catch (error) {
       console.error("Error saving bookmarks to remote storage:", error);
-      throw error; // Re-throw to be caught by the calling function
+      throw error;
     }
   },
   async delete() {
@@ -91,9 +90,9 @@ const remoteStorageStrategy = {
       });
       console.log("Successfully deleted remote bookmarks file.");
     } catch (error) {
-      if (error.name === 'StorageError' && error.message.includes('not found')) {
+      if (error.name === 'NoSuchKey' || (error.name === 'StorageError' && error.message.includes('not found'))) {
         console.log("No remote bookmarks file to delete (which is okay).");
-        return; // It's not an error if the file was already gone.
+        return; 
       }
       console.error("Error deleting bookmarks from remote storage:", error);
       throw error;

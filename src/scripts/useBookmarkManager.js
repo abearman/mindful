@@ -66,6 +66,8 @@ export const useBookmarkManager = () => {
     if (newStorageType === oldStorageType) {
       return; // No action needed if the type is the same
     }
+    console.log("Old storage type: ", oldStorageType);
+    console.log("New storage type: ", newStorageType);
 
     const dataToMigrate = bookmarkGroups;
     console.log(`Migrating bookmarks from ${oldStorageType} to ${newStorageType}...`);
