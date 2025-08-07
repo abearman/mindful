@@ -28,7 +28,7 @@ import DraggableGrid from './DraggableGrid.jsx';
 
 export function NewTabUI({ user, signIn, signOut }) {
   // Consume state from the context
-  const { bookmarkGroups, setBookmarkGroups, userId, storageType } = useContext(AppContext);
+  const { bookmarkGroups, setBookmarkGroups, userId, storageType, isMigrating } = useContext(AppContext);
 
   // Get all actions from the custom bookmarks hook
   const {
@@ -92,6 +92,11 @@ export function NewTabUI({ user, signIn, signOut }) {
       return; // Do nothing if in remote mode or not signed in.
     }
 
+    if (isMigrating) {  // Don't run this effect while migrating storage
+      console.log("Migration in progress, storage listener is paused.");
+      return;
+    }
+
     const handleStorageChange = async (changes, area) => {
       const userStorageKey = getUserStorageKey(userId);
       if (area === "local" && changes[userStorageKey]) {
@@ -108,7 +113,7 @@ export function NewTabUI({ user, signIn, signOut }) {
     return () => {
       chrome.storage.onChanged.removeListener(handleStorageChange);
     };
-  }, [userId, storageType, setBookmarkGroups]); // Re-runs if user or storageType changes
+  }, [userId, storageType, setBookmarkGroups, isMigrating]); // Re-runs if user or storageType changes
 
   return (
     <div>

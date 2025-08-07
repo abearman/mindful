@@ -15,43 +15,30 @@ export async function loadInitialBookmarks(userId, storageType) {
 // --- The Custom Hook ---
 
 export const useBookmarkManager = () => {
-  const { bookmarkGroups, setBookmarkGroups, userId, storageType, setStorageType } = useContext(AppContext);
+  const { bookmarkGroups, setBookmarkGroups, userId, storageType, setStorageType, setIsMigrating } = useContext(AppContext);
   const storage = new Storage(storageType);
 
-  /**
-   * A robust helper that correctly sequences the state update and async persistence.
-   * It uses the functional `setState` updater to prevent stale state issues.
-   */
   const updateAndPersistGroups = (updater) => {
-    // This function must return a promise so that the calling UI can await it.
     return new Promise((resolve, reject) => {
       setBookmarkGroups(currentGroups => {
-        // 1. Calculate the new state using the updater function. This is the only
-        //    way to get the guaranteed latest state (`currentGroups`).
         const newGroups = updater(currentGroups);
-
-        // 2. Now that we have the new state, trigger the async save operation.
-        //    This ensures we are saving the exact same data that is being set in the UI.
         if (userId) {
           storage.save(newGroups, userId)
             .then(() => {
-              // After a successful save, perform follow-up actions.
               if (storageType === StorageType.LOCAL) {
                 return refreshOtherMindfulTabs();
               }
             })
-            .then(resolve) // Resolve the outer promise when the async chain is complete.
+            .then(resolve)
             .catch(error => {
               console.error(`Failed to save bookmarks to ${storageType}:`, error);
-              reject(error); // Reject the outer promise on failure.
+              reject(error);
             });
         } else {
           const error = new Error("Cannot save: userId is not available.");
           console.error(error.message);
           reject(error);
         }
-
-        // 3. Finally, return the new state for React to render.
         return newGroups;
       });
     });
@@ -64,40 +51,40 @@ export const useBookmarkManager = () => {
 
     const oldStorageType = storageType;
     if (newStorageType === oldStorageType) {
-      return; // No action needed if the type is the same
+      return;
     }
-    console.log("Old storage type: ", oldStorageType);
-    console.log("New storage type: ", newStorageType);
-
-    const dataToMigrate = bookmarkGroups;
+    
     console.log(`Migrating bookmarks from ${oldStorageType} to ${newStorageType}...`);
+    setIsMigrating(true);
 
     try {
-      // 1. Define the old and new storage handlers
       const oldStorage = new Storage(oldStorageType);
       const newStorage = new Storage(newStorageType);
 
-      // 2. Save data to the new location
-      console.log(`Saving to ${newStorageType}...`);
+      // Instead of using the potentially stale 'bookmarkGroups' from React state,
+      // we load the fresh data directly from the source before migrating.
+      const dataToMigrate = await oldStorage.load(userId);
+      console.log("Data to migrate:", dataToMigrate);
+
+      // 1. Save fresh data to the new location
       await newStorage.save(dataToMigrate, userId);
 
-      // 3. Delete data from the old location
-      console.log(`Deleting from ${oldStorageType}...`);
+      // 2. Delete data from the old location
       await oldStorage.delete(userId);
 
-      // 4. Update the application's context to reflect the change
+      // 3. Update the application's context to reflect the change
       setStorageType(newStorageType);
 
       console.log("Storage migration completed successfully.");
     } catch (error) {
       console.error(`Failed to migrate storage from ${oldStorageType} to ${newStorageType}:`, error);
-      // Re-throw the error so the UI can be notified if needed
       throw error;
+    } finally {
+      setIsMigrating(false);
     }
   };
 
-  // --- Public API of the Hook ---
-  // All functions that modify data are async and return the persistence promise.
+  // --- ALL OTHER FUNCTIONS REMAIN UNCHANGED ---
 
   const addEmptyBookmarkGroup = async () => {
     await updateAndPersistGroups(prevGroups => {
@@ -246,7 +233,6 @@ export const useBookmarkManager = () => {
         try {
           const contents = e.target.result;
           const data = JSON.parse(contents);
-          // Use updateAndPersistGroups to handle the update and save.
           updateAndPersistGroups(() => data);
           console.log("Bookmarks successfully imported and saved.");
         } catch (error) {

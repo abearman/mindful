@@ -23,7 +23,8 @@ const chromeStorageStrategy = {
   async delete(userId) {
     const userStorageKey = getUserStorageKey(userId);
     await chrome.storage.local.remove(userStorageKey);
-    console.log(`Deleted local bookmarks for user: ${userId}`);
+    console.log("Deleted local bookmarks for user: ${userId}");
+    console.log("Deleted bookmarks for key: ", userStorageKey);
   }
 };
 
