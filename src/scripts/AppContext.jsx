@@ -6,6 +6,7 @@ import { fetchAuthSession, fetchUserAttributes, updateUserAttribute } from 'aws-
 export const AppContext = createContext();
 
 export function AppContextProvider({ children }) {
+  const [userAttributes, setUserAttributes] = useState(null);
   const [bookmarkGroups, setBookmarkGroups] = useState([]);
   const [userId, setUserId] = useState(null);
   const [storageType, setStorageType] = useState(null);
@@ -23,6 +24,8 @@ export function AppContextProvider({ children }) {
         setUserId(identityId);
 
         const attributes = await fetchUserAttributes();
+        setUserAttributes(attributes); 
+
         const storedType = attributes['custom:storage_type'];
 
         if (storedType) {
@@ -39,6 +42,7 @@ export function AppContextProvider({ children }) {
       } catch (error) {
         console.error("Error fetching initial user data:", error);
         setUserId(null);
+        setUserAttributes(null);
         setBookmarkGroups([]);
         setStorageType(StorageType.LOCAL);
       }
@@ -107,6 +111,7 @@ export function AppContextProvider({ children }) {
     isLoading,
     isMigrating,
     setIsMigrating,
+    userAttributes,
   };
 
   return (

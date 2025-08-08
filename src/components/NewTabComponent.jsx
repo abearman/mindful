@@ -28,7 +28,14 @@ import DraggableGrid from './DraggableGrid.jsx';
 
 export function NewTabUI({ user, signIn, signOut }) {
   // Consume state from the context
-  const { bookmarkGroups, setBookmarkGroups, userId, storageType, isMigrating } = useContext(AppContext);
+  const {  
+    bookmarkGroups, 
+    setBookmarkGroups, 
+    userId, 
+    storageType, 
+    isMigrating,
+    userAttributes
+  } = useContext(AppContext);
 
   // Get all actions from the custom bookmarks hook
   const {
@@ -43,34 +50,9 @@ export function NewTabUI({ user, signIn, signOut }) {
     importBookmarksFromJSON();
   };
 
-  const [isLoading, setIsLoading] = useState(true);
-  const [userAttributes, setUserAttributes] = useState(null);
-
-  // Effect to fetch user attributes when the user logs in
-  useEffect(() => {
-    if (!user) {
-      setUserAttributes(null);
-      setIsLoading(false);
-      return;
-    }
-
-    const fetchAttributes = async () => {
-      setIsLoading(true);
-      try {
-        const attributes = await fetchUserAttributes();
-        setUserAttributes(attributes);
-      } catch (error) {
-        console.error("Error fetching user attributes:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchAttributes();
-  }, [user]);
-
   // Effect to ensure an empty group for adding new bookmarks always exists.
   useEffect(() => {
-    if (isLoading || !bookmarkGroups) return; // Wait for loading to finish
+    if (!bookmarkGroups) return; // Wait for loading to finish
 
     if (bookmarkGroups.length > 0) {
       const hasEmptyGroup = bookmarkGroups.some(
@@ -83,7 +65,7 @@ export function NewTabUI({ user, signIn, signOut }) {
         // If there are no groups at all, add the initial empty one
         addEmptyBookmarkGroup();
     }
-  }, [bookmarkGroups, isLoading, addEmptyBookmarkGroup]); // Runs when bookmarks or loading state change.
+  }, [bookmarkGroups, addEmptyBookmarkGroup]); // Runs when bookmarks or loading state change.
 
   useEffect(() => {
     // Only attach this listener if we are in LOCAL storage mode.
