@@ -8,7 +8,8 @@ import { AppContext } from "../scripts/AppContext.jsx";
 import { useBookmarkManager } from '../scripts/useBookmarkManager.js';
 
 const DraggableGrid = () => {
-  const { bookmarkGroups, setBookmarkGroups, userId } = useContext(AppContext);
+  const { bookmarkGroups, setBookmarkGroups, userId, storageType, setStorageType } = useContext(AppContext);  
+ 
   const [activeItem, setActiveItem] = useState(null);
 
   const {

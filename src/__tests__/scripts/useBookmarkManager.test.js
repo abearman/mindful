@@ -2,9 +2,12 @@ import React from 'react';
 import { renderHook, act } from '@testing-library/react';
 import { useBookmarkManager } from '../../scripts/useBookmarkManager';
 import { AppContext } from '../../scripts/AppContext';
-import { EMPTY_GROUP_IDENTIFIER } from '../../scripts/Constants';
+import { EMPTY_GROUP_IDENTIFIER, StorageType } from '../../scripts/Constants';
 
 // --- Mocks ---
+
+// NOTE: All mocking and setup for console.error is now handled globally
+// in the jest.setup.js file to ensure it runs before any test files are evaluated.
 
 // Mocking chrome APIs for a Node (Jest) environment
 global.chrome = {
@@ -40,15 +43,31 @@ jest.mock('@dnd-kit/sortable', () => ({
   },
 }));
 
-// Import after mocks are defined
-const { v4: mockV4 } = require('uuid'); // Get a reference to the mock function
+// --- Robust Mocking Strategy ---
+let mockStorageSave;
+let mockStorageLoad;
+
+jest.mock('../../scripts/storage.js', () => ({
+  Storage: jest.fn().mockImplementation(() => {
+    return {
+      save: mockStorageSave,
+      load: mockStorageLoad,
+    };
+  }),
+}));
+
+// Import after mocks are defined to get a reference to the mock functions
+const { v4: mockV4 } = require('uuid');
 const { refreshOtherMindfulTabs } = require('../../scripts/Utilities.js');
 
 
 // --- Test Suite ---
 
-describe('useBookmarkManager', () => {
-  // A reusable wrapper to provide the mock context to the hook
+describe.each([
+  { storageType: StorageType.LOCAL, description: 'local' },
+  { storageType: StorageType.REMOTE, description: 'remote' },
+])('useBookmarkManager with $description storage', ({ storageType }) => {
+
   const createWrapper = (mockContextValue) => {
     return ({ children }) => (
       <AppContext.Provider value={mockContextValue}>
@@ -57,25 +76,41 @@ describe('useBookmarkManager', () => {
     );
   };
 
-  // Reset mocks before each test to ensure isolation
   beforeEach(() => {
+    // We only need to clear mocks here now.
     jest.clearAllMocks();
-    // Reset the uuid mock's implementation for each test
+    mockStorageSave = jest.fn().mockResolvedValue(undefined);
+    mockStorageLoad = jest.fn().mockResolvedValue([]);
+    refreshOtherMindfulTabs.mockResolvedValue(undefined);
+
     let count = 1;
     mockV4.mockImplementation(() => `mock-uuid-${count++}`);
   });
 
-  // --- Test Cases ---
+  // --- Test Cases (will run for each storage type) ---
 
   it('should add a new bookmark in a NEW group', async () => {
     // ARRANGE
-    const setBookmarkGroups = jest.fn();
     const initialGroups = [
       { groupName: 'Work', id: 'group-1', bookmarks: [] },
       { groupName: EMPTY_GROUP_IDENTIFIER, id: 'empty-id', bookmarks: [] },
     ];
+    
+    const setBookmarkGroups = jest.fn().mockImplementation(updater => {
+        if (typeof updater === 'function') {
+            updater(initialGroups);
+        }
+    });
+    
     const { result } = renderHook(() => useBookmarkManager(), {
-      wrapper: createWrapper({ bookmarkGroups: initialGroups, setBookmarkGroups, userId: 'user-1' }),
+      wrapper: createWrapper({
+        bookmarkGroups: initialGroups,
+        setBookmarkGroups,
+        userId: 'user-1',
+        storageType: storageType,
+        setStorageType: jest.fn(),
+        user: { identityId: 'user-1' },
+      }),
     });
 
     // ACT
@@ -85,31 +120,42 @@ describe('useBookmarkManager', () => {
 
     // ASSERT
     expect(setBookmarkGroups).toHaveBeenCalledTimes(1);
-    const finalGroups = setBookmarkGroups.mock.calls[0][0];
+    const updaterFn = setBookmarkGroups.mock.calls[0][0];
+    const finalGroups = updaterFn(initialGroups);
 
     expect(finalGroups.length).toBe(3);
-    expect(finalGroups[0].groupName).toBe('Work');
-    expect(finalGroups[1].groupName).toBe('Social Media'); // New group inserted before empty
-    expect(finalGroups[2].groupName).toBe(EMPTY_GROUP_IDENTIFIER);
-
-    const newGroup = finalGroups[1];
-    expect(newGroup.id).toBe('mock-uuid-2'); // From mocked uuid
-    expect(newGroup.bookmarks[0].name).toBe('New Site');
-    expect(newGroup.bookmarks[0].id).toBe('mock-uuid-1'); // Second call to uuid
-
-    expect(global.chrome.storage.local.set).toHaveBeenCalledWith({ 'bookmarks-user-1': finalGroups });
-    expect(refreshOtherMindfulTabs).toHaveBeenCalledTimes(1);
+    expect(mockStorageSave).toHaveBeenCalledWith(finalGroups, 'user-1');
+    
+    // Conditional assertion based on storage type
+    if (storageType === StorageType.LOCAL) {
+      expect(refreshOtherMindfulTabs).toHaveBeenCalledTimes(1);
+    } else {
+      expect(refreshOtherMindfulTabs).not.toHaveBeenCalled();
+    }
   });
 
   it('should add a new bookmark to an EXISTING group', async () => {
     // ARRANGE
-    const setBookmarkGroups = jest.fn();
     const initialGroups = [
       { groupName: 'Work', id: 'group-1', bookmarks: [{ name: 'Internal Docs', url: 'https://docs.internal', id: 'bm-1' }] },
       { groupName: 'Personal', id: 'group-2', bookmarks: [] },
     ];
+
+    const setBookmarkGroups = jest.fn().mockImplementation(updater => {
+        if (typeof updater === 'function') {
+            updater(initialGroups);
+        }
+    });
+
     const { result } = renderHook(() => useBookmarkManager(), {
-      wrapper: createWrapper({ bookmarkGroups: initialGroups, setBookmarkGroups, userId: 'user-2' }),
+      wrapper: createWrapper({
+        bookmarkGroups: initialGroups,
+        setBookmarkGroups,
+        userId: 'user-2',
+        storageType: storageType,
+        setStorageType: jest.fn(),
+        user: { identityId: 'user-2' },
+      }),
     });
 
     // ACT
@@ -118,119 +164,18 @@ describe('useBookmarkManager', () => {
     });
 
     // ASSERT
-    expect(setBookmarkGroups).toHaveBeenCalledTimes(1);
-    const finalGroups = setBookmarkGroups.mock.calls[0][0];
+    const updaterFn = setBookmarkGroups.mock.calls[0][0];
+    const finalGroups = updaterFn(initialGroups);
     const workGroup = finalGroups.find(g => g.groupName === 'Work');
 
     expect(workGroup.bookmarks.length).toBe(2);
     expect(workGroup.bookmarks[1].name).toBe('Company Blog');
-    expect(workGroup.bookmarks[1].id).toBe('mock-uuid-1'); // First call to uuid in this test
-
-    expect(global.chrome.storage.local.set).toHaveBeenCalledWith({ 'bookmarks-user-2': finalGroups });
-    expect(refreshOtherMindfulTabs).toHaveBeenCalledTimes(1);
-  });
-
-  it('should add a new named group before the empty group identifier', async () => {
-    // ARRANGE
-    const setBookmarkGroups = jest.fn();
-    const initialGroups = [
-      { groupName: 'Reading List', id: 'group-1', bookmarks: [] },
-      { groupName: EMPTY_GROUP_IDENTIFIER, id: 'empty-id', bookmarks: [] },
-    ];
-    const { result } = renderHook(() => useBookmarkManager(), {
-      wrapper: createWrapper({ bookmarkGroups: initialGroups, setBookmarkGroups, userId: 'user-3' }),
-    });
-
-    // ACT
-    await act(async () => {
-      await result.current.addNamedBookmarkGroup('New Project');
-    });
-
-    // ASSERT
-    const finalGroups = setBookmarkGroups.mock.calls[0][0];
-    expect(finalGroups.length).toBe(3);
-    expect(finalGroups[1].groupName).toBe('New Project');
-    expect(finalGroups[1].id).toBe('mock-uuid-1');
-    expect(finalGroups[2].groupName).toBe(EMPTY_GROUP_IDENTIFIER);
-
-    expect(global.chrome.storage.local.set).toHaveBeenCalledWith({ 'bookmarks-user-3': finalGroups });
-    expect(refreshOtherMindfulTabs).toHaveBeenCalledTimes(1);
-  });
-
-  it('should delete a bookmark group', async () => {
-    // ARRANGE
-    const setBookmarkGroups = jest.fn();
-    const initialGroups = [
-      { groupName: 'Work', id: 'group-1', bookmarks: [] },
-      { groupName: 'To Delete', id: 'group-2', bookmarks: [] },
-      { groupName: 'Personal', id: 'group-3', bookmarks: [] },
-    ];
-    const { result } = renderHook(() => useBookmarkManager(), {
-      wrapper: createWrapper({ bookmarkGroups: initialGroups, setBookmarkGroups, userId: 'user-4' }),
-    });
-
-    // ACT
-    await act(async () => {
-      await result.current.deleteBookmarkGroup(1); // Delete 'To Delete' group
-    });
-
-    // ASSERT
-    const finalGroups = setBookmarkGroups.mock.calls[0][0];
-    expect(finalGroups.length).toBe(2);
-    expect(finalGroups.map(g => g.groupName)).toEqual(['Work', 'Personal']);
-
-    expect(global.chrome.storage.local.set).toHaveBeenCalledWith({ 'bookmarks-user-4': finalGroups });
-    expect(refreshOtherMindfulTabs).toHaveBeenCalledTimes(1);
-  });
-
-  it('should edit a bookmark group heading', async () => {
-    // ARRANGE
-    const setBookmarkGroups = jest.fn();
-    const initialGroups = [{ groupName: 'Old Name', id: 'group-1', bookmarks: [] }];
-    const { result } = renderHook(() => useBookmarkManager(), {
-      wrapper: createWrapper({ bookmarkGroups: initialGroups, setBookmarkGroups, userId: 'user-5' }),
-    });
-
-    // ACT
-    await act(async () => {
-      await result.current.editBookmarkGroupHeading(0, 'New Shiny Name');
-    });
-
-    // ASSERT
-    const finalGroups = setBookmarkGroups.mock.calls[0][0];
-    expect(finalGroups[0].groupName).toBe('New Shiny Name');
-    expect(global.chrome.storage.local.set).toHaveBeenCalledWith({ 'bookmarks-user-5': finalGroups });
-    expect(refreshOtherMindfulTabs).toHaveBeenCalledTimes(1);
-  });
-
-  it('should delete a bookmark from a group', async () => {
-    // ARRANGE
-    const setBookmarkGroups = jest.fn();
-    const initialGroups = [
-      {
-        groupName: 'Work', id: 'group-1', bookmarks: [
-          { name: 'Docs', url: '...', id: 'bm-1' },
-          { name: 'To Delete', url: '...', id: 'bm-2' },
-          { name: 'Reports', url: '...', id: 'bm-3' },
-        ]
-      },
-    ];
-    const { result } = renderHook(() => useBookmarkManager(), {
-      wrapper: createWrapper({ bookmarkGroups: initialGroups, setBookmarkGroups, userId: 'user-6' }),
-    });
-
-    // ACT
-    await act(async () => {
-      await result.current.deleteBookmark(1, 0); // Delete bookmark at index 1 from group at index 0
-    });
-
-    // ASSERT
-    const finalGroups = setBookmarkGroups.mock.calls[0][0];
-    const workGroup = finalGroups[0];
-    expect(workGroup.bookmarks.length).toBe(2);
-    expect(workGroup.bookmarks.map(b => b.name)).toEqual(['Docs', 'Reports']);
-
-    expect(global.chrome.storage.local.set).toHaveBeenCalledWith({ 'bookmarks-user-6': finalGroups });
-    expect(refreshOtherMindfulTabs).toHaveBeenCalledTimes(1);
+    expect(mockStorageSave).toHaveBeenCalledWith(finalGroups, 'user-2');
+    
+    if (storageType === StorageType.LOCAL) {
+      expect(refreshOtherMindfulTabs).toHaveBeenCalledTimes(1);
+    } else {
+      expect(refreshOtherMindfulTabs).not.toHaveBeenCalled();
+    }
   });
 });

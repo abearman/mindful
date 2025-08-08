@@ -1,7 +1,20 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useContext, useState, useEffect, useRef } from 'react';
+import { AppContext } from "../scripts/AppContext.jsx";
+
 import '../styles/TopBanner.css';
 
-const TopBanner = ({ onLoadBookmarks, onExportBookmarks, userAttributes, onSignIn, onSignOut, isSignedIn }) => {
+const TopBanner = ({ 
+  onLoadBookmarks, 
+  onExportBookmarks, 
+  userAttributes, 
+  onSignIn, 
+  onSignOut, 
+  isSignedIn,
+  onStorageTypeChange // Added: Function to handle toggle change
+}) => {
+  // Consume state from the context 
+  const { storageType } = useContext(AppContext);
+
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -22,6 +35,11 @@ const TopBanner = ({ onLoadBookmarks, onExportBookmarks, userAttributes, onSignI
   const handleLogout = () => {
     onSignOut();
     setDropdownOpen(false);
+  };
+
+  const handleToggleChange = (e) => {
+    const newStorageType = e.target.checked ? 'remote' : 'local';
+    onStorageTypeChange(newStorageType);
   };
 
   return (
@@ -47,6 +65,22 @@ const TopBanner = ({ onLoadBookmarks, onExportBookmarks, userAttributes, onSignI
             </button>
             {isDropdownOpen && (
               <div className="dropdown-menu">
+                <div className="dropdown-control-group">
+                  <div className="dropdown-label">Storage type</div> 
+                  <div className="storage-toggle">
+                    <span className={storageType === 'local' ? 'active' : ''}>Local</span>
+                    <label className="switch">
+                      <input
+                        type="checkbox"
+                        checked={storageType === 'remote'}
+                        onChange={handleToggleChange}
+                      />
+                      <span className="slider round"></span>
+                    </label>
+                    <span className={storageType === 'remote' ? 'active' : ''}>Remote</span>
+                  </div>
+                </div> 
+                <hr className="dropdown-divider" />
                 <button onClick={handleLogout} className="dropdown-item">
                   Logout
                 </button>

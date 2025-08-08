@@ -1,12 +1,15 @@
 {
   "auth": {
-    "user_pool_id": "us-west-1_nczujDT0D",
+    "user_pool_id": "us-west-1_RSrC116WD",
     "aws_region": "us-west-1",
-    "user_pool_client_id": "15su9gpl5d3odtkot37l391fh",
-    "identity_pool_id": "us-west-1:80b049f8-2b21-43de-ad1e-b3131d3fc682",
+    "user_pool_client_id": "4ecrr38jpd3kdrv21qcdtk5eqk",
+    "identity_pool_id": "us-west-1:f25848f6-3408-4b8c-8e34-5fb44536387b",
     "mfa_methods": [],
     "standard_required_attributes": [
-      "email"
+      "email",
+      "phone_number",
+      "family_name",
+      "given_name"
     ],
     "username_attributes": [
       "email"
@@ -26,7 +29,7 @@
     "unauthenticated_identities_enabled": true
   },
   "data": {
-    "url": "https://phjmmgfherasveblunyhytxyfi.appsync-api.us-west-1.amazonaws.com/graphql",
+    "url": "https://loicyrmqajh7hnrkzpy4urxxky.appsync-api.us-west-1.amazonaws.com/graphql",
     "aws_region": "us-west-1",
     "default_authorization_type": "AWS_IAM",
     "authorization_types": [
@@ -104,6 +107,17 @@
       "enums": {},
       "nonModels": {}
     }
+  },
+  "storage": {
+    "aws_region": "us-west-1",
+    "bucket_name": "amplify-mindful-amybearma-mindfuluserbookmarksbuck-3z5vi6iuefqf",
+    "buckets": [
+      {
+        "name": "mindful-user-bookmarks",
+        "bucket_name": "amplify-mindful-amybearma-mindfuluserbookmarksbuck-3z5vi6iuefqf",
+        "aws_region": "us-west-1"
+      }
+    ]
   },
   "version": "1.4"
 }

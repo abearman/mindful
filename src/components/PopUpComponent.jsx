@@ -23,8 +23,8 @@ import { AppContextProvider, AppContext } from '../scripts/AppContext.jsx';
 
 // Your existing PopUp component function remains the same
 function PopUpComponent() {
-  const { bookmarkGroups, setBookmarkGroups, userId } = useContext(AppContext);
-    
+  const { bookmarkGroups, setBookmarkGroups, userId } = useContext(AppContext);    
+
   // Get all actions from the custom bookmarks hook
   const { 
     addNamedBookmark, 

@@ -14,9 +14,6 @@ const NEW_GROUP_NAME = "+ Add a group";
 
 
 function EditableBookmarkGroupHeading(props) {
-  // Consume state from the context 
-  const { bookmarkGroups, setBookmarkGroups, userId } = useContext(AppContext);
-
   // Get all actions from the custom bookmarks hook
   const { 
     editBookmarkGroupHeading,
