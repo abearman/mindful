@@ -2,6 +2,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import TopBanner from '../../components/TopBanner'; 
+import { AppContext } from '../../scripts/AppContext'; 
 
 // Mock CSS imports for Jest
 jest.mock('../styles/TopBanner.css', () => ({}));
@@ -12,6 +13,7 @@ describe('TopBanner Component', () => {
   const mockOnExportBookmarks = jest.fn();
   const mockOnSignIn = jest.fn();
   const mockOnSignOut = jest.fn();
+  const mockChangeStorageType = jest.fn();
 
   // Mock user data for the signed-in state
   const mockUserAttributes = {
@@ -27,14 +29,23 @@ describe('TopBanner Component', () => {
   // --- Test Suite for Signed-Out State ---
   describe('when user is signed out', () => {
     beforeEach(() => {
+      const mockContext = {
+        storageType: 'local', 
+      };
+
       // Render the component in a signed-out state
       render(
-        <TopBanner
-          isSignedIn={false}
-          onLoadBookmarks={mockOnLoadBookmarks}
-          onExportBookmarks={mockOnExportBookmarks}
-          onSignIn={mockOnSignIn}
-        />
+        <AppContext.Provider value={mockContext}>
+          <TopBanner
+            onLoadBookmarks={mockOnLoadBookmarks}
+            onExportBookmarks={mockOnExportBookmarks}
+            userAttributes={mockUserAttributes}
+            onSignIn={mockOnSignIn}
+            onSignOut={mockOnSignOut}
+            isSignedIn={false}
+            onStorageTypeChange={mockChangeStorageType}
+          />
+        </AppContext.Provider>
       );
     });
 
@@ -66,15 +77,23 @@ describe('TopBanner Component', () => {
   // --- Test Suite for Signed-In State ---
   describe('when user is signed in', () => {
     beforeEach(() => {
+      const mockContext = {
+        storageType: 'remote', 
+      };
+
       // Render the component in a signed-in state
       render(
-        <TopBanner
-          isSignedIn={true}
-          userAttributes={mockUserAttributes}
-          onSignOut={mockOnSignOut}
-          onLoadBookmarks={mockOnLoadBookmarks}
-          onExportBookmarks={mockOnExportBookmarks}
-        />
+        <AppContext.Provider value={mockContext}>
+          <TopBanner
+            onLoadBookmarks={mockOnLoadBookmarks}
+            onExportBookmarks={mockOnExportBookmarks}
+            userAttributes={mockUserAttributes}
+            onSignIn={mockOnSignIn}
+            onSignOut={mockOnSignOut}
+            isSignedIn={true}
+            onStorageTypeChange={mockChangeStorageType}
+          />
+        </AppContext.Provider>
       );
     });
 
@@ -124,6 +143,32 @@ describe('TopBanner Component', () => {
         
         // Assert that the menu is now closed
         expect(screen.queryByText('Logout')).not.toBeInTheDocument();
+    });
+
+    it('should display the storage toggle in the correct state', async () => {
+      // First, open the dropdown. Otherwise the storage toggle won't be visible in the DOM.
+      const user = userEvent.setup();
+      await user.click(screen.getByTitle('User Menu'));
+
+      // Find the toggle switch. Querying by role is robust and good for accessibility.
+      const storageToggle = screen.getByRole('checkbox');
+
+      // Based on the initial render where storageType is 'remote', it should be checked
+      expect(storageToggle).toBeChecked();
+    });
+
+    it('should call onStorageTypeChange when the toggle is clicked', async () => {
+      // First, open the dropdown. Otherwise the storage toggle won't be visible in the DOM.
+      const user = userEvent.setup();
+      await user.click(screen.getByTitle('User Menu'));
+
+      const storageToggle = screen.getByRole('checkbox');
+
+      // Simulate the user clicking the toggle
+      await user.click(storageToggle);
+      
+      // Assert that the mock handler passed in via props was called
+      expect(mockChangeStorageType).toHaveBeenCalledTimes(1);
     });
   });
 });
