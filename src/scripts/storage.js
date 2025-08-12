@@ -2,13 +2,9 @@ import { uploadData, downloadData, remove } from '@aws-amplify/storage';
 import { getUserStorageKey } from './Utilities.js';
 import { StorageType } from './Constants.js';
 import { fetchAuthSession } from 'aws-amplify/auth'; 
-import CryptoJS from 'crypto-js';  // TODO: Delete this
 
 // Invoke URL from Amazon API Gateway 
 const API_INVOKE_URL = 'https://j69tonnhy6.execute-api.us-west-1.amazonaws.com/v1'
-
-const ENCRYPTION_KEY_SECRET = 'a-very-secret-key-that-you-should-replace';
-const BOOKMARKS_FILE_NAME = 'bookmarks.json.encrypted';
 
 // --- Storage Strategies ---
 
