@@ -92,25 +92,29 @@ const remoteStorageStrategy = {
     }
   },
   
-  async delete() {   // TODO: update with KMS
-    console.log("Attempting to delete from remote storage...");
+  async delete(userId) {
     try {
-      await remove({
-        path: ({ identityId }) => `private/${identityId}/${BOOKMARKS_FILE_NAME}`,
-        options: {
-          accessLevel: 'private',
+      const { tokens } = await fetchAuthSession();
+      if (!tokens) throw new Error("User is not authenticated.");
+
+      const response = await fetch(`${API_INVOKE_URL}/bookmarks`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': tokens.idToken.toString(),
         },
       });
-      console.log("Successfully deleted remote bookmarks file.");
-    } catch (error) {
-      if (error.name === 'NoSuchKey' || (error.name === 'StorageError' && error.message.includes('not found'))) {
-        console.log("No remote bookmarks file to delete (which is okay).");
-        return; 
+
+      if (!response.ok) {
+        throw new Error(`Failed to delete bookmarks: ${response.statusText}`);
       }
+      
+      console.log("Bookmarks deleted successfully via API.");
+
+    } catch (error) {
       console.error("Error deleting bookmarks from remote storage:", error);
       throw error;
     }
-  }
+  } 
 };
 
 // --- Main Storage Class ---
