@@ -1,10 +1,10 @@
 import { uploadData, downloadData, remove } from '@aws-amplify/storage';
-import CryptoJS from 'crypto-js';
 import { getUserStorageKey } from './Utilities.js';
 import { StorageType } from './Constants.js';
+import { fetchAuthSession } from 'aws-amplify/auth'; 
 
-const ENCRYPTION_KEY_SECRET = 'a-very-secret-key-that-you-should-replace';
-const BOOKMARKS_FILE_NAME = 'bookmarks.json.encrypted';
+// Invoke URL from Amazon API Gateway 
+const API_INVOKE_URL = 'https://j69tonnhy6.execute-api.us-west-1.amazonaws.com/v1'
 
 // --- Storage Strategies ---
 
@@ -31,74 +31,86 @@ const chromeStorageStrategy = {
 const remoteStorageStrategy = {
   async load(userId) {
     try {
-      const downloadResult = await downloadData({
-        path: ({ identityId }) => `private/${identityId}/${BOOKMARKS_FILE_NAME}`,
-        options: {
-          accessLevel: 'private',
+      const { tokens } = await fetchAuthSession();
+      if (!tokens) throw new Error("User is not authenticated.");
+      
+      const response = await fetch(`${API_INVOKE_URL}/bookmarks`, {
+        method: 'GET',
+        headers: {
+          'Authorization': tokens.idToken.toString(),
         },
-      }).result;
+      });
 
-      const encryptedText = await downloadResult.body.text();
-
-      if (!encryptedText) {
-        return [];
-      }
-
-      const bytes = CryptoJS.AES.decrypt(encryptedText, ENCRYPTION_KEY_SECRET);
-      const decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-      return decryptedData;
-
-    } catch (error) {
-      // --- MODIFIED: More robust error check for "not found" scenarios ---
-      const isNoSuchKeyError = error.name === 'NoSuchKey';
-      const isNotFoundError = error.name === 'StorageError' && error.message.includes('not found');
-
-      if (isNoSuchKeyError || isNotFoundError) {
-        console.log("No remote bookmarks file found. Starting fresh.");
-        return []; // Gracefully handle and return an empty array
+      if (!response.ok) {
+        throw new Error(`Failed to load bookmarks: ${response.statusText}`);
       }
       
-      // Log any other unexpected errors
+      return await response.json();
+
+    } catch (error) {
       console.error("Error loading bookmarks from remote storage:", error);
       return []; // Fallback to an empty array to prevent app crash
     }
   },
+
+
   async save(data, userId) {
-    const jsonString = JSON.stringify(data);
-    const encryptedData = CryptoJS.AES.encrypt(jsonString, ENCRYPTION_KEY_SECRET).toString();
     try {
-      await uploadData({
-        path: ({ identityId }) => `private/${identityId}/${BOOKMARKS_FILE_NAME}`,
-        data: encryptedData,
-        options: {
-          accessLevel: 'private',
-          contentType: 'text/plain',
-        }
-      }).result;
+      // 1. Get the current user's session token
+      const { tokens } = await fetchAuthSession();
+      if (!tokens || !tokens.idToken) {
+        throw new Error("User is not authenticated.");
+      }
+      const idToken = tokens.idToken.toString(); // The JWT token
+
+      // 2. Make a POST request to our new API endpoint
+      const response = await fetch(`${API_INVOKE_URL}/bookmarks`, {
+        method: 'POST',
+        headers: {
+          // The Cognito Authorizer uses this header to verify the user
+          'Authorization': idToken,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Failed to save bookmarks: ${errorData.message || response.statusText}`);
+      }
+      
+      console.log("Bookmarks saved successfully via API.");
+      return await response.json();
+
     } catch (error) {
       console.error("Error saving bookmarks to remote storage:", error);
       throw error;
     }
   },
-  async delete() {
-    console.log("Attempting to delete from remote storage...");
+  
+  async delete(userId) {
     try {
-      await remove({
-        path: ({ identityId }) => `private/${identityId}/${BOOKMARKS_FILE_NAME}`,
-        options: {
-          accessLevel: 'private',
+      const { tokens } = await fetchAuthSession();
+      if (!tokens) throw new Error("User is not authenticated.");
+
+      const response = await fetch(`${API_INVOKE_URL}/bookmarks`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': tokens.idToken.toString(),
         },
       });
-      console.log("Successfully deleted remote bookmarks file.");
-    } catch (error) {
-      if (error.name === 'NoSuchKey' || (error.name === 'StorageError' && error.message.includes('not found'))) {
-        console.log("No remote bookmarks file to delete (which is okay).");
-        return; 
+
+      if (!response.ok) {
+        throw new Error(`Failed to delete bookmarks: ${response.statusText}`);
       }
+      
+      console.log("Bookmarks deleted successfully via API.");
+
+    } catch (error) {
       console.error("Error deleting bookmarks from remote storage:", error);
       throw error;
     }
-  }
+  } 
 };
 
 // --- Main Storage Class ---
