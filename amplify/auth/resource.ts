@@ -26,5 +26,17 @@ export const auth = defineAuth({
       mutable: true,      // Allows the user to change this value after sign-up
       // Not required, so thus won't appear on sign-up screen
     },
+    // Defines the custom attribute for an encrypted Data Encryption Key (DEK)
+    'custom:encryptedDek': {
+      dataType: 'String',
+      mutable: true,
+    },
+    // Defines the custom attribute for a salt: a random piece of data 
+    // that gets added to the input before hashing or encrypting it.
+    // This makes each DEK unique even if two users have the same passwords.
+    'custom:salt': {
+      dataType: 'String',
+      mutable: true,
+    }
   }
 });
