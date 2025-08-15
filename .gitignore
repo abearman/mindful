@@ -2,8 +2,14 @@
 node_modules/
 dist/
 
+*.pem
+*.crx
+dist.pem
+dist.crx
+
 # amplify
 .amplify
 amplifyconfiguration*
 amplify_outputs.json
 amplify_outputs.*.json
+
