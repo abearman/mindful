@@ -1,7 +1,5 @@
 ---
-layout: default
 title: Privacy Policy
-permalink: /mindful/privacy
 ---
 
 # Privacy Policy for Mindful Bookmarks
