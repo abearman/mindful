@@ -3,6 +3,7 @@
   "name": "Mindful",
   "description": "Store lists of bookmarks in separate categories",
   "version": "1.0.0",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1EOwSSPVE6vrpuLbK6srdDizCsSeLVH/Vuxj+dvOkm6J18AT/P10CQ5Awpl9f+RpcEUWsRDQXzzVGr12+laztE5/2zMq8eLnoswd6yBXOTtOGdS64SUdvSEejDkKEVJXB/FZy9sKqBbq/fIiI10REnqLks63zt4nu0YR7Bb80yqMn7jnxjnHt7d03Wdzby38SYgtonWQhpYU7nybo+rgOOTsSENKuDtGJPfeu33J/ASsluLEq25jB7uUGC70sF2XGBSZtE5w5cY+D58Lok7erALy8Ec3Sgg561I84IzYXbOKs7wil/eArCtqh35ig45xZCjzBZiZUdLlqaryGYJ3qQIDAQAB",
 
   "chrome_url_overrides": {
     "newtab": "NewTab.html"

@@ -2,5 +2,9 @@
   "type": "module",
   "scripts": {
     "test": "jest"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.152",
+    "@types/crypto-js": "^4.2.2"
   }
 }
