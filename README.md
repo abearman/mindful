@@ -16,3 +16,12 @@ Chrome plugin for productivity and efficiently storing bookmarks
 ## How to run the tests
 1. To run one-off, run `npm test`
 2. To run continually during development, run in watch mode: `npm test -- --watch`
+
+## How to switch between sandbox vs. prod
+This is all controlled by whatever file is named `amplify_outputs.json`.
+### To work on production:
+1. Download a copy of `amplify_outputs.json` from AWS Apps > Deployment and name it `amplify_outputs.prod.json`.
+2. Run `cp amplify_outputs.prod.json amplify_outputs.json`
+
+### To work on sandbox
+1. Run `npx ampx sandbox` to have `amplify_outputs.json` generated for you.
