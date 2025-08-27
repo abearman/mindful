@@ -99,19 +99,20 @@ export const useBookmarkManager = () => {
 
   const addNamedBookmarkGroup = async (groupName) => {
     await updateAndPersistGroups(prevGroups => {
-        const newGroup = {
-            groupName: groupName,
-            bookmarks: [],
-            id: uuidv4(),
-        };
-        const updatedGroups = [...prevGroups];
-        const emptyGroupIndex = updatedGroups.findIndex(g => g.groupName === EMPTY_GROUP_IDENTIFIER);
-        if (emptyGroupIndex !== -1) {
-            updatedGroups.splice(emptyGroupIndex, 0, newGroup);
-        } else {
-            updatedGroups.push(newGroup);
-        }
-        return updatedGroups;
+      console.log("Calling addNamedBookmarkGroup");
+      const newGroup = {
+          groupName: groupName,
+          bookmarks: [],
+          id: uuidv4(),
+      };
+      const updatedGroups = [...prevGroups];
+      const emptyGroupIndex = updatedGroups.findIndex(g => g.groupName === EMPTY_GROUP_IDENTIFIER);
+      if (emptyGroupIndex !== -1) {
+          updatedGroups.splice(emptyGroupIndex, 0, newGroup);
+      } else {
+          updatedGroups.push(newGroup);
+      }
+      return updatedGroups;
     });
   };
 

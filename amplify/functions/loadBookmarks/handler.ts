@@ -1,129 +1,122 @@
 import { KMSClient, DecryptCommand } from "@aws-sdk/client-kms";
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-import { Buffer } from 'buffer'; 
-import CryptoJS from "crypto-js";
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+import { createDecipheriv } from "crypto";
 
 const kmsClient = new KMSClient({});
 const s3Client = new S3Client({});
 
-const BOOKMARKS_FILE_NAME = "bookmarks.json.encrypted";
-const KEY_FILE_NAME = "bookmarks.key";
-
+// Works for REST API (v1) and HTTP API (v2)
+const getUserIdFromEvent = (event: any): string | undefined => {
+  const restSub = event?.requestContext?.authorizer?.claims?.sub;          // REST
+  const httpSub = event?.requestContext?.authorizer?.jwt?.claims?.sub;     // HTTP
+  return restSub ?? httpSub;
+};
 
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  const allowedOrigin = process.env.ALLOWED_ORIGIN;
+  const allowedOrigin = process.env.ALLOWED_ORIGIN ?? "*";
+  const headers = {
+    "Access-Control-Allow-Origin": allowedOrigin,
+    "Access-Control-Allow-Methods": "OPTIONS, GET, POST, DELETE",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    "Vary": "Origin",
+    "Content-Type": "application/json",
+  };
 
-  if (!allowedOrigin) {
-    console.error("CRITICAL: ALLOWED_ORIGIN environment variable is not set.");
-    return {
-      statusCode: 500,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: "Internal Server Error: Service misconfiguration." }),
-    };
+  const userId = getUserIdFromEvent(event);
+  if (!userId) {
+    return { statusCode: 401, headers, body: JSON.stringify({ message: "Unauthorized: Missing authentication details" }) };
   }
 
-  if (!event.requestContext.authorizer?.claims?.sub) {
-    return {
-      statusCode: 401,
-      body: JSON.stringify({ message: 'Unauthorized: Missing authentication details' }),
-    };
+  const bucket = process.env.S3_BUCKET_NAME;
+  if (!bucket) {
+    return { statusCode: 500, headers, body: JSON.stringify({ message: "Server misconfiguration: missing S3_BUCKET_NAME" }) };
   }
-
-  // If the code reaches here, TypeScript knows the values are not null.
-  const userId = event.requestContext.authorizer.claims.sub;  
-
-  const s3Bucket = process.env.S3_BUCKET_NAME;
 
   try {
-    const keyObject = await s3Client.send(new GetObjectCommand({
-        Bucket: s3Bucket,
-        Key: `private/${userId}/${KEY_FILE_NAME}`
+    // 1) Read the wrapped data key
+    const keyObj = await s3Client.send(new GetObjectCommand({
+      Bucket: bucket,
+      Key: `private/${userId}/${process.env.KEY_FILE_NAME}`,
     }));
+    if (!keyObj.Body) {
+      // No key yet → treat as no data
+      return { statusCode: 200, headers, body: JSON.stringify([]) };
+    }
+    const wrappedKeyBytes = await keyObj.Body.transformToByteArray();
 
-    const dekKey = `private/${userId}/${BOOKMARKS_FILE_NAME}`;
-    if (!keyObject.Body) {
-      // If the body is missing, we can't continue.
-      return {
-        statusCode: 500,
-        headers: { "Access-Control-Allow-Origin": allowedOrigin },
-        body: JSON.stringify({ message: "Internal Server Error: Missing key data" }),
-      };
+    // 2) Read the ciphertext package (JSON: {version, algo, iv, tag, data})
+    const dataKey = `private/${userId}/${process.env.BOOKMARKS_FILE_NAME}`;
+    const dataObj = await s3Client.send(new GetObjectCommand({
+      Bucket: bucket,
+      Key: dataKey,
+    }));
+    if (!dataObj.Body) {
+      return { statusCode: 200, headers, body: JSON.stringify([]) };
+    }
+    const payloadText = await dataObj.Body.transformToString("utf-8");
+
+    // If object exists but empty/malformed, be defensive
+    if (!payloadText || !payloadText.trim()) {
+      return { statusCode: 200, headers, body: JSON.stringify([]) };
     }
 
-    // If the code reaches this point, TypeScript knows keyObject.Body is defined.
-    const encryptedDek = await keyObject.Body.transformToByteArray();
-
-    const dataObject = await s3Client.send(
-      new GetObjectCommand({ Bucket: s3Bucket, Key: dekKey }
-    ));
-
-    if (!dataObject.Body) {
-      // If the body is missing, the function can't continue.
-      return {
-        statusCode: 500,
-        headers: { "Access-Control-Allow-Origin": allowedOrigin },
-        body: JSON.stringify({ message: "Internal Server Error: Missing data" }),
-      };
-    }
-
-    // After this check, TypeScript knows dataObject.Body is a valid stream.
-    const encryptedData = await dataObject.Body.transformToString("utf-8"); 
-    
-    const decryptCommand = new DecryptCommand({
-      CiphertextBlob: encryptedDek,
-      EncryptionContext: { userId: userId }
-    });
-    const { Plaintext } = await kmsClient.send(decryptCommand);
-
-    if (!Plaintext) {
-      // If the decryption key is missing, we cannot continue.
-      return {
-        statusCode: 500,
-        headers: { "Access-Control-Allow-Origin": allowedOrigin },
-        body: JSON.stringify({ message: "Internal Server Error: Could not process key" }),
-      };
-    }
-
-    // Convert the raw key into a format CryptoJS understands
-    const keyHex = Buffer.from(Plaintext).toString('hex');
-    const decryptionKey = CryptoJS.enc.Hex.parse(keyHex);
-
-    // Use the correctly formatted key to decrypt the data
-    const decryptedBytes = CryptoJS.AES.decrypt(encryptedData, decryptionKey);
-    const decryptedJson = decryptedBytes.toString(CryptoJS.enc.Utf8);
-    const bookmarks = JSON.parse(decryptedJson);
-
-    return {
-      statusCode: 200,
-      headers: { "Access-Control-Allow-Origin": allowedOrigin },
-      body: JSON.stringify(bookmarks),
+    let payload: {
+      version: number;
+      algo: string;
+      iv: string;   // base64
+      tag: string;  // base64
+      data: string; // base64
     };
-
-  } catch (error) {
-    if (error instanceof Error) {
-      if (error.name === 'NoSuchKey') {
-        return {
-            statusCode: 200,
-            headers: { "Access-Control-Allow-Origin": allowedOrigin },
-            body: JSON.stringify([]),
-        };
-      }
-      // This return handles any other type of Error
-      console.error("Error loading bookmarks:", error);
-      return {
-        statusCode: 500,
-        headers: { "Access-Control-Allow-Origin": allowedOrigin },
-        body: JSON.stringify({ message: "Internal Server Error" }),
-      };
-    } else {
-      // This 'else' block handles anything thrown that ISN'T an Error object
-      console.error("An unexpected non-Error value was thrown:", error);
-      return {
-        statusCode: 500,
-        headers: { "Access-Control-Allow-Origin": allowedOrigin },
-        body: JSON.stringify({ message: "An unknown error occurred" }),
-      };
+    try {
+      payload = JSON.parse(payloadText);
+    } catch {
+      // If old format or corrupted, surface as empty for now
+      return { statusCode: 200, headers, body: JSON.stringify([]) };
     }
+
+    // 3) KMS Decrypt the wrapped key (must use same EncryptionContext)
+    const { Plaintext } = await kmsClient.send(new DecryptCommand({
+      CiphertextBlob: wrappedKeyBytes,
+      EncryptionContext: { userId },
+    }));
+    if (!Plaintext) {
+      return { statusCode: 500, headers, body: JSON.stringify({ message: "Could not decrypt data key" }) };
+    }
+    const key = Buffer.from(Plaintext as Uint8Array); // 32 bytes
+
+    // 4) Decrypt with AES-256-GCM
+    if (payload.algo !== "AES-256-GCM") {
+      // If you ever need to support legacy formats, branch here.
+      return { statusCode: 500, headers, body: JSON.stringify({ message: `Unsupported cipher: ${payload.algo}` }) };
+    }
+
+    const iv = Buffer.from(payload.iv, "base64");   // 12 bytes
+    const tag = Buffer.from(payload.tag, "base64"); // 16 bytes
+    const data = Buffer.from(payload.data, "base64");
+
+    const decipher = createDecipheriv("aes-256-gcm", key, iv);
+    decipher.setAuthTag(tag);
+
+    const decrypted = Buffer.concat([decipher.update(data), decipher.final()]);
+    const text = decrypted.toString("utf8");
+
+    // 5) Parse bookmarks JSON (expect array/object)
+    let bookmarks: unknown;
+    try {
+      bookmarks = JSON.parse(text);
+    } catch {
+      // Corrupt plaintext; treat as empty
+      return { statusCode: 200, headers, body: JSON.stringify([]) };
+    }
+
+    return { statusCode: 200, headers, body: JSON.stringify(bookmarks ?? []) };
+  } catch (error) {
+    // If object not found, return empty list (fresh account)
+    if (typeof error === "object" && error && "name" in error && (error as any).name === "NoSuchKey") {
+      return { statusCode: 200, headers, body: JSON.stringify([]) };
+    }
+    console.error("Error loading bookmarks:", error);
+    return { statusCode: 500, headers, body: JSON.stringify({ message: "Internal Server Error" }) };
   }
 };
