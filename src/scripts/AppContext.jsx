@@ -11,8 +11,7 @@ export function AppContextProvider({ children }) {
   const [userId, setUserId] = useState(null);
   const [storageType, setStorageType] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  // State to prevent race conditions during storage migration ---
-  const [isMigrating, setIsMigrating] = useState(false);
+  const [isMigrating, setIsMigrating] = useState(false); // prevent race conditions
 
   // Effect for fetching the user's identity and storage preference
   useEffect(() => {
@@ -24,10 +23,9 @@ export function AppContextProvider({ children }) {
         setUserId(identityId);
 
         const attributes = await fetchUserAttributes();
-        setUserAttributes(attributes); 
+        setUserAttributes(attributes);
 
         const storedType = attributes['custom:storage_type'];
-
         if (storedType) {
           setStorageType(storedType);
         } else {
@@ -53,12 +51,10 @@ export function AppContextProvider({ children }) {
 
   // Effect for loading bookmarks when userId or storageType changes
   useEffect(() => {
-    // Guard clause to prevent this effect from running during a migration ---
     if (isMigrating) {
       console.log("Migration in progress, skipping bookmark load.");
       return;
     }
-
     if (!userId || !storageType) {
       if (!storageType) return;
       setIsLoading(false);
@@ -79,6 +75,49 @@ export function AppContextProvider({ children }) {
     };
 
     loadData();
+  }, [userId, storageType, isMigrating]);
+
+  // Effect: listen for bookmark update broadcasts and reload
+  useEffect(() => {
+    if (!userId || !storageType || isMigrating) return;
+
+    const reload = async () => {
+      try {
+        const fresh = await loadInitialBookmarks(userId, storageType);
+        setBookmarkGroups(fresh);
+      } catch (e) {
+        console.error("Reload after update failed:", e);
+      }
+    };
+
+    // 1) Extension runtime messages
+    const runtimeHandler = (msg) => {
+      if (msg?.type === 'MINDFUL_BOOKMARKS_UPDATED') reload();
+    };
+    try {
+      chrome?.runtime?.onMessage?.addListener(runtimeHandler);
+    } catch {}
+
+    // 2) BroadcastChannel
+    let bc;
+    try {
+      bc = new BroadcastChannel('mindful');
+      bc.onmessage = (e) => {
+        if (e?.data?.type === 'MINDFUL_BOOKMARKS_UPDATED') reload();
+      };
+    } catch {}
+
+    // 3) Visibility change (catch stale state after backgrounding)
+    const onVis = () => {
+      if (document.visibilityState === 'visible') reload();
+    };
+    document.addEventListener('visibilitychange', onVis);
+
+    return () => {
+      try { chrome?.runtime?.onMessage?.removeListener(runtimeHandler); } catch {}
+      try { bc?.close(); } catch {}
+      document.removeEventListener('visibilitychange', onVis);
+    };
   }, [userId, storageType, isMigrating]);
 
   // Handler for updating the storage type preference

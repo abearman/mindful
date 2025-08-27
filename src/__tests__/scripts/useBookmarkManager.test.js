@@ -47,7 +47,7 @@ jest.mock('@dnd-kit/sortable', () => ({
 let mockStorageSave;
 let mockStorageLoad;
 
-jest.mock('../../scripts/storage.js', () => ({
+jest.mock('../../scripts/Storage.js', () => ({
   Storage: jest.fn().mockImplementation(() => {
     return {
       save: mockStorageSave,

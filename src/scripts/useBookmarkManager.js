@@ -4,7 +4,7 @@ import { arrayMove } from '@dnd-kit/sortable';
 import { AppContext } from './AppContext.jsx';
 import { EMPTY_GROUP_IDENTIFIER, StorageType } from './Constants.js';
 import { refreshOtherMindfulTabs } from './Utilities.js';
-import { Storage } from './storage.js';
+import { Storage } from './Storage.js';
 
 export async function loadInitialBookmarks(userId, storageType) {
   if (!userId) return [];
@@ -22,27 +22,29 @@ export const useBookmarkManager = () => {
     return new Promise((resolve, reject) => {
       setBookmarkGroups(currentGroups => {
         const newGroups = updater(currentGroups);
-        if (userId) {
-          storage.save(newGroups, userId)
-            .then(() => {
-              if (storageType === StorageType.LOCAL) {
-                return refreshOtherMindfulTabs();
-              }
-            })
-            .then(resolve)
-            .catch(error => {
-              console.error(`Failed to save bookmarks to ${storageType}:`, error);
-              reject(error);
-            });
-        } else {
+  
+        if (!userId) {
           const error = new Error("Cannot save: userId is not available.");
           console.error(error.message);
           reject(error);
+          return newGroups;
         }
-        return newGroups;
+  
+        storage.save(newGroups, userId)
+          .then(() => {
+            // Always notify other views (new tab, options, other popups)
+            refreshOtherMindfulTabs();
+            resolve(newGroups); // resolve with the updated value for convenience
+          })
+          .catch(error => {
+            console.error(`Failed to save bookmarks to ${storageType}:`, error);
+            reject(error);
+          });
+  
+        return newGroups; // immediate UI update in this view (the popup)
       });
     });
-  };
+  }; 
 
   const changeStorageType = async (newStorageType) => {
     if (!userId) {

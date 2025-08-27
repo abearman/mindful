@@ -42,15 +42,46 @@ export const isCurrentTabTheNewTab = () => {
   });
 }
 
-export function refreshOtherMindfulTabs() {
-  // Reload any tabs (except the current one) that are open and pointed to newtab (aka Mindful page)
-  chrome.tabs.query({}, function(tabs) {
-    tabs.forEach(function(tab) {
-      if ((tab.url == CHROME_NEW_TAB) && (!tab.active))  {
-        chrome.tabs.reload(tab.id);
-      }    
+/**
+ * Notify every Mindful surface that bookmarks changed,
+ * then (optionally) hard-refresh any known tabs.
+ */
+export async function refreshOtherMindfulTabs() {
+  // 1) Broadcast to all extension views (popup, new tab, options, background)
+  try {
+    chrome?.runtime?.sendMessage?.({ type: 'MINDFUL_BOOKMARKS_UPDATED' });
+  } catch (e) {
+    console.warn('runtime.sendMessage failed:', e);
+  }
+
+  // 2) Broadcast to any non-extension pages that might be listening
+  try {
+    const bc = new BroadcastChannel('mindful');
+    bc.postMessage({ type: 'MINDFUL_BOOKMARKS_UPDATED' });
+    bc.close();
+  } catch (e) {
+    // BroadcastChannel not available or blocked (ok to ignore)
+  }
+
+  // 3) (Optional) If you already reload tabs, keep doing it here.
+  // Wrap in try/catch so it’s a no-op without "tabs" permission.
+  try {
+    // Adjust these URL patterns to your actual extension pages if you want
+    const tabs = await chrome?.tabs?.query?.({
+      url: [
+        'chrome-extension://*/newtab.html',
+        'chrome-extension://*/options.html',
+      ],
     });
-  });
+    if (tabs?.length) {
+      for (const t of tabs) {
+        // Trigger a hard reload; listeners will still handle soft reloads.
+        try { chrome.tabs.reload(t.id); } catch {}
+      }
+    }
+  } catch (e) {
+    // No "tabs" permission or not available in this context — ignore
+  }
 }
 
 export function refreshActiveMindfulTab() {
