@@ -29,11 +29,11 @@ export function AppContextProvider({ children }) {
         if (storedType) {
           setStorageType(storedType);
         } else {
-          setStorageType(StorageType.REMOTE);
+          setStorageType(StorageType.LOCAL);  // Default storage is local
           await updateUserAttribute({
             userAttribute: {
               attributeKey: 'custom:storage_type',
-              value: StorageType.REMOTE,
+              value: StorageType.LOCAL,
             },
           });
         }
