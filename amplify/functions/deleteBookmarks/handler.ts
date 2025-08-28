@@ -1,62 +1,73 @@
 import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+import { env } from '$amplify/env/saveBookmarksFunc';
 
 const s3Client = new S3Client({});
 
-const BOOKMARKS_FILE_NAME = "bookmarks.json.encrypted";
-const KEY_FILE_NAME = "bookmarks.key";
-
+// Works for REST API (v1) and HTTP API (v2)
+const getUserIdFromEvent = (event: any): string | undefined => {
+  const restSub = event?.requestContext?.authorizer?.claims?.sub;          // REST
+  const httpSub = event?.requestContext?.authorizer?.jwt?.claims?.sub;     // HTTP
+  return restSub ?? httpSub;
+};
 
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  const allowedOrigin = process.env.allowedOrigin;
-
-  if (!allowedOrigin) {
-    console.error("CRITICAL: ALLOWED_ORIGIN environment variable is not set.");
-    return {
-      statusCode: 500,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: "Internal Server Error: Service misconfiguration." }),
-    };
+  if (!env.ALLOWED_ORIGIN && process.env.NODE_ENV === 'production') {
+    throw new Error("Missing ALLOWED_ORIGIN secret in production");
   }
 
-  if (!event.requestContext.authorizer?.claims?.sub) {
+  const allowedOrigin = env.ALLOWED_ORIGIN ?? "*"; // resolved securely at runtime
+  const headers = {
+    "Access-Control-Allow-Origin": allowedOrigin,
+    "Access-Control-Allow-Methods": "OPTIONS, GET, POST, DELETE",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    "Vary": "Origin",
+  };
+
+  const userId = getUserIdFromEvent(event);
+  if (!userId) {
     return {
       statusCode: 401,
-      headers: { "Access-Control-Allow-Origin": allowedOrigin }, 
-      body: JSON.stringify({ message: 'Unauthorized: Missing authentication details' }),
+      headers,
+      body: JSON.stringify({ message: "Unauthorized: Missing authentication details" }),
     };
   }
 
-  // If the code reaches here, TypeScript knows the values are not null.
-  const userId = event.requestContext.authorizer.claims.sub;
+  const bucket = process.env.S3_BUCKET_NAME;
+  if (!bucket) {
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ message: "Server misconfiguration: missing S3_BUCKET_NAME" }),
+    };
+  }
 
-  const s3Bucket = process.env.S3_BUCKET_NAME;
-  const bookmarkPath = `private/${userId}/${BOOKMARKS_FILE_NAME}`;
-  const keyPath = `private/${userId}/${KEY_FILE_NAME}`;
+  const bookmarkPath = `private/${userId}/${process.env.BOOKMARKS_FILE_NAME}`;
+  const keyPath = `private/${userId}/${process.env.KEY_FILE_NAME}`;
 
   try {
-    const deleteBookmarkFile = s3Client.send(new DeleteObjectCommand({
-      Bucket: s3Bucket,
-      Key: bookmarkPath
-    }));
-    const deleteKeyFile = s3Client.send(new DeleteObjectCommand({
-      Bucket: s3Bucket,
-      Key: keyPath
-    }));
-    await Promise.all([deleteBookmarkFile, deleteKeyFile]);
-    
-    return {
-      statusCode: 204,
-      headers: { "Access-Control-Allow-Origin": allowedOrigin },
-      body: '',
-    };
+    // Delete both objects; treat "not found" as success (idempotent delete)
+    await Promise.all([
+      s3Client.send(new DeleteObjectCommand({ Bucket: bucket, Key: bookmarkPath })),
+      s3Client.send(new DeleteObjectCommand({ Bucket: bucket, Key: keyPath })),
+    ]);
 
+    return {
+      statusCode: 204, // No Content
+      headers,
+      body: "",
+    };
   } catch (error) {
+    // If either key doesn't exist, S3 may still succeed; but just in case:
+    const name = (error as any)?.name;
+    if (name === "NoSuchKey" || name === "NotFound") {
+      return { statusCode: 204, headers, body: "" };
+    }
+
     console.error("Error deleting bookmarks:", error);
     return {
       statusCode: 500,
-      headers: { "Access-Control-Allow-Origin": allowedOrigin },
+      headers,
       body: JSON.stringify({ message: "Internal Server Error" }),
     };
   }

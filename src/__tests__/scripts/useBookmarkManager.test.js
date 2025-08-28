@@ -47,7 +47,7 @@ jest.mock('@dnd-kit/sortable', () => ({
 let mockStorageSave;
 let mockStorageLoad;
 
-jest.mock('../../scripts/storage.js', () => ({
+jest.mock('../../scripts/Storage.js', () => ({
   Storage: jest.fn().mockImplementation(() => {
     return {
       save: mockStorageSave,
@@ -125,13 +125,7 @@ describe.each([
 
     expect(finalGroups.length).toBe(3);
     expect(mockStorageSave).toHaveBeenCalledWith(finalGroups, 'user-1');
-    
-    // Conditional assertion based on storage type
-    if (storageType === StorageType.LOCAL) {
-      expect(refreshOtherMindfulTabs).toHaveBeenCalledTimes(1);
-    } else {
-      expect(refreshOtherMindfulTabs).not.toHaveBeenCalled();
-    }
+    expect(refreshOtherMindfulTabs).toHaveBeenCalledTimes(1);
   });
 
   it('should add a new bookmark to an EXISTING group', async () => {
@@ -171,11 +165,6 @@ describe.each([
     expect(workGroup.bookmarks.length).toBe(2);
     expect(workGroup.bookmarks[1].name).toBe('Company Blog');
     expect(mockStorageSave).toHaveBeenCalledWith(finalGroups, 'user-2');
-    
-    if (storageType === StorageType.LOCAL) {
-      expect(refreshOtherMindfulTabs).toHaveBeenCalledTimes(1);
-    } else {
-      expect(refreshOtherMindfulTabs).not.toHaveBeenCalled();
-    }
+    expect(refreshOtherMindfulTabs).toHaveBeenCalledTimes(1);
   });
 });

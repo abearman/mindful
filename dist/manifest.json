@@ -22,6 +22,10 @@
     "windows"
   ],
 
+  "host_permissions": [
+    "https://*.execute-api.us-west-1.amazonaws.com/*"
+  ],
+
   "action": {
     "default_popup": "PopUp.html",
     "default_icon": {

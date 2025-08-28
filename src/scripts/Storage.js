@@ -2,9 +2,10 @@ import { uploadData, downloadData, remove } from '@aws-amplify/storage';
 import { getUserStorageKey } from './Utilities.js';
 import { StorageType } from './Constants.js';
 import { fetchAuthSession } from 'aws-amplify/auth'; 
+import amplify_outputs from '../../amplify_outputs.json';
 
 // Invoke URL from Amazon API Gateway 
-const API_INVOKE_URL = 'https://j69tonnhy6.execute-api.us-west-1.amazonaws.com/v1'
+const API_INVOKE_URL = amplify_outputs.custom.API.bookmarks.endpoint;
 
 // --- Storage Strategies ---
 
@@ -33,11 +34,13 @@ const remoteStorageStrategy = {
     try {
       const { tokens } = await fetchAuthSession();
       if (!tokens) throw new Error("User is not authenticated.");
-      
+      const idToken = tokens?.idToken?.toString(); // The JWT token
+
       const response = await fetch(`${API_INVOKE_URL}/bookmarks`, {
         method: 'GET',
         headers: {
-          'Authorization': tokens.idToken.toString(),
+          'Authorization': `Bearer ${idToken}`,
+          "Content-Type": "application/json",
         },
       });
 
@@ -61,16 +64,20 @@ const remoteStorageStrategy = {
       if (!tokens || !tokens.idToken) {
         throw new Error("User is not authenticated.");
       }
-      const idToken = tokens.idToken.toString(); // The JWT token
+      const idToken = tokens?.idToken?.toString(); // The JWT token
+      const accessToken = tokens?.accessToken?.toString();
+
+      // The Cognito Authorizer uses this header to verify the user
+      // TODO: Change back to idToken?
+      const headers = {
+        Authorization: `Bearer ${idToken}`,   // MUST include "Bearer "
+        "Content-Type": "application/json",
+      };
 
       // 2. Make a POST request to our new API endpoint
       const response = await fetch(`${API_INVOKE_URL}/bookmarks`, {
         method: 'POST',
-        headers: {
-          // The Cognito Authorizer uses this header to verify the user
-          'Authorization': idToken,
-          'Content-Type': 'application/json'
-        },
+        headers: headers,
         body: JSON.stringify(data)
       });
 
@@ -92,11 +99,12 @@ const remoteStorageStrategy = {
     try {
       const { tokens } = await fetchAuthSession();
       if (!tokens) throw new Error("User is not authenticated.");
+      const idToken = tokens?.idToken?.toString(); // The JWT token
 
       const response = await fetch(`${API_INVOKE_URL}/bookmarks`, {
         method: 'DELETE',
         headers: {
-          'Authorization': tokens.idToken.toString(),
+          'Authorization': `Bearer ${idToken}`,
         },
       });
 
