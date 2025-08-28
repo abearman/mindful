@@ -45,6 +45,15 @@ jobs:
             "storage": {
               "aws_region": "us-east-1",
               "bucket_name": "dummy-bucket-name"
+            },
+            "custom": {
+              "API": {
+                "bookmarks": {
+                  "apiName": "bookmarksApi",
+                  "type": "httpApi",
+                  "endpoint": "https://dummy.execute-api.us-west-1.amazonaws.com"
+                }
+              }
             }
           }
           EOF
