@@ -1,5 +1,6 @@
 import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+import { env } from '$amplify/env/saveBookmarksFunc';
 
 const s3Client = new S3Client({});
 
@@ -11,7 +12,11 @@ const getUserIdFromEvent = (event: any): string | undefined => {
 };
 
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  const allowedOrigin = process.env.ALLOWED_ORIGIN ?? "*";
+  if (!env.ALLOWED_ORIGIN && process.env.NODE_ENV === 'production') {
+    throw new Error("Missing ALLOWED_ORIGIN secret in production");
+  }
+
+  const allowedOrigin = env.ALLOWED_ORIGIN ?? "*"; // resolved securely at runtime
   const headers = {
     "Access-Control-Allow-Origin": allowedOrigin,
     "Access-Control-Allow-Methods": "OPTIONS, GET, POST, DELETE",

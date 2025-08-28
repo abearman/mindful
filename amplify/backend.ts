@@ -1,4 +1,4 @@
-import { defineBackend } from '@aws-amplify/backend';
+import { defineBackend, secret } from '@aws-amplify/backend';
 import { defineFunction } from '@aws-amplify/backend-function';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as apigwv2 from 'aws-cdk-lib/aws-apigatewayv2';
@@ -12,22 +12,42 @@ import { data } from './data/resource';
 import { storage } from './storage/resource';
 
 // ---------- 1) Lambdas ----------
+const BOOKMARKS_FILE_NAME = 'bookmarks.json.encrypted'
+const KEY_FILE_NAME = 'bookmarks.key'
+
 const saveBookmarks = defineFunction({
   name: 'saveBookmarksFunc',
   entry: './functions/saveBookmarks/handler.ts',
   resourceGroupName: 'storage',
+  environment: {
+    // Pulled securely at runtime
+    ALLOWED_ORIGIN: secret('ALLOWED_ORIGIN'),
+    // These are non-secret, fine to keep as plain envs
+    BOOKMARKS_FILE_NAME: BOOKMARKS_FILE_NAME,
+    KEY_FILE_NAME: KEY_FILE_NAME,
+  },
 });
 
 const loadBookmarks = defineFunction({
   name: 'loadBookmarksFunc',
   entry: './functions/loadBookmarks/handler.ts',
   resourceGroupName: 'storage',
+  environment: {
+    ALLOWED_ORIGIN: secret('ALLOWED_ORIGIN'),
+    BOOKMARKS_FILE_NAME: BOOKMARKS_FILE_NAME,
+    KEY_FILE_NAME: KEY_FILE_NAME,
+  },
 });
 
 const deleteBookmarks = defineFunction({
   name: 'deleteBookmarksFunc',
   entry: './functions/deleteBookmarks/handler.ts',
   resourceGroupName: 'storage',
+  environment: {
+    ALLOWED_ORIGIN: secret('ALLOWED_ORIGIN'),
+    BOOKMARKS_FILE_NAME: BOOKMARKS_FILE_NAME,
+    KEY_FILE_NAME: KEY_FILE_NAME,
+  },
 });
 
 // ---------- 2) Backend ----------
@@ -58,14 +78,8 @@ kmsKey.grant(saveBookmarksFn, 'kms:GenerateDataKey');
 kmsKey.grant(loadBookmarksFn, 'kms:Decrypt');
 
 // ---------- 5) Lambda env ----------
-// TODO !!! Make this an Amplify secret
-const allowedOrigin = 'chrome-extension://iccllnhemcoilldcjclboggfpighgoel'; // set your real extension ID
-
 for (const fn of [saveBookmarksFn, loadBookmarksFn, deleteBookmarksFn]) {
   fn.addEnvironment('S3_BUCKET_NAME', s3Bucket.bucketName);
-  fn.addEnvironment('ALLOWED_ORIGIN', allowedOrigin);
-  fn.addEnvironment("BOOKMARKS_FILE_NAME", "bookmarks.json.encrypted");
-  fn.addEnvironment("KEY_FILE_NAME", "bookmarks.key");
 }
 saveBookmarksFn.addEnvironment('KMS_KEY_ID', kmsKeyId);
 loadBookmarksFn.addEnvironment('KMS_KEY_ID', kmsKeyId);
