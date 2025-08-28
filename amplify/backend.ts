@@ -21,7 +21,8 @@ const saveBookmarks = defineFunction({
   resourceGroupName: 'storage',
   environment: {
     // Pulled securely at runtime
-    ALLOWED_ORIGIN: secret('ALLOWED_ORIGIN'),
+    ALLOWED_EXTENSION_IDS: secret('ALLOWED_EXTENSION_IDS'),
+    ALLOWED_ORIGIN: secret('ALLOWED_ORIGIN'),  // Keep this legacy value of single allowed Chrome extension ID
     // These are non-secret, fine to keep as plain envs
     BOOKMARKS_FILE_NAME: BOOKMARKS_FILE_NAME,
     KEY_FILE_NAME: KEY_FILE_NAME,
@@ -33,6 +34,7 @@ const loadBookmarks = defineFunction({
   entry: './functions/loadBookmarks/handler.ts',
   resourceGroupName: 'storage',
   environment: {
+    ALLOWED_EXTENSION_IDS: secret('ALLOWED_EXTENSION_IDS'),
     ALLOWED_ORIGIN: secret('ALLOWED_ORIGIN'),
     BOOKMARKS_FILE_NAME: BOOKMARKS_FILE_NAME,
     KEY_FILE_NAME: KEY_FILE_NAME,
@@ -44,6 +46,7 @@ const deleteBookmarks = defineFunction({
   entry: './functions/deleteBookmarks/handler.ts',
   resourceGroupName: 'storage',
   environment: {
+    ALLOWED_EXTENSION_IDS: secret('ALLOWED_EXTENSION_IDS'),
     ALLOWED_ORIGIN: secret('ALLOWED_ORIGIN'),
     BOOKMARKS_FILE_NAME: BOOKMARKS_FILE_NAME,
     KEY_FILE_NAME: KEY_FILE_NAME,
