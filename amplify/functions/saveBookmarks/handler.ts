@@ -3,6 +3,12 @@ import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { createCipheriv, randomBytes } from "crypto";
 import { env } from '$amplify/env/saveBookmarksFunc';
+import {
+  ensureSecretsPresent,
+  evalCors,
+  preflightIfNeeded,
+  assertCorsOr403,
+} from "../_shared/cors";
 
 const kmsClient = new KMSClient({});
 const s3Client = new S3Client({});
@@ -15,40 +21,44 @@ const getUserIdFromEvent = (event: any): string | undefined => {
 };
 
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  if (!env.ALLOWED_ORIGIN && process.env.NODE_ENV === 'production') {
-    throw new Error("Missing ALLOWED_ORIGIN secret in production");
-  }
+  // Ensure CORS secrets exist in prod (ALLOWED_EXTENSION_IDS CSV and/or ALLOWED_ORIGIN)
+  ensureSecretsPresent(env.ALLOWED_EXTENSION_IDS, env.ALLOWED_ORIGIN);
 
-  const allowedOrigin = env.ALLOWED_ORIGIN ?? "*"; // resolved securely at runtime
-  const headers = {
-    "Access-Control-Allow-Origin": allowedOrigin,
-    "Access-Control-Allow-Methods": "OPTIONS, GET, POST, DELETE",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization",
-    "Vary": "Origin",
-    "Content-Type": "application/json",
-  };
+  // Build CORS headers once; reuse for all responses
+  const cors = evalCors(event, {
+    idsCsv: env.ALLOWED_EXTENSION_IDS,
+    legacyOrigin: env.ALLOWED_ORIGIN,
+  });
+  
+  // Handle preflight early
+  const maybePreflight = preflightIfNeeded(cors);
+  if (maybePreflight) return maybePreflight;
+
+  // Block disallowed origins in production
+  const maybe403 = assertCorsOr403(cors);
+  if (maybe403) return maybe403;
 
   // Basic auth check
   const userId = getUserIdFromEvent(event);
   if (!userId) {
-    return { statusCode: 401, headers, body: JSON.stringify({ message: "Unauthorized: Missing authentication details" }) };
+    return { statusCode: 401, headers: cors.headers, body: JSON.stringify({ message: "Unauthorized: Missing authentication details" }) };
   }
 
   if (!event.body) {
-    return { statusCode: 400, headers, body: JSON.stringify({ message: "Bad Request: Missing request body" }) };
+    return { statusCode: 400, headers: cors.headers, body: JSON.stringify({ message: "Bad Request: Missing request body" }) };
   }
 
   let bookmarksToSave: unknown;
   try {
     bookmarksToSave = JSON.parse(event.body);
   } catch {
-    return { statusCode: 400, headers, body: JSON.stringify({ message: "Bad Request: Body must be valid JSON" }) };
+    return { statusCode: 400, headers: cors.headers, body: JSON.stringify({ message: "Bad Request: Body must be valid JSON" }) };
   }
 
   if (!process.env.S3_BUCKET_NAME || !process.env.KMS_KEY_ID) {
     return {
       statusCode: 500,
-      headers,
+      headers: cors.headers,
       body: JSON.stringify({ message: "Server misconfiguration: missing S3_BUCKET_NAME or KMS_KEY_ID" }),
     };
   }
@@ -63,7 +73,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
       })
     );
     if (!Plaintext || !CiphertextBlob) {
-      return { statusCode: 500, headers, body: JSON.stringify({ message: "Failed to generate encryption key" }) };
+      return { statusCode: 500, headers: cors.headers, body: JSON.stringify({ message: "Failed to generate encryption key" }) };
     }
 
     // 2) Encrypt with AES-256-GCM
@@ -105,10 +115,10 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
       })
     );
 
-    return { statusCode: 200, headers, body: JSON.stringify({ message: "Bookmarks saved successfully" }) };
+    return { statusCode: 200, headers: cors.headers, body: JSON.stringify({ message: "Bookmarks saved successfully" }) };
   } catch (error) {
     console.error("Error saving bookmarks:", error);
     const msg = error instanceof Error ? error.message : "Unknown error";
-    return { statusCode: 500, headers, body: JSON.stringify({ message: "Internal Server Error", error: msg }) };
+    return { statusCode: 500, headers: cors.headers, body: JSON.stringify({ message: "Internal Server Error", error: msg }) };
   }
 };

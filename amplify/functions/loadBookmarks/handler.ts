@@ -3,6 +3,7 @@ import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { createDecipheriv } from "crypto";
 import { env } from '$amplify/env/saveBookmarksFunc';
+import { ensureSecretsPresent, evalCors, preflightIfNeeded, assertCorsOr403 } from "../_shared/cors";
 
 const kmsClient = new KMSClient({});
 const s3Client = new S3Client({});
@@ -15,27 +16,31 @@ const getUserIdFromEvent = (event: any): string | undefined => {
 };
 
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  if (!env.ALLOWED_ORIGIN && process.env.NODE_ENV === 'production') {
-    throw new Error("Missing ALLOWED_ORIGIN secret in production");
-  }
+  // Ensure CORS secrets exist in prod (ALLOWED_EXTENSION_IDS CSV and/or ALLOWED_ORIGIN)
+  ensureSecretsPresent(env.ALLOWED_EXTENSION_IDS, env.ALLOWED_ORIGIN);
 
-  const allowedOrigin = env.ALLOWED_ORIGIN ?? "*"; // resolved securely at runtime
-  const headers = {
-    "Access-Control-Allow-Origin": allowedOrigin,
-    "Access-Control-Allow-Methods": "OPTIONS, GET, POST, DELETE",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization",
-    "Vary": "Origin",
-    "Content-Type": "application/json",
-  };
+  // Build CORS headers once; reuse for all responses
+  const cors = evalCors(event, {
+    idsCsv: env.ALLOWED_EXTENSION_IDS,
+    legacyOrigin: env.ALLOWED_ORIGIN,
+  });
+  
+  // Handle preflight early
+  const maybePreflight = preflightIfNeeded(cors);
+  if (maybePreflight) return maybePreflight;
 
+  // Block disallowed origins in production
+  const maybe403 = assertCorsOr403(cors);
+  if (maybe403) return maybe403;
+  
   const userId = getUserIdFromEvent(event);
   if (!userId) {
-    return { statusCode: 401, headers, body: JSON.stringify({ message: "Unauthorized: Missing authentication details" }) };
+    return { statusCode: 401, headers: cors.headers, body: JSON.stringify({ message: "Unauthorized: Missing authentication details" }) };
   }
 
   const bucket = process.env.S3_BUCKET_NAME;
   if (!bucket) {
-    return { statusCode: 500, headers, body: JSON.stringify({ message: "Server misconfiguration: missing S3_BUCKET_NAME" }) };
+    return { statusCode: 500, headers: cors.headers, body: JSON.stringify({ message: "Server misconfiguration: missing S3_BUCKET_NAME" }) };
   }
 
   try {
@@ -46,7 +51,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     }));
     if (!keyObj.Body) {
       // No key yet → treat as no data
-      return { statusCode: 200, headers, body: JSON.stringify([]) };
+      return { statusCode: 200, headers: cors.headers, body: JSON.stringify([]) };
     }
     const wrappedKeyBytes = await keyObj.Body.transformToByteArray();
 
@@ -57,13 +62,13 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
       Key: dataKey,
     }));
     if (!dataObj.Body) {
-      return { statusCode: 200, headers, body: JSON.stringify([]) };
+      return { statusCode: 200, headers: cors.headers, body: JSON.stringify([]) };
     }
     const payloadText = await dataObj.Body.transformToString("utf-8");
 
     // If object exists but empty/malformed, be defensive
     if (!payloadText || !payloadText.trim()) {
-      return { statusCode: 200, headers, body: JSON.stringify([]) };
+      return { statusCode: 200, headers: cors.headers, body: JSON.stringify([]) };
     }
 
     let payload: {
@@ -77,7 +82,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
       payload = JSON.parse(payloadText);
     } catch {
       // If old format or corrupted, surface as empty for now
-      return { statusCode: 200, headers, body: JSON.stringify([]) };
+      return { statusCode: 200, headers: cors.headers, body: JSON.stringify([]) };
     }
 
     // 3) KMS Decrypt the wrapped key (must use same EncryptionContext)
@@ -86,14 +91,14 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
       EncryptionContext: { userId },
     }));
     if (!Plaintext) {
-      return { statusCode: 500, headers, body: JSON.stringify({ message: "Could not decrypt data key" }) };
+      return { statusCode: 500, headers: cors.headers, body: JSON.stringify({ message: "Could not decrypt data key" }) };
     }
     const key = Buffer.from(Plaintext as Uint8Array); // 32 bytes
 
     // 4) Decrypt with AES-256-GCM
     if (payload.algo !== "AES-256-GCM") {
       // If you ever need to support legacy formats, branch here.
-      return { statusCode: 500, headers, body: JSON.stringify({ message: `Unsupported cipher: ${payload.algo}` }) };
+      return { statusCode: 500, headers: cors.headers, body: JSON.stringify({ message: `Unsupported cipher: ${payload.algo}` }) };
     }
 
     const iv = Buffer.from(payload.iv, "base64");   // 12 bytes
@@ -112,16 +117,16 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
       bookmarks = JSON.parse(text);
     } catch {
       // Corrupt plaintext; treat as empty
-      return { statusCode: 200, headers, body: JSON.stringify([]) };
+      return { statusCode: 200, headers: cors.headers, body: JSON.stringify([]) };
     }
 
-    return { statusCode: 200, headers, body: JSON.stringify(bookmarks ?? []) };
+    return { statusCode: 200, headers: cors.headers, body: JSON.stringify(bookmarks ?? []) };
   } catch (error) {
     // If object not found, return empty list (fresh account)
     if (typeof error === "object" && error && "name" in error && (error as any).name === "NoSuchKey") {
-      return { statusCode: 200, headers, body: JSON.stringify([]) };
+      return { statusCode: 200, headers: cors.headers, body: JSON.stringify([]) };
     }
     console.error("Error loading bookmarks:", error);
-    return { statusCode: 500, headers, body: JSON.stringify({ message: "Internal Server Error" }) };
+    return { statusCode: 500, headers: cors.headers, body: JSON.stringify({ message: "Internal Server Error" }) };
   }
 };
