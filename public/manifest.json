@@ -22,8 +22,8 @@
     "windows"
   ],
 
-  "host_permissions": [
-    "https://*.execute-api.us-west-1.amazonaws.com/*"
+  "optional_host_permissions": [
+    "https://2rra98zl35.execute-api.us-west-1.amazonaws.com/*"
   ],
 
   "action": {

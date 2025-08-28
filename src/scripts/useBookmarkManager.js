@@ -5,11 +5,30 @@ import { AppContext } from './AppContext.jsx';
 import { EMPTY_GROUP_IDENTIFIER, StorageType } from './Constants.js';
 import { refreshOtherMindfulTabs } from './Utilities.js';
 import { Storage } from './Storage.js';
+import amplify_outputs from '../../amplify_outputs.json';
+
+const API_HOST_PATTERN = `https://${new URL(amplify_outputs.custom.API.bookmarks.endpoint).host}/*`;
 
 export async function loadInitialBookmarks(userId, storageType) {
   if (!userId) return [];
   const storage = new Storage(storageType);
   return storage.load(userId);
+}
+
+// Ask for host_permissions only when needed & only once
+async function ensureApiHostPermission() {
+  if (typeof chrome === 'undefined' || !chrome.permissions) return true; // in tests, etc.
+  const has_permissions = await chrome.permissions.contains({ origins: [API_HOST_PATTERN] });
+  if (has_permissions) return true;
+  // Must be called from a user gesture (e.g., the click that triggers changeStorageType)
+  return chrome.permissions.request({ origins: [API_HOST_PATTERN] });
+}
+
+// Tidy up host_permissions when leaving cloud storage
+async function maybeRemoveApiHostPermission() {
+  if (typeof chrome === 'undefined' || !chrome.permissions) return;
+  const has_permissions = await chrome.permissions.contains({ origins: [API_HOST_PATTERN] });
+  if (has_permissions) await chrome.permissions.remove({ origins: [API_HOST_PATTERN] });
 }
 
 // --- The Custom Hook ---
@@ -60,6 +79,15 @@ export const useBookmarkManager = () => {
     setIsMigrating(true);
 
     try {
+      // If enabling cloud/remote, make sure we have the optional host permission
+      if (newStorageType === StorageType.REMOTE) {
+        const granted = await ensureApiHostPermission();
+        if (!granted) {
+          console.warn("User denied API host permission; staying on local storage.");
+          return; // bail without changing storageType
+        }
+      }
+
       const oldStorage = new Storage(oldStorageType);
       const newStorage = new Storage(newStorageType);
 
@@ -78,6 +106,12 @@ export const useBookmarkManager = () => {
       setStorageType(newStorageType);
 
       console.log("Storage migration completed successfully.");
+
+      // If leaving remote for local, drop the host_permission
+      if (oldStorageType === StorageType.REMOTE && newStorageType !== StorageType.REMOTE) {
+        await maybeRemoveApiHostPermission();
+      }
+
     } catch (error) {
       console.error(`Failed to migrate storage from ${oldStorageType} to ${newStorageType}:`, error);
       throw error;
