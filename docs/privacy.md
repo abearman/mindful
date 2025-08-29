@@ -5,77 +5,69 @@ title: Privacy Policy
 # Privacy Policy for Mindful Bookmarks
 **Effective date:** {{ site.time | date: "%Y-%m-%d" }}
 
-Mindful Bookmarks is built to give you control over your data. You can choose **Remote Storage** (default) or **Local-Only Storage**.
-
----
+Mindful gives you control over your data. By default, data stays **locally on your device**. You can optionally enable **Cloud Sync** to keep bookmarks in sync across your devices.
 
 ## Storage Options
+### 1) Local (default)
 
-### 1) Remote Storage (default)
-- Your bookmarks, tags, and preferences are encrypted **in transit** (HTTPS/TLS) and **at rest** using AWS-managed encryption (e.g., KMS).
-- Ciphertext is stored in our cloud database; **no plaintext content** is stored on our servers.
-- Encryption keys are managed via **AWS Key Management Service (KMS)**; servers cannot decrypt your data.
-- We do **not** sell or share your data with third parties. We do **not** use your data for advertising.
+- Bookmark data (URL, title, tags, folder structure, settings) is stored on your device via Chrome’s `chrome.storage` API.
+- No data is sent to our servers in this mode.
 
-### 2) Local-Only Storage (opt-in)
-- You may switch to local mode at any time.
-- In local mode, all data is kept on your device using Chrome’s `storage` API; **nothing is sent to our servers**.
+### 2) Cloud Sync (opt-in)
 
----
-
+- If you enable Cloud Sync, we store your bookmark data in our backend so it can sync across your devices.
+- Data is encrypted in transit (HTTPS/TLS) and at rest using AWS-managed encryption (e.g., KMS).
+- We do not sell or share your data, and we do not use it for advertising or unrelated purposes.
+  
 ## Data We Handle
 
-- **Bookmark data & preferences** (titles, URLs, tags, folder structure, settings) — used only to provide core functionality and sync (if remote mode is enabled).
+- **Bookmark data & preferences**: URLs, titles, tags, folder/group structure, and settings you create in the app. Used only to provide bookmarking and (if enabled) syncing.
+- **Account info for Cloud Sync**: Email address, phone number, and full name.
+Authentication is provided by our identity provider (e.g., AWS Cognito via Amplify). We do not store or access your password.
+- **Diagnostics (minimal, non-content)**: error codes and operational metadata to maintain reliability. We do not collect page text, keystrokes, mouse movements, or browsing history.
 
-- **User account information (required for login):**
-  - **Name, email, phone number, and password** are required to create and sign in to your account.
-  - **Purpose:** authentication, account security (including MFA/verification), and essential service communications (e.g., password resets, critical notices).
-  - **Handling:** authentication is provided by our identity provider (e.g., AWS Amplify/Cognito). Passwords are **never stored in plaintext** and are protected using industry-standard methods. We do not access your password.
-  - **Contact settings:** you may update your profile details in the app (where available) or by contacting support.
+We do **not** collect financial/health data, personal communications, precise location, web history, or other unrelated categories.
 
-- **Diagnostics (minimal, non-content):**
-  - Error codes and operational metadata to maintain reliability.
-  - **Never** includes bookmark contents.
+## How Permissions Are Used
 
-We **do not** collect unrelated data such as full browsing history, health/financial data, keystrokes, or mouse movements.
-
----
+- `storage`: save your bookmarks and settings locally.
+- `tabs`: read the current tab’s URL/title only when you click **"Add bookmark."** No background page reading or content script injection.
+- **Optional site access**: may request access to [https://2rra98zl35.execute-api.us-west-1.amazonaws.com/](https://2rra98zl35.execute-api.us-west-1.amazonaws.com) only when you enable Cloud Sync to save/retrieve your own bookmarks.
 
 ## Your Controls
 
-- **Switch storage mode** at any time in Settings.
+- **Switch modes** any time in Settings (Local ↔ Cloud Sync).
+- **Export/Import** bookmarks as JSON from the app.
 - **Delete data**:
-  - Local mode: Remove the extension or clear Chrome’s site/extension storage.
-  - Remote mode: Switch to Local mode. All associated ciphertext will be deleted from our systems. 
-- **Export**: You can export your bookmarks from the app.
-- **Load**: You can load bookmarks from a local JSON file into the app.
-
----
+  - Local: remove the extension or clear its storage.
+  - Cloud Sync: use *Settings → Cloud Sync → Delete cloud data*. We delete copies immediately.
 
 ## Security
 
-- Client-side encryption; servers store ciphertext only.
-- Keys protected via **AWS KMS**; access is tightly scoped and audited.
-- Transport security with HTTPS/TLS.
-
----
+- Transport security (HTTPS/TLS) and encryption at rest on AWS.
+- Access to backend systems is restricted and audited.
+- We do not execute remote code from third-party CDNs.
 
 ## Data Sharing & Selling
 
-- We do **not** sell personal information.
-- We do **not** share data with third parties except service providers necessary to run the app (e.g., AWS), who process data on our behalf under strict agreements.
+- We do not sell personal information.
+- We do not share data except with service providers necessary to run the app (e.g., AWS), operating under data-processing agreements and only on our instructions.
 
----
+## Regional Rights
+
+Depending on your region (e.g., GDPR/CCPA), you may have rights to access, correct, export, or delete your data. Contact us to exercise these rights.
 
 ## Children’s Privacy
 
 Mindful Bookmarks is not intended for children under 13.
 
----
-
 ## Contact
 
-Questions or requests (including data deletion)?  
-**Email:** amylbearman@gmail.com
+Questions or requests (including data deletion/export)?
+Email: `amylbearman@gmail.com`
 
-_Last updated: {{ site.time | date: "%Y-%m-%d" }}_
+## Changes to This Policy
+
+We may update this policy to reflect product or legal changes. We’ll update the “Effective date” above and, if changes are material, provide notice in-app.
+
+Last updated: {{ site.time | date: "%Y-%m-%d" }}
