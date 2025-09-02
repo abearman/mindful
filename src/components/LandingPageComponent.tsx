@@ -1,16 +1,13 @@
 import "../styles/Index.css"
 import React from "react";
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "../components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import { Badge } from "../components/ui/badge";
 import {
-  Accordion,
-  AccordionItem,
-  AccordionTrigger,
-  AccordionContent,
-} from "@/components/ui/accordion";
-import { Input } from "@/components/ui/input";
+  Accordion, AccordionItem, AccordionTrigger, AccordionContent,
+} from "../components/ui/accordion";
+import { Input } from "../components/ui/input";
 import {
   Lock,
   HardDrive,
@@ -48,7 +45,7 @@ export default function LandingPage() {
       <header className="sticky top-0 z-30 backdrop-blur supports-[backdrop-filter]:bg-neutral-950/50">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
           <a href="#home" className="flex items-center gap-2">
-            <div className="h-7 w-7 rounded-xl bg-blue-400" />
+            <img src="/assets/icon-no-bg-128.png" className="w-[30px] h-[30px] object-cover" />
             <span className="text-lg font-semibold tracking-tight">Mindful</span>
             <Badge className="ml-2 bg-neutral-800 text-neutral-300 hover:bg-neutral-800">Bookmarks</Badge>
           </a>
@@ -230,7 +227,7 @@ export default function LandingPage() {
         <motion.h3 {...fadeUp} className="text-2xl font-semibold tracking-tight md:text-3xl">
           Frequently asked questions
         </motion.h3>
-        <Accordion type="single" collapsible className="mt-6 divide-y divide-neutral-800 border border-neutral-800">
+        <Accordion type="multiple" collapsible className="mt-6 divide-y divide-neutral-800 border border-neutral-800">
           <AccordionItem value="item-1">
             <AccordionTrigger className="px-4 text-left">Do I need an account?</AccordionTrigger>
             <AccordionContent className="px-4 text-neutral-300">
@@ -283,7 +280,7 @@ export default function LandingPage() {
         <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 px-4 py-8 sm:grid-cols-2 md:grid-cols-4">
           <div>
             <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded-lg bg-blue-400" />
+              <img src="/assets/icon-no-bg-128.png" className="w-[30px] h-[30px] object-cover" />
               <span className="text-sm font-semibold">Mindful</span>
             </div>
             <p className="mt-3 text-sm text-neutral-400">A calm, visual space for your digital mind.</p>
