@@ -34,9 +34,11 @@ const fadeUp = {
   transition: { duration: 0.6, ease: "easeOut" },
 };
 
+const CHROME_EXTENSION_LINK = "https://chromewebstore.google.com/detail/mindful/bjobloafhnodgomnplkfhebkihnafhfe"
+
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-100 selection:bg-emerald-300 selection:text-neutral-900">
+    <div className="min-h-screen bg-neutral-950 text-neutral-100 selection:bg-blue-300 selection:text-neutral-900">
       {/* Top gradient glow */}
       <div className="pointer-events-none fixed inset-0 -z-10">
         <div className="absolute inset-x-0 -top-24 h-[420px] bg-[radial-gradient(ellipse_at_top,rgba(16,185,129,0.18),transparent_55%)]" />
@@ -46,7 +48,7 @@ export default function LandingPage() {
       <header className="sticky top-0 z-30 backdrop-blur supports-[backdrop-filter]:bg-neutral-950/50">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
           <a href="#home" className="flex items-center gap-2">
-            <div className="h-7 w-7 rounded-xl bg-emerald-400" />
+            <div className="h-7 w-7 rounded-xl bg-blue-400" />
             <span className="text-lg font-semibold tracking-tight">Mindful</span>
             <Badge className="ml-2 bg-neutral-800 text-neutral-300 hover:bg-neutral-800">Bookmarks</Badge>
           </a>
@@ -60,12 +62,12 @@ export default function LandingPage() {
             <Button variant="ghost" className="hidden md:inline-flex" asChild>
               <a href="#email" aria-label="Join the beta">Join beta</a>
             </Button>
-            <Button className="bg-emerald-500 text-neutral-900 hover:bg-emerald-400" asChild>
-              {/* TODO: replace with your Chrome Web Store URL */}
-              <a href="#" aria-label="Add Mindful to Chrome">
-                <Download className="mr-2 h-4 w-4" /> Add to Chrome
+            <Button asChild className="bg-neutral-200 text-neutral-900 hover:bg-white">
+              <a href={CHROME_EXTENSION_LINK} aria-label="Add Mindful to Chrome">
+                <Download className="h-4 w-4" />
+                Add to Chrome
               </a>
-            </Button>
+            </Button> 
           </div>
         </div>
       </header>
@@ -84,8 +86,8 @@ export default function LandingPage() {
               Organize links intuitively, without the noise. Keep everything private on your device—or opt in to encrypted cloud sync. Your bookmarks. Private. Local. Yours.
             </p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-              <Button size="lg" className="bg-emerald-500 text-neutral-900 hover:bg-emerald-400" asChild>
-                <a href="#" aria-label="Add Mindful to Chrome">
+              <Button size="lg" className="bg-neutral-200 text-neutral-900 hover:bg-white" asChild>
+                <a href={CHROME_EXTENSION_LINK} aria-label="Add Mindful to Chrome">
                   <Download className="mr-2 h-5 w-5" /> Add to Chrome
                 </a>
               </Button>
@@ -99,17 +101,11 @@ export default function LandingPage() {
           </motion.div>
 
           <motion.div {...fadeUp} className="relative">
-            {/* Hero visual placeholder — replace with product screenshots */}
-            <div className="relative rounded-3xl border border-neutral-800 bg-neutral-900 p-2 shadow-2xl">
-              <div className="h-80 rounded-2xl bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.06),transparent_60%)] p-6">
-                <div className="grid h-full grid-cols-3 gap-3">
-                  {[...Array(9)].map((_, i) => (
-                    <div key={i} className="rounded-xl border border-neutral-800/80 bg-neutral-950/60" />
-                  ))}
-                </div>
-              </div>
-            </div>
-            <div className="pointer-events-none absolute -left-8 -top-8 -z-10 h-56 w-56 rounded-full bg-emerald-500/20 blur-3xl" />
+            <img
+              src="/assets/ui-screenshot.png"
+              alt="Mindful Bookmarks UI"
+              className="rounded-3xl border border-neutral-800 shadow-2xl"
+            />
           </motion.div>
         </div>
       </section>
@@ -163,10 +159,10 @@ export default function LandingPage() {
               Mindful was built to give you control. Keep everything on‑device, or turn on encrypted sync to access your boards everywhere. Either way—your data stays yours.
             </p>
             <ul className="mt-6 space-y-3 text-sm text-neutral-300">
-              <li className="flex items-start gap-3"><Lock className="mt-0.5 h-5 w-5 text-emerald-400" /> Local‑Only mode stores everything on your device.</li>
-              <li className="flex items-start gap-3"><ShieldCheck className="mt-0.5 h-5 w-5 text-emerald-400" /> Optional sync: client‑side AES‑GCM, KMS‑managed data keys, HTTPS in transit.</li>
-              <li className="flex items-start gap-3"><FolderTree className="mt-0.5 h-5 w-5 text-emerald-400" /> No ads. No behavioral tracking. No selling data.</li>
-              <li className="flex items-start gap-3"><Share2 className="mt-0.5 h-5 w-5 text-emerald-400" /> Export and import anytime—your content is portable by default.</li>
+              <li className="flex items-start gap-3"><Lock className="mt-0.5 h-5 w-5 text-blue-400" /> Local‑Only mode stores everything on your device.</li>
+              <li className="flex items-start gap-3"><ShieldCheck className="mt-0.5 h-5 w-5 text-blue-400" /> Optional sync: client‑side AES‑GCM, KMS‑managed data keys, HTTPS in transit.</li>
+              <li className="flex items-start gap-3"><FolderTree className="mt-0.5 h-5 w-5 text-blue-400" /> No ads. No behavioral tracking. No selling data.</li>
+              <li className="flex items-start gap-3"><Share2 className="mt-0.5 h-5 w-5 text-blue-400" /> Export and import anytime—your content is portable by default.</li>
             </ul>
           </motion.div>
           <motion.div {...fadeUp}>
@@ -184,7 +180,7 @@ export default function LandingPage() {
                   }}
                 >
                   <Input type="email" placeholder="you@domain.com" className="bg-neutral-950 text-neutral-100 placeholder:text-neutral-500" required />
-                  <Button type="submit" className="bg-emerald-500 text-neutral-900 hover:bg-emerald-400">
+                  <Button type="submit" className="bg-neutral-200 text-neutral-900 hover:bg-white">
                     Join beta
                   </Button>
                 </form>
@@ -271,8 +267,8 @@ export default function LandingPage() {
               <p className="mt-1 text-neutral-300">Start free in seconds. Upgrade only if you want encrypted sync.</p>
             </div>
             <div className="flex gap-3">
-              <Button size="lg" className="bg-emerald-500 text-neutral-900 hover:bg-emerald-400" asChild>
-                <a href="#">Add to Chrome</a>
+              <Button size="lg" className="bg-neutral-200 text-neutral-900 hover:bg-white" asChild>
+                <a href={CHROME_EXTENSION_LINK}>Add to Chrome</a>
               </Button>
               <Button size="lg" variant="secondary" className="bg-neutral-200 text-neutral-900 hover:bg-white" asChild>
                 <a href="#email">Join beta</a>
@@ -287,7 +283,7 @@ export default function LandingPage() {
         <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 px-4 py-8 sm:grid-cols-2 md:grid-cols-4">
           <div>
             <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded-lg bg-emerald-400" />
+              <div className="h-6 w-6 rounded-lg bg-blue-400" />
               <span className="text-sm font-semibold">Mindful</span>
             </div>
             <p className="mt-3 text-sm text-neutral-400">A calm, visual space for your digital mind.</p>
@@ -346,8 +342,8 @@ function Feature({
     <Card className="h-full border-neutral-800 bg-neutral-900">
       <CardHeader>
         <div className="flex items-center gap-3">
-          <div className="rounded-xl bg-emerald-500/15 p-2">
-            <Icon className="h-5 w-5 text-emerald-400" />
+          <div className="rounded-xl bg-blue-500/15 p-2">
+            <Icon className="h-5 w-5 text-blue-400" />
           </div>
           <CardTitle className="text-base">{title}</CardTitle>
         </div>
@@ -362,7 +358,7 @@ function Feature({
 function Step({ number, title, desc }: { number: number; title: string; desc: string }) {
   return (
     <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-6">
-      <div className="mb-2 inline-flex h-7 w-7 items-center justify-center rounded-full bg-emerald-500/20 text-sm font-semibold text-emerald-300">
+      <div className="mb-2 inline-flex h-7 w-7 items-center justify-center rounded-full bg-blue-500/20 text-sm font-semibold text-blue-300">
         {number}
       </div>
       <h4 className="text-lg font-medium">{title}</h4>
@@ -387,10 +383,10 @@ function PricingCard({
   cta: string;
 }) {
   return (
-    <Card className={`${highlighted ? "border-emerald-600/60 bg-neutral-900/90" : "border-neutral-800 bg-neutral-900"} relative overflow-hidden`}>
+    <Card className={`${highlighted ? "border-blue-600/60 bg-neutral-900/90" : "border-neutral-800 bg-neutral-900"} relative overflow-hidden`}>
       {highlighted && (
         <div className="absolute right-4 top-4">
-          <Badge className="bg-emerald-600 text-white hover:bg-emerald-600">Most popular</Badge>
+          <Badge className="bg-blue-600 text-white hover:bg-blue-600">Most popular</Badge>
         </div>
       )}
       <CardHeader>
@@ -404,7 +400,7 @@ function PricingCard({
             <li key={f}>{f}</li>
           ))}
         </ul>
-        <Button className={`${highlighted ? "bg-emerald-500 text-neutral-900 hover:bg-emerald-400" : "bg-neutral-200 text-neutral-900 hover:bg-white"}`}>
+        <Button className={`${highlighted ? "bg-blue-500 text-neutral-900 hover:bg-blue-400" : "bg-neutral-200 text-neutral-900 hover:bg-white"}`}>
           {cta}
         </Button>
       </CardContent>
