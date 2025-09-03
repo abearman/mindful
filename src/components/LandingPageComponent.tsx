@@ -30,72 +30,21 @@ const fadeUp = {
   transition: { duration: 0.6, ease: "easeOut" },
 };
 
-const BETA_GROUP_URL = "https://groups.google.com/g/mindful-beta-testers";
 const CHROME_EXTENSION_URL = "https://chromewebstore.google.com/detail/mindful/bjobloafhnodgomnplkfhebkihnafhfe"
 
-
-function useTesterGate() {
-  const [unlocked, setUnlocked] = React.useState(false);
-
-  React.useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("tester") === "1") {
-      localStorage.setItem("mindful:isTester", "1");
-      setUnlocked(true);
-    } else {
-      setUnlocked(localStorage.getItem("mindful:isTester") === "1");
-    }
-  }, []);
-
-  const unlock = React.useCallback(() => {
-    localStorage.setItem("mindful:isTester", "1");
-    setUnlocked(true);
-  }, []);
-
-  return { unlocked, unlock };
-}
-
-function JoinBetaButton({ size = "default" }: { size?: "default" | "lg" }) {
-  const { unlock } = useTesterGate();
-  return (
-    <Button
-      size={size}
-      variant="ghost"
-      onClick={() => {
-        window.open(BETA_GROUP_URL, "_blank", "noopener,noreferrer");
-        unlock();
-      }}
-      aria-label="Join the Mindful beta (opens Google Group)"
-      className="cursor-pointer"   // 👈 ensures hand cursor
-    >
-      Join beta
-    </Button>
-  );
-}
-
 function InstallCTA({ size = "default", className = "" }: { size?: "default" | "lg"; className?: string }) {
-  const { unlocked } = useTesterGate();
   return (
     <Button
       size={size}
       className={`bg-neutral-200 text-neutral-900 hover:bg-white ${className}`}
       asChild
-      disabled={!unlocked}
-      aria-disabled={!unlocked}
-      title={unlocked ? "Add to Chrome" : "Join the beta first to unlock install"}
+      title="Add to Chrome" 
     >
       <a
-        href={unlocked ? CHROME_EXTENSION_URL : BETA_GROUP_URL}
-        onClick={(e) => {
-          if (!unlocked) {
-            e.preventDefault();
-            // If somehow still locked, nudge to Group
-            window.open(BETA_GROUP_URL, "_blank", "noopener,noreferrer");
-          }
-        }}
+        href={CHROME_EXTENSION_URL }
       >
         <Download className="mr-2 h-5 w-5" />
-        {unlocked ? "Add to Chrome" : "Install (testers only)"}
+        Add to Chrome
       </a>
     </Button>
   );
@@ -124,7 +73,6 @@ export default function LandingPage() {
             <a href="#faq" className="text-sm text-neutral-300 hover:text-white">FAQ</a>
           </nav>
           <div className="flex items-center gap-2">
-            <JoinBetaButton />
             <InstallCTA />
           </div>
         </div>
@@ -220,16 +168,12 @@ export default function LandingPage() {
             </ul>
           </motion.div>
           <motion.div {...fadeUp}>
-            <Card className="border-neutral-800 bg-neutral-900">
+            {/* <Card className="border-neutral-800 bg-neutral-900">
               <CardHeader>
                 <CardTitle className="text-lg">Get early access</CardTitle>
               </CardHeader>
               <CardContent>
                 <ol className="mb-4 space-y-3 text-sm text-neutral-300">
-                  <li className="flex items-start gap-3">
-                    <div className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-blue-500/20 text-xs font-semibold text-blue-300">1</div>
-                    <span>Join the beta Google Group (auto-approved).</span>
-                  </li>
                   <li className="flex items-start gap-3">
                     <div className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-blue-500/20 text-xs font-semibold text-blue-300">2</div>
                     <span>Install the extension (button unlocks after joining).</span>
@@ -237,16 +181,12 @@ export default function LandingPage() {
                 </ol>
 
                 <div className="flex flex-col gap-3 sm:flex-row">
-                  <JoinBetaButton />
                   <InstallCTA />
                 </div>
 
-                <p className="mt-2 text-xs text-neutral-500">
-                  Tip: Make sure you’re signed into Chrome with the same Google account you used to join the Group.
-                </p>
               </CardContent>
 
-            </Card>
+            </Card> */}
           </motion.div>
         </div>
       </section>
@@ -330,7 +270,6 @@ export default function LandingPage() {
             </div>
             <div className="flex gap-3">
               <InstallCTA size="lg" />
-              <JoinBetaButton size="lg" />
             </div>
           </CardContent>
         </Card>
