@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useContext } from "react";
-import { AppContext } from "../scripts/AppContext.jsx";
-import { Avatar } from "./ui/Avatar.jsx"; 
+import PhoneInput from 'react-phone-number-input';
 
+/* Amplify auth */
 import {
   updateUserAttributes,
   fetchUserAttributes,
@@ -9,12 +9,17 @@ import {
   confirmUserAttribute,
 } from "aws-amplify/auth";
 
+/* CSS */
 import 'react-phone-number-input/style.css';
-import '../styles/ManageAccount.css';
-import PhoneInput from 'react-phone-number-input';
+
+/* Scripts */
+import { AppContext } from "@/scripts/AppContext.jsx";
+
+/* Components */
+import { Avatar } from "@/components/ui/Avatar.jsx"; 
 
 
-export default function ManageAccountUI({ onUpdateProfile }) {
+export default function ManageAccountComponent({ user, signIn, signOut }) {
   const {  
     userAttributes,
     setUserAttributes,
@@ -89,9 +94,6 @@ export default function ManageAccountUI({ onUpdateProfile }) {
       setSaving(false);
     }
   };
-
-  // simple local toggle like the mockup
-  const [notifMode, setNotifMode] = useState("Allow");
 
   return (
     <div className="min-h-screen bg-[#f5f5f5] py-10 px-4">

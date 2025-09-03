@@ -1,32 +1,29 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect } from "react";
 
 // Import Amplify and the Authenticator UI component
 import { Amplify } from 'aws-amplify';
-import { fetchUserAttributes } from 'aws-amplify/auth';
 import '@aws-amplify/ui-react/styles.css';
 
 // Import Amplify configuration and configure Amplify
-import config from '../../amplify_outputs.json';
+import config from '/amplify_outputs.json';
 Amplify.configure(config);
 
 /* CSS styles */
-import "../styles/NewTab.css";
-import "../styles/TopBanner.css";
-import "../styles/Login.css";
+import "@/styles/Login.css";
 
 /* Constants */
-import { EMPTY_GROUP_IDENTIFIER, StorageType } from "../scripts/Constants.js"; // Note: Added StorageType here
+import { EMPTY_GROUP_IDENTIFIER, StorageType } from "@/scripts/Constants.js"; // Note: Added StorageType here
 
 /* Hooks and Utilities */
-import { getUserStorageKey } from '../scripts/Utilities.js';
-import { loadInitialBookmarks, useBookmarkManager } from '../scripts/useBookmarkManager.js';
-import { AppContext } from "../scripts/AppContext.jsx";
+import { getUserStorageKey } from '@/scripts/Utilities.js';
+import { loadInitialBookmarks, useBookmarkManager } from '@/scripts/useBookmarkManager.js';
+import { AppContext } from "@/scripts/AppContext.jsx";
 
 /* Components */
-import TopBanner from "./TopBanner.jsx";
-import DraggableGrid from './DraggableGrid.jsx';
+import TopBanner from "@/components/TopBanner.jsx";
+import DraggableGrid from '@/components/DraggableGrid.jsx';
 
-export function NewTabUI({ user, signIn, signOut }) {
+export function NewTabPage({ user, signIn, signOut }) {
   // Consume state from the context
   const {  
     bookmarkGroups, 

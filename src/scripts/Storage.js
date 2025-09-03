@@ -2,7 +2,7 @@ import { uploadData, downloadData, remove } from '@aws-amplify/storage';
 import { getUserStorageKey } from './Utilities.js';
 import { StorageType } from './Constants.js';
 import { fetchAuthSession } from 'aws-amplify/auth'; 
-import amplify_outputs from '../../amplify_outputs.json';
+import amplify_outputs from '/amplify_outputs.json';
 
 // Invoke URL from Amazon API Gateway 
 const API_INVOKE_URL = amplify_outputs.custom.API.bookmarks.endpoint;

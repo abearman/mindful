@@ -5,7 +5,7 @@ import { AppContext } from './AppContext.jsx';
 import { EMPTY_GROUP_IDENTIFIER, StorageType } from './Constants.js';
 import { refreshOtherMindfulTabs } from './Utilities.js';
 import { Storage } from './Storage.js';
-import amplify_outputs from '../../amplify_outputs.json';
+import amplify_outputs from '/amplify_outputs.json';
 
 const API_HOST_PATTERN = `https://${new URL(amplify_outputs.custom.API.bookmarks.endpoint).host}/*`;
 

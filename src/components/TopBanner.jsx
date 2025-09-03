@@ -1,9 +1,11 @@
 import React, { useContext, useState, useEffect, useRef } from 'react';
-import { AppContext } from "../scripts/AppContext.jsx";
-import { Avatar } from "./ui/Avatar.jsx";
-import { MenuItem } from "./ui/MenuItem.jsx";
 
-import '../styles/TopBanner.css';
+/* Scripts */
+import { AppContext } from "@/scripts/AppContext.jsx";
+
+/* CSS styles */
+import "@/styles/TopBanner.css";
+
 
 const TopBanner = ({ 
   onLoadBookmarks, 

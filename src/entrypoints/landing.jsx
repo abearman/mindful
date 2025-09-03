@@ -1,13 +1,16 @@
-import "../styles/Index.css"
 import React from "react";
 import { createRoot } from "react-dom/client";
 
-// Import Amplify and configure it 
+/* Configure Amplify */
 import { Amplify } from 'aws-amplify';
-import config from '../../amplify_outputs.json';
+import config from '/amplify_outputs.json';
 Amplify.configure(config);
 
-import LandingPage from "../components/LandingPageComponent.tsx"
+/* Components */
+import LandingPage from "@/pages/LandingPage.tsx"
+
+/* CSS styles */
+import "@/styles/Index.css"
 
 const container = document.getElementById("root");
 const root = createRoot(container);

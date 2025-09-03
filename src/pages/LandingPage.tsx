@@ -1,12 +1,12 @@
-import "../styles/Index.css"
+import "@/styles/Index.css"
 import React from "react";
 import { motion } from "framer-motion";
-import { Button } from "../components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
-import { Badge } from "../components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
   Accordion, AccordionItem, AccordionTrigger, AccordionContent,
-} from "../components/ui/accordion";
+} from "@/components/ui/accordion";
 import {
   Lock,
   HardDrive,

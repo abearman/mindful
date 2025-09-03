@@ -1,26 +1,15 @@
 import React, { useContext, useState, useEffect } from 'react';
 
-// Import Amplify and configure it
-import { Amplify } from 'aws-amplify';
-import config from '../../amplify_outputs.json';
-Amplify.configure(config);
-
-// Import Amplify Authenticator
-import { Authenticator } from '@aws-amplify/ui-react';
-import { getCurrentUser } from 'aws-amplify/auth';
-
-/* CSS styles */
-import '../styles/PopUp.css';
+/* Hooks and Utilities */
+import { AppContext } from "@/scripts/AppContext.jsx";
+import { constructValidURL } from '@/scripts/Utilities.js';
+import { useBookmarkManager } from '@/scripts/useBookmarkManager.js'; 
 
 /* Constants */
-import { URL_PATTERN, EMPTY_GROUP_IDENTIFIER } from '../scripts/Constants.js';
+import { URL_PATTERN, EMPTY_GROUP_IDENTIFIER } from '@/scripts/Constants.js';
 
-/* Hooks and Utilities */
-import { constructValidURL } from '../scripts/Utilities.js';
-import { useBookmarkManager } from '../scripts/useBookmarkManager.js'; 
-import { AppContextProvider, AppContext } from '../scripts/AppContext.jsx';
 
-function PopUpComponent() {
+export default function PopupComponent() {
   // Consume state from the context. All data now flows from here.
   const { bookmarkGroups } = useContext(AppContext);
 
@@ -130,40 +119,3 @@ function PopUpComponent() {
     </div>
   );
 }
-
-// The PopupApp wrapper remains largely the same, as its job of providing
-// the context is correct.
-function PopupApp() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const checkUser = async () => {
-      try {
-        const authenticatedUser = await getCurrentUser();
-        setUser(authenticatedUser);
-      } catch (err) {
-        setUser(null);
-      }
-      setLoading(false);
-    };
-    checkUser();
-  }, []);
-
-  if (loading) {
-    return <div className="loading">Loading...</div>;
-  }
-  
-  // The AppContextProvider handles loading bookmarks from the correct storage source.
-  // PopUpComponent doesn't need to know how or when this happens.
-  return user ? (
-    <AppContextProvider user={user}>
-      <PopUpComponent />
-    </AppContextProvider>
-  ) : (
-    <div className="signed-out-message">Please sign in on the new tab page to add bookmarks.</div>
-  );
-}
-
-
-export default PopupApp;

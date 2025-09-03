@@ -1,12 +1,17 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import PopupApp from '../components/PopUpComponent'; 
+
+/* Components */
+import PopupPage from '@/pages/PopupPage'; 
+
+/* CSS styles */
+import "@/styles/PopUp.css";
 
 const container = document.getElementById('root');
 const root = createRoot(container);
 
 root.render(
   <React.StrictMode>
-    <PopupApp />
+    <PopupPage />
   </React.StrictMode>
 );
