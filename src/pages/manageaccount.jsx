@@ -20,7 +20,6 @@ root.render(
       {({ signIn, signOut, user }) => (
         <AppContextProvider user={user}>
           <ManageAccountUI
-            userAttributes={user?.attributes}
             onUpdateProfile={async (payload) => {
               // TODO: persist to your backend/Cognito
               console.log("Save profile", payload);

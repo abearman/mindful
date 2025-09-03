@@ -159,3 +159,56 @@
 .ma-footer-note {
   margin-top: 18px;
 }
+
+/* === Phone input === */
+
+/* Phone input should hug content so flag sits next to number */
+.phone-field .PhoneInput {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;  /* push flag + number to the right edge */
+  gap: 0.4rem;
+  width: 100%;
+}
+
+.phone-field .PhoneInputInput {
+  flex: 0 1 auto;
+  text-align: right !important;
+}
+
+/* Never let the flag column grow (we already have size rules for the icon/img) */
+.phone-field .PhoneInputCountry {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto !important;
+}
+
+/* Hard size the icon box itself */
+.phone-field .PhoneInputCountryIcon {
+  width: 18px !important;
+  height: 14px !important;
+  display: inline-block !important;
+  overflow: hidden;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.08);
+  flex: 0 0 18px !important; /* explicit */
+}
+
+/* Whatever the library puts inside (img/svg/span), limit to the 18×14 box */
+.phone-field .PhoneInputCountryIcon *,
+.phone-field .PhoneInputCountryIconImg,
+.phone-field .PhoneInputCountryIcon > img,
+.phone-field .PhoneInputCountryIcon > svg {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  object-fit: cover;
+}
+
+/* Minimal native select */
+.phone-field select.PhoneInputCountrySelect {
+  background: transparent;
+  border: none;
+  padding: 0;
+}
