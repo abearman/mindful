@@ -18,8 +18,9 @@ export default defineConfig({
     rollupOptions: {
       input: {
         index: './index.html',  // Entry point for the Mindful landing page 
-        newtab: './src/newtab.jsx', // Entry point for the new tab page
-        popup: './src/popup.jsx',   // Entry point for the popup window
+        newtab: './src/pages/newtab.jsx', // Entry point for the new tab page
+        popup: './src/pages/popup.jsx',   // Entry point for the popup window
+        manageAccount: './src/pages/manageaccount.jsx',  // Entry point for Manage Account page
       },
       output: {
         entryFileNames: '[name].js', // Maintain separate output files

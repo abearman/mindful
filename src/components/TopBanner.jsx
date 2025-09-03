@@ -1,5 +1,7 @@
 import React, { useContext, useState, useEffect, useRef } from 'react';
 import { AppContext } from "../scripts/AppContext.jsx";
+import { Avatar } from "./ui/Avatar.jsx";
+import { MenuItem } from "./ui/MenuItem.jsx";
 
 import '../styles/TopBanner.css';
 
@@ -81,6 +83,19 @@ const TopBanner = ({
                   </div>
                 </div> 
                 <hr className="dropdown-divider" />
+
+                <button
+                  onClick={() => {
+                    const url = chrome?.runtime?.getURL
+                      ? chrome.runtime.getURL("ManageAccount.html")
+                      : "ManageAccount.html"; // fallback for web/debug
+                    window.location.href = url;
+                  }}
+                  className="dropdown-item"
+                >
+                  Manage Account
+                </button>
+
                 <button onClick={handleLogout} className="dropdown-item">
                   Logout
                 </button>
