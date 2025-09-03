@@ -7,7 +7,6 @@ import { Badge } from "../components/ui/badge";
 import {
   Accordion, AccordionItem, AccordionTrigger, AccordionContent,
 } from "../components/ui/accordion";
-import { Input } from "../components/ui/input";
 import {
   Lock,
   HardDrive,
@@ -31,7 +30,76 @@ const fadeUp = {
   transition: { duration: 0.6, ease: "easeOut" },
 };
 
-const CHROME_EXTENSION_LINK = "https://chromewebstore.google.com/detail/mindful/bjobloafhnodgomnplkfhebkihnafhfe"
+const BETA_GROUP_URL = "https://groups.google.com/g/mindful-beta-testers";
+const CHROME_EXTENSION_URL = "https://chromewebstore.google.com/detail/mindful/bjobloafhnodgomnplkfhebkihnafhfe"
+
+
+function useTesterGate() {
+  const [unlocked, setUnlocked] = React.useState(false);
+
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("tester") === "1") {
+      localStorage.setItem("mindful:isTester", "1");
+      setUnlocked(true);
+    } else {
+      setUnlocked(localStorage.getItem("mindful:isTester") === "1");
+    }
+  }, []);
+
+  const unlock = React.useCallback(() => {
+    localStorage.setItem("mindful:isTester", "1");
+    setUnlocked(true);
+  }, []);
+
+  return { unlocked, unlock };
+}
+
+function JoinBetaButton({ size = "default" }: { size?: "default" | "lg" }) {
+  const { unlock } = useTesterGate();
+  return (
+    <Button
+      size={size}
+      variant="ghost"
+      onClick={() => {
+        window.open(BETA_GROUP_URL, "_blank", "noopener,noreferrer");
+        unlock();
+      }}
+      aria-label="Join the Mindful beta (opens Google Group)"
+      className="cursor-pointer"   // 👈 ensures hand cursor
+    >
+      Join beta
+    </Button>
+  );
+}
+
+function InstallCTA({ size = "default", className = "" }: { size?: "default" | "lg"; className?: string }) {
+  const { unlocked } = useTesterGate();
+  return (
+    <Button
+      size={size}
+      className={`bg-neutral-200 text-neutral-900 hover:bg-white ${className}`}
+      asChild
+      disabled={!unlocked}
+      aria-disabled={!unlocked}
+      title={unlocked ? "Add to Chrome" : "Join the beta first to unlock install"}
+    >
+      <a
+        href={unlocked ? CHROME_EXTENSION_URL : BETA_GROUP_URL}
+        onClick={(e) => {
+          if (!unlocked) {
+            e.preventDefault();
+            // If somehow still locked, nudge to Group
+            window.open(BETA_GROUP_URL, "_blank", "noopener,noreferrer");
+          }
+        }}
+      >
+        <Download className="mr-2 h-5 w-5" />
+        {unlocked ? "Add to Chrome" : "Install (testers only)"}
+      </a>
+    </Button>
+  );
+}
 
 export default function LandingPage() {
   return (
@@ -56,15 +124,8 @@ export default function LandingPage() {
             <a href="#faq" className="text-sm text-neutral-300 hover:text-white">FAQ</a>
           </nav>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" className="hidden md:inline-flex" asChild>
-              <a href="#email" aria-label="Join the beta">Join beta</a>
-            </Button>
-            <Button asChild className="bg-neutral-200 text-neutral-900 hover:bg-white">
-              <a href={CHROME_EXTENSION_LINK} aria-label="Add Mindful to Chrome">
-                <Download className="h-4 w-4" />
-                Add to Chrome
-              </a>
-            </Button> 
+            <JoinBetaButton />
+            <InstallCTA />
           </div>
         </div>
       </header>
@@ -80,21 +141,17 @@ export default function LandingPage() {
               A calm, visual space for your digital mind
             </h1>
             <p className="mt-4 max-w-xl text-neutral-300">
-              Organize links intuitively, without the noise. Keep everything private on your device—or opt in to encrypted cloud sync. Your bookmarks. Private. Local. Yours.
+              Organize links intuitively, without the noise. Keep everything private on your device or opt in to encrypted cloud sync. Your bookmarks. Private. Local. Yours.
             </p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-              <Button size="lg" className="bg-neutral-200 text-neutral-900 hover:bg-white" asChild>
-                <a href={CHROME_EXTENSION_LINK} aria-label="Add Mindful to Chrome">
-                  <Download className="mr-2 h-5 w-5" /> Add to Chrome
-                </a>
-              </Button>
+              <InstallCTA size="lg" />
               <Button size="lg" variant="secondary" className="bg-neutral-200 text-neutral-900 hover:bg-white" asChild>
                 <a href="#features" aria-label="See how it works">
                   <Sparkles className="mr-2 h-5 w-5" /> See how it works
                 </a>
               </Button>
             </div>
-            <p className="mt-3 text-xs text-neutral-400">No signup required in Local‑Only mode • Import from Chrome/Firefox/Safari</p>
+            {/* <p className="mt-3 text-xs text-neutral-400">No signup required in Local‑Only mode • Import from Chrome/Firefox/Safari</p> */}
           </motion.div>
 
           <motion.div {...fadeUp} className="relative">
@@ -122,14 +179,14 @@ export default function LandingPage() {
           Build a visual memory palace for the web
         </motion.h2>
         <motion.p {...fadeUp} className="mt-3 max-w-2xl text-neutral-300">
-          Mindful turns your new tab into a personal command center. Arrange boards, group links, and find anything instantly—without leaking your browsing habits.
+          Mindful turns your new tab into a personal command center. Arrange boards, group links, and find anything instantly, without leaking your browsing habits.
         </motion.p>
 
         <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           <Feature icon={LayoutGrid} title="Boards & groups" desc="Drag cards, resize, and keep related links together in a clean visual grid." />
           <Feature icon={Tags} title="Tags you’ll actually use" desc="Fast, fuzzy tagging and filters. Save now, find later." />
           <Feature icon={Search} title="Blazing‑fast search" desc="Search titles, descriptions, and tags instantly—no network required in Local mode." />
-          <Feature icon={Lock} title="Local‑only by default" desc="Use Mindful entirely offline. No account or signup required." />
+          <Feature icon={Lock} title="Local‑only by default" desc="Use Mindful entirely offline."/>
           <Feature icon={ShieldCheck} title="End‑to‑end privacy" desc="Opt‑in cloud sync uses client‑side AES‑GCM with KMS‑managed data keys. We can’t read your data." />
           <Feature icon={HardDrive} title="Own your storage" desc="Encrypted backups to your cloud or ours. Export anytime." />
         </div>
@@ -159,7 +216,7 @@ export default function LandingPage() {
               <li className="flex items-start gap-3"><Lock className="mt-0.5 h-5 w-5 text-blue-400" /> Local‑Only mode stores everything on your device.</li>
               <li className="flex items-start gap-3"><ShieldCheck className="mt-0.5 h-5 w-5 text-blue-400" /> Optional sync: client‑side AES‑GCM, KMS‑managed data keys, HTTPS in transit.</li>
               <li className="flex items-start gap-3"><FolderTree className="mt-0.5 h-5 w-5 text-blue-400" /> No ads. No behavioral tracking. No selling data.</li>
-              <li className="flex items-start gap-3"><Share2 className="mt-0.5 h-5 w-5 text-blue-400" /> Export and import anytime—your content is portable by default.</li>
+              <li className="flex items-start gap-3"><Share2 className="mt-0.5 h-5 w-5 text-blue-400" /> Export and import anytime. Your content is portable by default.</li>
             </ul>
           </motion.div>
           <motion.div {...fadeUp}>
@@ -168,21 +225,27 @@ export default function LandingPage() {
                 <CardTitle className="text-lg">Get early access</CardTitle>
               </CardHeader>
               <CardContent>
-                <form
-                  id="email"
-                  className="flex flex-col gap-3 sm:flex-row"
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    alert("Hook this up to your ESP or serverless function.");
-                  }}
-                >
-                  <Input type="email" placeholder="you@domain.com" className="bg-neutral-950 text-neutral-100 placeholder:text-neutral-500" required />
-                  <Button type="submit" className="bg-neutral-200 text-neutral-900 hover:bg-white">
-                    Join beta
-                  </Button>
-                </form>
-                <p className="mt-2 text-xs text-neutral-500">We only email about the product. No spam—ever.</p>
+                <ol className="mb-4 space-y-3 text-sm text-neutral-300">
+                  <li className="flex items-start gap-3">
+                    <div className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-blue-500/20 text-xs font-semibold text-blue-300">1</div>
+                    <span>Join the beta Google Group (auto-approved).</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <div className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-blue-500/20 text-xs font-semibold text-blue-300">2</div>
+                    <span>Install the extension (button unlocks after joining).</span>
+                  </li>
+                </ol>
+
+                <div className="flex flex-col gap-3 sm:flex-row">
+                  <JoinBetaButton />
+                  <InstallCTA />
+                </div>
+
+                <p className="mt-2 text-xs text-neutral-500">
+                  Tip: Make sure you’re signed into Chrome with the same Google account you used to join the Group.
+                </p>
               </CardContent>
+
             </Card>
           </motion.div>
         </div>
@@ -197,16 +260,18 @@ export default function LandingPage() {
           <PricingCard
             title="Free"
             price="$0"
-            tagline="Local‑Only forever"
+            tagline="Full power for free: organize endlessly, sync if you want"
             features={[
-              "Boards, tags, and fast search",
+              "Customizable groups and bookmark names",
+              // "Boards, tags, and fast search",
               "New‑tab experience",
               "Import & export",
-              "No account required",
+              "Local-only mode for extra privacy",
+              "Optional end-to-end encrypted cloud sync"
             ]}
             cta="Start free"
           />
-          <PricingCard
+          {/* <PricingCard
             highlighted
             title="Pro"
             price="$3/mo"
@@ -218,7 +283,7 @@ export default function LandingPage() {
               "Priority support",
             ]}
             cta="Go Pro"
-          />
+          /> */}
         </div>
       </section>
 
@@ -231,7 +296,7 @@ export default function LandingPage() {
           <AccordionItem value="item-1">
             <AccordionTrigger className="px-4 text-left">Do I need an account?</AccordionTrigger>
             <AccordionContent className="px-4 text-neutral-300">
-              Nope. Local‑Only mode requires no account or internet connection. You can enable encrypted sync later.
+              Yes. Both Local‑Only and Remote modes requires an account and login. 
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="item-2">
@@ -240,18 +305,18 @@ export default function LandingPage() {
               Your data is encrypted on your device using AES‑GCM before it leaves the browser. The encryption keys are derived client‑side and protected with KMS‑managed data keys. Servers store only ciphertext.
             </AccordionContent>
           </AccordionItem>
-          <AccordionItem value="item-3">
+          {/* <AccordionItem value="item-3">
             <AccordionTrigger className="px-4 text-left">Can I import from other tools?</AccordionTrigger>
             <AccordionContent className="px-4 text-neutral-300">
               Yes—import from Chrome, Firefox, Safari, and common bookmark export formats. You can also export your data anytime.
             </AccordionContent>
-          </AccordionItem>
-          <AccordionItem value="item-4">
+          </AccordionItem> */}
+          {/* <AccordionItem value="item-4">
             <AccordionTrigger className="px-4 text-left">Is there a keyboard‑first workflow?</AccordionTrigger>
             <AccordionContent className="px-4 text-neutral-300">
               Absolutely. Use quick‑add, global search, and command palette actions to stay in flow.
             </AccordionContent>
-          </AccordionItem>
+          </AccordionItem> */}
         </Accordion>
       </section>
 
@@ -261,15 +326,11 @@ export default function LandingPage() {
           <CardContent className="flex flex-col items-center gap-4 p-8 text-center md:flex-row md:justify-between md:text-left">
             <div>
               <h4 className="text-xl font-semibold">Turn every new tab into a mindful command center</h4>
-              <p className="mt-1 text-neutral-300">Start free in seconds. Upgrade only if you want encrypted sync.</p>
+              <p className="mt-1 text-neutral-300">Start free in seconds.</p>
             </div>
             <div className="flex gap-3">
-              <Button size="lg" className="bg-neutral-200 text-neutral-900 hover:bg-white" asChild>
-                <a href={CHROME_EXTENSION_LINK}>Add to Chrome</a>
-              </Button>
-              <Button size="lg" variant="secondary" className="bg-neutral-200 text-neutral-900 hover:bg-white" asChild>
-                <a href="#email">Join beta</a>
-              </Button>
+              <InstallCTA size="lg" />
+              <JoinBetaButton size="lg" />
             </div>
           </CardContent>
         </Card>
