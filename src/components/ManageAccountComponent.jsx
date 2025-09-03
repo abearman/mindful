@@ -2,6 +2,13 @@ import React, { useMemo, useState, useContext } from "react";
 import { AppContext } from "../scripts/AppContext.jsx";
 import { Avatar } from "./ui/Avatar.jsx"; 
 
+import {
+  updateUserAttributes,
+  fetchUserAttributes,
+  sendUserAttributeVerificationCode,
+  confirmUserAttribute,
+} from "aws-amplify/auth";
+
 import 'react-phone-number-input/style.css';
 import '../styles/ManageAccount.css';
 import PhoneInput from 'react-phone-number-input';
@@ -10,13 +17,19 @@ import PhoneInput from 'react-phone-number-input';
 export default function ManageAccountUI({ onUpdateProfile }) {
   const {  
     userAttributes,
+    setUserAttributes,
     storageType,
   } = useContext(AppContext);
 
-  const name = useMemo(() => {
-    const gn = userAttributes.given_name || "";
-    const fn = userAttributes.family_name || "";
-    return [gn, fn].filter(Boolean).join(" ").trim() || "Your name";
+  const [pendingVerify, setPendingVerify] = useState(null); // "email" | "phone_number" | null
+  const [verifyCode, setVerifyCode] = useState("");
+
+  const given_name = useMemo(() => {
+    return userAttributes.given_name || "";
+  }, [userAttributes]);
+
+  const family_name = useMemo(() => {
+    return userAttributes.family_name || "";
   }, [userAttributes]);
 
   const initials = useMemo(() => {
@@ -29,7 +42,8 @@ export default function ManageAccountUI({ onUpdateProfile }) {
   const phone = userAttributes.phone_number || "Your phone number";
 
   const [form, setForm] = useState({
-    name,
+    given_name,
+    family_name,
     email,
     phone,
   });
@@ -38,9 +52,39 @@ export default function ManageAccountUI({ onUpdateProfile }) {
   const handle = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
 
   const save = async () => {
+    setSaving(true);
     try {
-      setSaving(true);
-      await onUpdateProfile?.(form);
+      const current = await fetchUserAttributes();
+  
+      // Map your UI fields -> Cognito standard attributes
+      const next = {
+        given_name: form.given_name,
+        family_name: form.family_name,                 
+        email: form.email,
+        phone_number: toE164(form.phone),
+        // For custom attrs: "custom:preferred_theme": "dark"
+      };
+  
+      // Only send what changed
+      const changed = Object.fromEntries(
+        Object.entries(next).filter(([k, v]) => (current[k] || "") !== (v || ""))
+      );
+      if (Object.keys(changed).length === 0) return;
+  
+      await updateUserAttributes({ userAttributes: changed });
+  
+      // If email or phone changed, kick off verification to the NEW value
+      if (changed.email) {
+        await sendUserAttributeVerificationCode({ userAttributeKey: "email" });
+        setPendingVerify("email");
+      } else if (changed.phone_number) {
+        await sendUserAttributeVerificationCode({ userAttributeKey: "phone_number" });
+        setPendingVerify("phone_number");
+      } else {
+        // Refresh local copy (and push into your AppContext if you have a setter)
+        const updated = await fetchUserAttributes();
+        setUserAttributes(updated); 
+      }
     } finally {
       setSaving(false);
     }
@@ -60,7 +104,7 @@ export default function ManageAccountUI({ onUpdateProfile }) {
             <div className="flex items-center gap-4">
               <Avatar initials={initials} />
               <div className="flex-1">
-                <div className="text-base font-semibold text-gray-900">{name}</div>
+                <div className="text-base font-semibold text-gray-900">{given_name + " " + family_name}</div>
                 <div className="text-sm text-gray-500">{email}</div>
               </div>
               {/* Close icon placeholder
@@ -70,12 +114,20 @@ export default function ManageAccountUI({ onUpdateProfile }) {
 
             {/* Fields */}
             <div className="text-sm mt-6 divide-y divide-gray-200">
-              <FieldRow label="Name">
+              <FieldRow label="Given Name">
                 <input
                   className="w-full bg-transparent text-right text-gray-700 placeholder-gray-400 focus:outline-none"
-                  value={form.name}
-                  onChange={handle("name")}
-                  placeholder="your name"
+                  value={form.given_name}
+                  onChange={handle("given_name")}
+                  placeholder="Your given name"
+                />
+              </FieldRow>
+              <FieldRow label="Family Name">
+                <input
+                  className="w-full bg-transparent text-right text-gray-700 placeholder-gray-400 focus:outline-none"
+                  value={form.family_name}
+                  onChange={handle("family_name")}
+                  placeholder="Your family name"
                 />
               </FieldRow>
               <FieldRow label="Email account">
@@ -102,12 +154,6 @@ export default function ManageAccountUI({ onUpdateProfile }) {
                   />
                 </div>
               </FieldRow>
-                {/* <input
-                  className="w-full bg-transparent text-right text-gray-700 placeholder-gray-400 focus:outline-none"
-                  value={form.phone}
-                  onChange={handle("phone")}
-                  placeholder="Add number"
-                /> */}
             </div>
 
             <div className="text-sm pt-6">
@@ -120,6 +166,44 @@ export default function ManageAccountUI({ onUpdateProfile }) {
               </button>
             </div>
           </div>
+
+          {pendingVerify && (
+            <div className="mt-6 rounded-xl border border-gray-200 p-4">
+              <div className="text-sm font-medium text-gray-700 mb-2">
+                Enter the code sent to your {pendingVerify === "email" ? "email" : "phone"}:
+              </div>
+              <div className="flex gap-3">
+                <input
+                  className="flex-1 rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500"
+                  value={verifyCode}
+                  onChange={(e) => setVerifyCode(e.target.value)}
+                  placeholder="123456"
+                  inputMode="numeric"
+                />
+                <button
+                  className="rounded-lg bg-blue-600 px-4 py-2 text-white font-semibold hover:bg-blue-500"
+                  onClick={async () => {
+                    await confirmUserAttribute({
+                      userAttributeKey: pendingVerify,
+                      confirmationCode: verifyCode.trim(),
+                    });
+                    setPendingVerify(null);
+                    setVerifyCode("");
+                    const updated = await fetchUserAttributes();
+                    setUserAttributes?.(updated);
+                  }}
+                >
+                  Confirm
+                </button>
+                <button
+                  className="rounded-lg border px-3 py-2 font-medium"
+                  onClick={() => sendUserAttributeVerificationCode({ userAttributeKey: pendingVerify })}
+                >
+                  Resend
+                </button>
+              </div>
+            </div>
+          )}
         </main>
       </div>
     </div>
@@ -137,4 +221,12 @@ function FieldRow({ label, children }) {
       </div>
     </div>
   );
+}
+
+function toE164(p) {
+  if (!p) return "";
+  if (p.startsWith("+")) return p;
+  const digits = p.replace(/\D/g, "");
+  if (digits.length === 10) return `+1${digits}`;
+  return `+${digits}`;
 }

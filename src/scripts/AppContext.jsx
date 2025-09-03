@@ -151,6 +151,7 @@ export function AppContextProvider({ children }) {
     isMigrating,
     setIsMigrating,
     userAttributes,
+    setUserAttributes,
   };
 
   return (
