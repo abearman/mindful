@@ -3,9 +3,6 @@ import React, { useContext, useState, useEffect, useRef } from 'react';
 /* Scripts */
 import { AppContext } from "@/scripts/AppContext.jsx";
 
-/* CSS styles */
-import "@/styles/TopBanner.css";
-
 
 const TopBanner = ({ 
   onLoadBookmarks, 

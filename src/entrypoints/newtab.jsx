@@ -17,6 +17,7 @@ import { AppContextProvider } from "@/scripts/AppContext.jsx";
 import formFields from "@/config/formFields.js";
 
 /* CSS styles */
+import "@/styles/Index.css"; 
 import "@/styles/NewTab.css";
 
 const container = document.getElementById("root");

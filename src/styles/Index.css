@@ -1,6 +1,11 @@
 @import "tailwindcss";
 @tailwind base;
 @tailwind components;
+
+/* Put component layers after @tailwind components */
+@import "@/styles/components/top-banner.css";
+@import "@fortawesome/fontawesome-free/css/all.min.css";
+
 @tailwind utilities;
 
 /* optional dark defaults */
