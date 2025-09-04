@@ -26,6 +26,7 @@ export default function ManageAccountComponent({ user, signIn, signOut }) {
     userAttributes,
     setUserAttributes,
     storageType,
+    setStorageType,
   } = useContext(AppContext);
 
   const [pendingVerify, setPendingVerify] = useState(null); // "email" | "phone_number" | null
@@ -96,6 +97,7 @@ export default function ManageAccountComponent({ user, signIn, signOut }) {
         // Refresh local copy (and push into your AppContext)
         const updated = await fetchUserAttributes();
         setUserAttributes(updated); 
+        setStorageType(form.storage_type); 
       }
     } finally {
       setSaving(false);
