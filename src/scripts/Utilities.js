@@ -94,3 +94,11 @@ export function refreshActiveMindfulTab() {
     });
   });
 }
+
+export function toE164(p) {
+  if (!p) return "";
+  if (p.startsWith("+")) return p;
+  const digits = p.replace(/\D/g, "");
+  if (digits.length === 10) return `+1${digits}`;
+  return `+${digits}`;
+}

@@ -14,6 +14,7 @@ import 'react-phone-number-input/style.css';
 
 /* Scripts */
 import { AppContext } from "@/scripts/AppContext.jsx";
+import { toE164 } from "@/scripts/Utilities.js";
 
 /* Components */
 import { Avatar } from "@/components/ui/Avatar.jsx"; 
@@ -51,10 +52,14 @@ export default function ManageAccountComponent({ user, signIn, signOut }) {
     family_name,
     email,
     phone,
+    storage_type: storageType ?? "remote",
   });
   const [saving, setSaving] = useState(false);
 
-  const handle = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
+  const handle = (key) => (valueOrEvent) => {
+    const newValue = valueOrEvent?.target ? valueOrEvent.target.value : valueOrEvent;
+    setForm((f) => ({ ...f, [key]: newValue }));
+  };
 
   const save = async () => {
     setSaving(true);
@@ -67,6 +72,7 @@ export default function ManageAccountComponent({ user, signIn, signOut }) {
         family_name: form.family_name,                 
         email: form.email,
         phone_number: toE164(form.phone),
+        "custom:storage_type": form.storage_type, 
         // For custom attrs: "custom:preferred_theme": "dark"
       };
   
@@ -96,118 +102,120 @@ export default function ManageAccountComponent({ user, signIn, signOut }) {
   };
 
   return (
-    <div className="min-h-screen bg-[#f5f5f5] py-10 px-4">
-      <div className="mx-auto max-w-6xl grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className="min-h-screen bg-[#f5f5f5] py-10 px-4 flex justify-center">
+      <main className="w-full max-w-2xl">
+        <div className="rounded-2xl bg-white shadow-xl p-6">
+          {/* Header row */}
+          <div className="flex items-center gap-4">
+            <Avatar initials={initials} />
+            <div className="flex-1">
+              <div className="text-base font-semibold text-gray-900">{given_name + " " + family_name}</div>
+              <div className="text-sm text-gray-500">{email}</div>
+            </div>
+            {/* Close icon placeholder
+            <button className="text-gray-400 hover:text-gray-600">✕</button>
+            */}
+          </div>
 
-        {/* RIGHT PANEL */}
-        <main className="lg:col-span-2">
-          <div className="rounded-2xl bg-white shadow-xl p-6">
-            {/* Header row */}
-            <div className="flex items-center gap-4">
-              <Avatar initials={initials} />
-              <div className="flex-1">
-                <div className="text-base font-semibold text-gray-900">{given_name + " " + family_name}</div>
-                <div className="text-sm text-gray-500">{email}</div>
+          {/* Fields */}
+          <div className="text-sm mt-6 divide-y divide-gray-200">
+            <FieldRow label="Given name">
+              <input
+                className="w-full bg-transparent text-right text-gray-700 placeholder-gray-400 focus:outline-none"
+                value={form.given_name}
+                onChange={handle("given_name")}
+                placeholder="Your given name"
+              />
+            </FieldRow>
+            <FieldRow label="Family name">
+              <input
+                className="w-full bg-transparent text-right text-gray-700 placeholder-gray-400 focus:outline-none"
+                value={form.family_name}
+                onChange={handle("family_name")}
+                placeholder="Your family name"
+              />
+            </FieldRow>
+            <FieldRow label="Email account">
+              <input
+                type="email"
+                className="w-full bg-transparent text-right text-gray-700 placeholder-gray-400 focus:outline-none"
+                value={form.email}
+                onChange={handle("email")}
+                placeholder="yourname@gmail.com"
+              />
+            </FieldRow>
+            <FieldRow label="Phone number">
+              <div className="phone-field">
+                <PhoneInput
+                  international
+                  defaultCountry="US"
+                  value={form.phone}
+                  onChange={(value) => handle('phone')({ target: { value } })}
+                  countryCallingCodeEditable={false}
+                  numberInputProps={{
+                    className: 'bg-transparent text-gray-700 placeholder-gray-400 focus:outline-none',
+                    placeholder: 'Add number',
+                  }}
+                />
               </div>
-              {/* Close icon placeholder
-              <button className="text-gray-400 hover:text-gray-600">✕</button>
-              */}
-            </div>
+            </FieldRow>
+            <FieldRow label="Storage type">
+              <CompactStorageToggle
+                value={form.storage_type}
+                onChange={handle("storage_type")}
+              />
+            </FieldRow>
+          </div>
 
-            {/* Fields */}
-            <div className="text-sm mt-6 divide-y divide-gray-200">
-              <FieldRow label="Given Name">
-                <input
-                  className="w-full bg-transparent text-right text-gray-700 placeholder-gray-400 focus:outline-none"
-                  value={form.given_name}
-                  onChange={handle("given_name")}
-                  placeholder="Your given name"
-                />
-              </FieldRow>
-              <FieldRow label="Family Name">
-                <input
-                  className="w-full bg-transparent text-right text-gray-700 placeholder-gray-400 focus:outline-none"
-                  value={form.family_name}
-                  onChange={handle("family_name")}
-                  placeholder="Your family name"
-                />
-              </FieldRow>
-              <FieldRow label="Email account">
-                <input
-                  type="email"
-                  className="w-full bg-transparent text-right text-gray-700 placeholder-gray-400 focus:outline-none"
-                  value={form.email}
-                  onChange={handle("email")}
-                  placeholder="yourname@gmail.com"
-                />
-              </FieldRow>
-              <FieldRow label="Phone number">
-                <div className="phone-field">
-                  <PhoneInput
-                    international
-                    defaultCountry="US"
-                    value={form.phone}
-                    onChange={(value) => handle('phone')({ target: { value } })}
-                    countryCallingCodeEditable={false}
-                    numberInputProps={{
-                      className: 'bg-transparent text-gray-700 placeholder-gray-400 focus:outline-none',
-                      placeholder: 'Add number',
-                    }}
-                  />
-                </div>
-              </FieldRow>
-            </div>
+          <div className="text-sm pt-6">
+            <button
+              onClick={save}
+              disabled={saving}
+              className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-2.5 text-white font-semibold shadow hover:bg-blue-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {saving ? "Saving…" : "Save Changes"}
+            </button>
+          </div>
+        </div>
 
-            <div className="text-sm pt-6">
+        {pendingVerify && (
+          <div className="mt-6 rounded-xl border border-gray-200 p-4">
+            <div className="text-sm font-medium text-gray-700 mb-2">
+              Enter the code sent to your {pendingVerify === "email" ? "email" : "phone"}:
+            </div>
+            <div className="flex gap-3">
+              <input
+                className="flex-1 rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500"
+                value={verifyCode}
+                onChange={(e) => setVerifyCode(e.target.value)}
+                placeholder="123456"
+                inputMode="numeric"
+              />
               <button
-                onClick={save}
-                disabled={saving}
-                className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-2.5 text-white font-semibold shadow hover:bg-blue-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className="rounded-lg bg-blue-600 px-4 py-2 text-white font-semibold hover:bg-blue-500"
+                onClick={async () => {
+                  await confirmUserAttribute({
+                    userAttributeKey: pendingVerify,
+                    confirmationCode: verifyCode.trim(),
+                  });
+                  setPendingVerify(null);
+                  setVerifyCode("");
+                  const updated = await fetchUserAttributes();
+                  setUserAttributes(updated);
+                }}
               >
-                {saving ? "Saving…" : "Save Changes"}
+                Confirm
+              </button>
+              <button
+                className="rounded-lg border px-3 py-2 font-medium"
+                onClick={() => sendUserAttributeVerificationCode({ userAttributeKey: pendingVerify })}
+              >
+                Resend
               </button>
             </div>
           </div>
-
-          {pendingVerify && (
-            <div className="mt-6 rounded-xl border border-gray-200 p-4">
-              <div className="text-sm font-medium text-gray-700 mb-2">
-                Enter the code sent to your {pendingVerify === "email" ? "email" : "phone"}:
-              </div>
-              <div className="flex gap-3">
-                <input
-                  className="flex-1 rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500"
-                  value={verifyCode}
-                  onChange={(e) => setVerifyCode(e.target.value)}
-                  placeholder="123456"
-                  inputMode="numeric"
-                />
-                <button
-                  className="rounded-lg bg-blue-600 px-4 py-2 text-white font-semibold hover:bg-blue-500"
-                  onClick={async () => {
-                    await confirmUserAttribute({
-                      userAttributeKey: pendingVerify,
-                      confirmationCode: verifyCode.trim(),
-                    });
-                    setPendingVerify(null);
-                    setVerifyCode("");
-                    const updated = await fetchUserAttributes();
-                    setUserAttributes(updated);
-                  }}
-                >
-                  Confirm
-                </button>
-                <button
-                  className="rounded-lg border px-3 py-2 font-medium"
-                  onClick={() => sendUserAttributeVerificationCode({ userAttributeKey: pendingVerify })}
-                >
-                  Resend
-                </button>
-              </div>
-            </div>
-          )}
-        </main>
-      </div>
+        )}
+      </main>
     </div>
   );
 }
@@ -225,10 +233,50 @@ function FieldRow({ label, children }) {
   );
 }
 
-function toE164(p) {
-  if (!p) return "";
-  if (p.startsWith("+")) return p;
-  const digits = p.replace(/\D/g, "");
-  if (digits.length === 10) return `+1${digits}`;
-  return `+${digits}`;
+function CompactStorageToggle({ value = "remote", onChange, disabled }) {
+  const isRemote = value === "remote";
+
+  return (
+    <div className="flex items-center gap-3 text-sm">
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => onChange?.("local")}
+        className={`transition ${
+          !isRemote ? "font-medium text-gray-900" : "text-gray-500"
+        } hover:text-gray-900 disabled:opacity-50`}
+      >
+        Local
+      </button>
+
+      {/* compact switch */}
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => onChange?.(isRemote ? "local" : "remote")}
+        aria-pressed={isRemote}
+        className={`relative inline-flex h-5 w-9 items-center rounded-full border transition
+          ${isRemote ? "bg-blue-600 border-blue-600" : "bg-gray-300 border-gray-300"}
+          focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60
+          disabled:opacity-50`}
+      >
+        <span
+          className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition
+            ${isRemote ? "translate-x-4" : "translate-x-1"}`}
+        />
+      </button>
+
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => onChange?.("remote")}
+        className={`transition ${
+          isRemote ? "font-medium text-gray-900" : "text-gray-500"
+        } hover:text-gray-900 disabled:opacity-50`}
+      >
+        Remote
+      </button>
+    </div>
+  );
 }
+
