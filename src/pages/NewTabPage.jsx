@@ -95,7 +95,7 @@ export function NewTabPage({ user, signIn, signOut }) {
   }, [userId, storageType, setBookmarkGroups, isMigrating]); // Re-runs if user or storageType changes
 
   return (
-    <div>
+    <div className="min-h-screen bg-[#f5f5f5] text-[#484848]">
       <TopBanner
         onLoadBookmarks={handleLoadBookmarks}
         onExportBookmarks={exportBookmarksToJSON}
