@@ -24,16 +24,41 @@
     gap: 15px;
   }
 
-  .top-banner .icon-button {
+  /* .top-banner .icon-button {
     background: none;
     border: none;
     cursor: pointer;
     font-size: 1.2em;
     color: #F0F8FF;
+  } */
+
+  /* stable hit-area for the buttons */
+  .top-banner .icon-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;           /* fixed click target; tweak as you like */
+    height: 32px;
+    padding: 0;            /* avoid page-level padding rules */
+    line-height: 1;
+    background: none;
+    border: none;
+    color: #F0F8FF;
+    cursor: pointer;
   }
 
-  .top-banner .icon-button:hover {
-    color: #007bff;
+  /* pin the icon’s size independent of page fonts */
+  .top-banner .icon-button i {
+    font-size: 18px;       /* use px or rem (e.g., 1.125rem), not em */
+    line-height: 1;        /* prevent extra vertical space */
+    width: 1em;            /* consistent square box */
+    height: 1em;
+    display: inline-block; 
+    vertical-align: middle;
+  }
+
+  .top-banner .icon-button:hover { 
+    color: #007bff; 
   }
 
   /* Style for the button containing the avatar */
