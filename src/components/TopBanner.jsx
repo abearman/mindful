@@ -49,8 +49,18 @@ const TopBanner = ({
   return (
     <div className="top-banner">
       <div className="logo-container">
-        <div className="logo-text">Mindful</div>
-      </div>
+        <div
+          className="logo-text cursor-pointer"
+          onClick={() => {
+            const url = chrome?.runtime?.getURL
+              ? chrome.runtime.getURL("newtab.html")
+              : "newtab.html"; // fallback for dev
+            window.location.href = url;
+          }}
+        >
+          Mindful
+        </div>
+      </div> 
       <div className="icon-container">
         <button onClick={onLoadBookmarks} className="icon-button" title="Load Bookmarks">
           <i className="fas fa-upload"></i>
