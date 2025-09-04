@@ -15,6 +15,7 @@ import 'react-phone-number-input/style.css';
 /* Scripts */
 import { AppContext } from "@/scripts/AppContext.jsx";
 import { toE164 } from "@/scripts/Utilities.js";
+import { StorageType } from '@/scripts/Constants.js';
 
 /* Components */
 import { Avatar } from "@/components/ui/Avatar.jsx"; 
@@ -52,7 +53,7 @@ export default function ManageAccountComponent({ user, signIn, signOut }) {
     family_name,
     email,
     phone,
-    storage_type: storageType ?? "remote",
+    storage_type: storageType ?? StorageType.LOCAL,
   });
   const [saving, setSaving] = useState(false);
 
@@ -233,15 +234,15 @@ function FieldRow({ label, children }) {
   );
 }
 
-function CompactStorageToggle({ value = "remote", onChange, disabled }) {
-  const isRemote = value === "remote";
+function CompactStorageToggle({ value = StorageType.LOCAL, onChange, disabled }) {
+  const isRemote = value === StorageType.REMOTE;
 
   return (
     <div className="flex items-center gap-3 text-sm">
       <button
         type="button"
         disabled={disabled}
-        onClick={() => onChange?.("local")}
+        onClick={() => onChange?.(StorageType.LOCAL)}
         className={`transition ${
           !isRemote ? "font-medium text-gray-900" : "text-gray-500"
         } hover:text-gray-900 disabled:opacity-50`}
@@ -253,7 +254,7 @@ function CompactStorageToggle({ value = "remote", onChange, disabled }) {
       <button
         type="button"
         disabled={disabled}
-        onClick={() => onChange?.(isRemote ? "local" : "remote")}
+        onClick={() => onChange?.(isRemote ? StorageType.LOCAL : StorageType.REMOTE)}
         aria-pressed={isRemote}
         className={`relative inline-flex h-5 w-9 items-center rounded-full border transition
           ${isRemote ? "bg-blue-600 border-blue-600" : "bg-gray-300 border-gray-300"}
@@ -269,7 +270,7 @@ function CompactStorageToggle({ value = "remote", onChange, disabled }) {
       <button
         type="button"
         disabled={disabled}
-        onClick={() => onChange?.("remote")}
+        onClick={() => onChange?.(StorageType.REMOTE)}
         className={`transition ${
           isRemote ? "font-medium text-gray-900" : "text-gray-500"
         } hover:text-gray-900 disabled:opacity-50`}
