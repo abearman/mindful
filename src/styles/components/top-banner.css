@@ -13,8 +13,11 @@
     line-height: 1.25;
   }
 
-  .top-banner .logo-text {
+  .top-banner .logo-text, .avatar-icon {
     font-family: system-ui, sans-serif; 
+  }
+
+  .top-banner .logo-text {
     font-size: 20px;
     font-weight: 700;
     color: #F0F8FF;
@@ -57,26 +60,12 @@
 
   /* Style for the button containing the avatar */
   .top-banner .avatar-button {
-    background: none;
-    border: none;
-    padding: 0;
     cursor: pointer;
-    border-radius: 50%;
   }
 
   /* Style for the avatar icon itself */
   .top-banner .avatar-icon {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 35px;
-    height: 35px;
-    border-radius: 50%;
-    background-color: #007bff;
-    font-size: 16px;
-    font-weight: bold;
     text-transform: uppercase;
-    font-family: system-ui, sans-serif; 
   }
 
   .top-banner .avatar-container {

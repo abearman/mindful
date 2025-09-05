@@ -79,6 +79,7 @@ function EditableBookmark(props) {
         target="_blank"
         rel="noopener noreferrer"
         ref={aRef}
+        className="text-base"
       >
         {text}
       </a>
