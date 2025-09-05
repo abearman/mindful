@@ -14,9 +14,11 @@
   }
 
   .top-banner .logo-text {
-    font-size: 1.5em;
+    font-family: system-ui, sans-serif; 
+    font-size: 20px;
     font-weight: 700;
     color: #F0F8FF;
+    letter-spacing: -0.01em;
   }
 
   .top-banner .icon-container {
@@ -24,21 +26,13 @@
     gap: 15px;
   }
 
-  /* .top-banner .icon-button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 1.2em;
-    color: #F0F8FF;
-  } */
-
   /* stable hit-area for the buttons */
   .top-banner .icon-button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 32px;           /* fixed click target; tweak as you like */
-    height: 32px;
+    width: 35px;           
+    height: 35px;
     padding: 0;            /* avoid page-level padding rules */
     line-height: 1;
     background: none;
@@ -75,14 +69,14 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 40px;
-    height: 40px;
+    width: 35px;
+    height: 35px;
     border-radius: 50%;
     background-color: #007bff;
-    color: white;
-    font-size: 1rem;
+    font-size: 16px;
     font-weight: bold;
     text-transform: uppercase;
+    font-family: system-ui, sans-serif; 
   }
 
   .top-banner .avatar-container {

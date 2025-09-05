@@ -70,7 +70,7 @@ const TopBanner = ({
         {isSignedIn && userAttributes ? (
           <div className="avatar-container" ref={dropdownRef}>
             <button onClick={() => setDropdownOpen(!isDropdownOpen)} className="avatar-button" title="User Menu">
-              <div className="avatar-icon">
+              <div className="avatar-icon text-gray-700">
                 {userAttributes.given_name[0] + userAttributes.family_name[0]}
               </div>
             </button>
