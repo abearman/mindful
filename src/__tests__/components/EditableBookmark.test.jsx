@@ -3,14 +3,13 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 
-import { EditableBookmark } from '../../components/EditableBookmark'; 
-import { AppContext } from '../../scripts/AppContext'; 
-import { useBookmarkManager } from '../../scripts/useBookmarkManager'; 
-import { createUniqueID } from '../../scripts/Utilities'; 
+import { EditableBookmark } from '@/components/EditableBookmark'; 
+import { AppContext } from '@/scripts/AppContext'; 
+import { useBookmarkManager } from '@/scripts/useBookmarkManager'; 
 
 // Mock the custom hook and utility functions
-jest.mock('../../scripts/useBookmarkManager.js');
-jest.mock('../../scripts/Utilities.js', () => ({
+jest.mock('@/scripts/useBookmarkManager');
+jest.mock('@/scripts/Utilities', () => ({
   createUniqueID: jest.fn(() => 'unique-id-123'),
 }));
 

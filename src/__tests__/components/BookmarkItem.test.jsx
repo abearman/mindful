@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { BookmarkItem } from '../../components/BookmarkItem';
+import { BookmarkItem } from '@/components/BookmarkItem';
 import '@testing-library/jest-dom';
 
 // Mock the useSortable hook from @dnd-kit/sortable
@@ -9,13 +9,13 @@ jest.mock('@dnd-kit/sortable', () => ({
 }));
 
 // Mock the EditableBookmark component
-jest.mock('../../components/EditableBookmark.jsx', () => ({
+jest.mock('@/components/EditableBookmark', () => ({
   EditableBookmark: jest.fn(({ bookmark }) => <div data-testid="editable-bookmark">{bookmark.title}</div>),
 }));
 
 // Import the mocked hook and component after mocking them
 import { useSortable } from '@dnd-kit/sortable';
-import { EditableBookmark } from '../../components/EditableBookmark';
+import { EditableBookmark } from '@/components/EditableBookmark';
 
 describe('BookmarkItem', () => {
   const mockBookmark = { id: 'bookmark-1', title: 'Test Bookmark', url: 'https://example.com' };

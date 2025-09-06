@@ -2,14 +2,14 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
-import { AddBookmarkInline } from '../../components/AddBookmarkInline';
-import { AppContext } from '../../scripts/AppContext';
-import { useBookmarkManager } from '../../scripts/useBookmarkManager';
-import { constructValidURL } from '../../scripts/Utilities';
+import { AddBookmarkInline } from '@/components/AddBookmarkInline';
+import { AppContext } from '@/scripts/AppContext';
+import { useBookmarkManager } from '@/scripts/useBookmarkManager';
+import { constructValidURL } from '@/scripts/Utilities';
 
 // Mock the custom hook and utilities
-jest.mock('../../scripts/useBookmarkManager.js');
-jest.mock('../../scripts/Utilities.js');
+jest.mock('@/scripts/useBookmarkManager');
+jest.mock('@/scripts/Utilities');
 
 // Mock the AppContext
 const mockContext = {

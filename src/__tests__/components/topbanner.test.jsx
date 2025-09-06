@@ -1,11 +1,11 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import TopBanner from '../../components/TopBanner'; 
-import { AppContext } from '../../scripts/AppContext'; 
+import TopBanner from '@/components/TopBanner'; 
+import { AppContext } from '@/scripts/AppContext'; 
 
 // Mock CSS imports for Jest
-jest.mock('../styles/TopBanner.css', () => ({}));
+jest.mock('@/styles/components/top-banner.css', () => ({}));
 
 describe('TopBanner Component', () => {
   // Mock handler functions that are passed as props

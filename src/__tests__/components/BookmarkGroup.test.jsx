@@ -2,21 +2,21 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
-import { BookmarkGroup } from '../../components/BookmarkGroup';
-import { EMPTY_GROUP_IDENTIFIER } from '../../scripts/Constants';
+import { BookmarkGroup } from '@/components/BookmarkGroup';
+import { EMPTY_GROUP_IDENTIFIER } from '@/scripts/Constants';
 
 // --- FIXED MOCKS ---
 
 // Mock child components to isolate the BookmarkGroup component for testing.
-jest.mock('../../components/BookmarkItem.jsx', () => ({
+jest.mock('@/components/BookmarkItem', () => ({
   // This is the component actually rendered in the loop. The test expects
   // to find 'editable-bookmark', so our mock should provide it.
   BookmarkItem: () => <div data-testid="editable-bookmark"></div>,
 }));
-jest.mock('../../components/EditableBookmarkGroupHeading.jsx', () => ({
+jest.mock('@/components/EditableBookmarkGroupHeading', () => ({
   EditableBookmarkGroupHeading: () => <div data-testid="editable-heading"></div>,
 }));
-jest.mock('../../components/AddBookmarkInline.jsx', () => ({
+jest.mock('@/components/AddBookmarkInline', () => ({
   AddBookmarkInline: () => <div data-testid="add-bookmark-inline"></div>,
 }));
 
