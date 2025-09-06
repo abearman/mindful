@@ -1,4 +1,3 @@
-// components/ManageAccountPage.jsx
 import React, { useContext } from "react";
 
 /* Components */ 
