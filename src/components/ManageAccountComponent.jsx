@@ -13,12 +13,12 @@ import {
 import 'react-phone-number-input/style.css';
 
 /* Scripts */
-import { AppContext } from "@/scripts/AppContext.jsx";
-import { toE164 } from "@/scripts/Utilities.js";
-import { StorageType } from '@/scripts/Constants.js';
+import { AppContext } from "@/scripts/AppContextProvider";
+import { toE164 } from "@/scripts/Utilities"
+import { StorageType } from "@/scripts/Constants";
 
 /* Components */
-import { Avatar } from "@/components/ui/Avatar.jsx"; 
+import { Avatar } from "@/components/ui/Avatar"; 
 
 
 export default function ManageAccountComponent({ user, signIn, signOut }) {

@@ -6,7 +6,7 @@ import '@testing-library/jest-dom';
 import { NewTabPage } from '@/pages/NewTabPage';
 
 // Mock dependencies
-import { AppContextProvider, AppContext } from '@/scripts/AppContext';
+import { AppContextProvider, AppContext } from '@/scripts/AppContextProvider';
 import * as useBookmarkManager from '@/scripts/useBookmarkManager';
 import * as Utilities from '@/scripts/Utilities';
 import { fetchUserAttributes, fetchAuthSession } from 'aws-amplify/auth';

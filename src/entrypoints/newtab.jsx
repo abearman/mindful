@@ -10,11 +10,11 @@ Amplify.configure(config);
 import { Authenticator } from '@aws-amplify/ui-react';
 
 /* Components */
-import { NewTabPage } from "@/pages/NewTabPage.jsx"; 
+import { NewTabPage } from "@/pages/NewTabPage"; 
 
 /* Scripts */ 
-import { AppContextProvider } from "@/scripts/AppContext.jsx";
-import formFields from "@/config/formFields.js";
+import { AppContextProvider } from "@/scripts/AppContextProvider";
+import formFields from "@/config/formFields";
 
 /* CSS styles */
 import "@/styles/Index.css"; 

@@ -4,7 +4,7 @@ import React, { useContext, useState, useRef, useEffect } from 'react';
 import '@/styles/EditableBookmarkGroupHeading.css';
 
 /* Constants */
-import { EMPTY_GROUP_IDENTIFIER } from "@/scripts/Constants.js";
+import { EMPTY_GROUP_IDENTIFIER } from "@/scripts/Constants";
 
 /* Hooks and Utilities */
 import { useBookmarkManager } from '@/scripts/useBookmarkManager';

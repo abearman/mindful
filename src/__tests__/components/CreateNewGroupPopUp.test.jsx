@@ -5,7 +5,7 @@ import Modal from 'react-modal';
 
 // Mock the custom hook and context
 import { useBookmarkManager } from '@/scripts/useBookmarkManager';
-import { AppContext } from '@/scripts/AppContext';
+import { AppContext } from '@/scripts/AppContextProvider';
 
 // Component to test
 import { CreateNewGroupPopUp } from '@/components/CreateNewGroupPopUp';

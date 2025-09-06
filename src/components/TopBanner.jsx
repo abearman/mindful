@@ -1,7 +1,10 @@
 import React, { useContext, useState, useEffect, useRef } from 'react';
 
 /* Scripts */
-import { AppContext } from "@/scripts/AppContext.jsx";
+import { AppContext } from "@/scripts/AppContextProvider";
+
+/* Components */
+import Tooltip from "@/components/ui/Tooltip";
 
 
 const TopBanner = ({ 
@@ -59,9 +62,11 @@ const TopBanner = ({
         </div>
       </div> 
       <div className="icon-container">
-        <button onClick={onLoadBookmarks} className="icon-button" title="Load Bookmarks">
-          <i className="fas fa-upload"></i>
-        </button>
+        <Tooltip label="Load bookmarks">
+          <button onClick={onLoadBookmarks} className="icon-button" title="Load Bookmarks">
+            <i className="fas fa-upload"></i>
+          </button>
+        </Tooltip>
         <button onClick={onExportBookmarks} className="icon-button" title="Export Bookmarks">
           <i className="fas fa-download"></i>
         </button>

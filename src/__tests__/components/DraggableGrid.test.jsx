@@ -5,7 +5,7 @@ import { render, screen, fireEvent, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
 import DraggableGrid from '@/components/DraggableGrid';
-import { AppContext } from '@/scripts/AppContext';
+import { AppContext } from '@/scripts/AppContextProvider';
 import { useBookmarkManager } from '@/scripts/useBookmarkManager';
 
 // --- FIXED & EXPANDED MOCKS ---

@@ -1,10 +1,10 @@
 import { useContext } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { arrayMove } from '@dnd-kit/sortable';
-import { AppContext } from './AppContext.jsx';
-import { EMPTY_GROUP_IDENTIFIER, StorageType } from './Constants.js';
-import { refreshOtherMindfulTabs } from './Utilities.js';
-import { Storage } from './Storage.js';
+import { AppContext } from '@/scripts/AppContextProvider';
+import { EMPTY_GROUP_IDENTIFIER, StorageType } from '@/scripts/Constants';
+import { refreshOtherMindfulTabs } from '@/scripts/Utilities';
+import { Storage } from '@/scripts/Storage';
 import amplify_outputs from '/amplify_outputs.json';
 
 const API_HOST_PATTERN = `https://${new URL(amplify_outputs.custom.API.bookmarks.endpoint).host}/*`;

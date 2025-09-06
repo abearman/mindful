@@ -4,8 +4,8 @@ import { SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
 
 import { BookmarkGroup } from '@/components/BookmarkGroup';
 import { BookmarkItem } from '@/components/BookmarkItem'; // Import BookmarkItem to render in the overlay
-import { AppContext } from "@/scripts/AppContext.jsx";
-import { useBookmarkManager } from '@/scripts/useBookmarkManager.js';
+import { AppContext } from "@/scripts/AppContextProvider";
+import { useBookmarkManager } from '@/scripts/useBookmarkManager';
 
 const DraggableGrid = () => {
   const { bookmarkGroups, setBookmarkGroups, userId, storageType, setStorageType } = useContext(AppContext);  

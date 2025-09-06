@@ -1,10 +1,10 @@
 import React from 'react';
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { BookmarkItem } from '@/components/BookmarkItem.jsx';
-import { EditableBookmarkGroupHeading } from '@/components/EditableBookmarkGroupHeading.jsx';
-import { AddBookmarkInline } from '@/components/AddBookmarkInline.jsx';
-import { EMPTY_GROUP_IDENTIFIER } from '@/scripts/Constants.js';
+import { BookmarkItem } from '@/components/BookmarkItem';
+import { EditableBookmarkGroupHeading } from '@/components/EditableBookmarkGroupHeading';
+import { AddBookmarkInline } from '@/components/AddBookmarkInline';
+import { EMPTY_GROUP_IDENTIFIER } from '@/scripts/Constants';
 
 export const BookmarkGroup = ({ bookmarkGroup, groupIndex, handleDeleteBookmarkGroup }) => {
   const {

@@ -4,12 +4,12 @@ import React, { useContext, useState } from 'react';
 import '@/styles/AddBookmarkInline.css';
 
 /* Constants */
-import { URL_PATTERN } from '@/scripts/Constants.js'
+import { URL_PATTERN } from '@/scripts/Constants'
 
 /* Hooks and Utilities */
-import { useBookmarkManager } from '@/scripts/useBookmarkManager.js';
-import { AppContext } from '@/scripts/AppContext.jsx';
-import { constructValidURL } from "@/scripts/Utilities.js";
+import { useBookmarkManager } from '@/scripts/useBookmarkManager';
+import { AppContext } from '@/scripts/AppContextProvider';
+import { constructValidURL } from "@/scripts/Utilities";
 
 
 function AddBookmarkInline(props) {

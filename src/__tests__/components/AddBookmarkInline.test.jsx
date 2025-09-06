@@ -3,7 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
 import { AddBookmarkInline } from '@/components/AddBookmarkInline';
-import { AppContext } from '@/scripts/AppContext';
+import { AppContext } from '@/scripts/AppContextProvider';
 import { useBookmarkManager } from '@/scripts/useBookmarkManager';
 import { constructValidURL } from '@/scripts/Utilities';
 

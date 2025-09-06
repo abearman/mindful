@@ -1,6 +1,5 @@
-import { uploadData, downloadData, remove } from '@aws-amplify/storage';
-import { getUserStorageKey } from './Utilities.js';
-import { StorageType } from './Constants.js';
+import { getUserStorageKey } from './Utilities';
+import { StorageType } from './Constants';
 import { fetchAuthSession } from 'aws-amplify/auth'; 
 import amplify_outputs from '/amplify_outputs.json';
 

@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
 import { EditableBookmarkGroupHeading } from '@/components/EditableBookmarkGroupHeading';
-import { AppContext } from '@/scripts/AppContext';
+import { AppContext } from '@/scripts/AppContextProvider';
 import { useBookmarkManager } from '@/scripts/useBookmarkManager';
 import { EMPTY_GROUP_IDENTIFIER } from "@/scripts/Constants";
 

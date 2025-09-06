@@ -5,13 +5,13 @@ import Modal from 'react-modal';
 import '@/styles/NewTab.css';
 
 /* Utilities */
-import { constructValidURL } from "@/scripts/Utilities.js";
+import { constructValidURL } from "@/scripts/Utilities";
 
 /* Bookmark Storage */
-import { useBookmarkManager } from '@/scripts/useBookmarkManager.js';
+import { useBookmarkManager } from '@/scripts/useBookmarkManager';
 
 /* Constants */
-import { URL_PATTERN } from '@/scripts/Constants.js';
+import { URL_PATTERN } from '@/scripts/Constants';
 
 
 function CreateNewGroupPopUp(props) {

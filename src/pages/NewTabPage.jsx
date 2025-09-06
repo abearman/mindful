@@ -12,12 +12,12 @@ Amplify.configure(config);
 import "@/styles/Login.css";
 
 /* Constants */
-import { EMPTY_GROUP_IDENTIFIER, StorageType } from "@/scripts/Constants.js"; // Note: Added StorageType here
+import { EMPTY_GROUP_IDENTIFIER, StorageType } from "@/scripts/Constants"; 
 
 /* Hooks and Utilities */
 import { getUserStorageKey } from '@/scripts/Utilities.js';
-import { loadInitialBookmarks, useBookmarkManager } from '@/scripts/useBookmarkManager.js';
-import { AppContext } from "@/scripts/AppContext.jsx";
+import { loadInitialBookmarks, useBookmarkManager } from '@/scripts/useBookmarkManager';
+import { AppContext } from "@/scripts/AppContextProvider";
 
 /* Components */
 import TopBanner from "@/components/TopBanner.jsx";

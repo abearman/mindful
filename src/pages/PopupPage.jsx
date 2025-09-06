@@ -9,10 +9,10 @@ Amplify.configure(config);
 import { getCurrentUser } from 'aws-amplify/auth';
 
 /* Hooks and Utilities */
-import { AppContextProvider } from '@/scripts/AppContext.jsx';
+import { AppContextProvider } from '@/scripts/AppContextProvider';
 
 /* Components */
-import PopUpComponent from '@/components/PopUpComponent.jsx';
+import PopUpComponent from '@/components/PopUpComponent';
 
 export default function PopupPage() {
   const [user, setUser] = useState(null);

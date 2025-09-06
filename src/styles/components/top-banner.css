@@ -194,4 +194,67 @@
   .top-banner .slider.round:before {
     border-radius: 50%;
   }
+
+  /* ===== Tooltips ===== */
+  .tooltip-wrapper {
+    position: relative;
+    display: inline-flex;
+  }
+
+  /* Hidden by default; shown on hover or keyboard focus */
+  .tooltip-wrapper .tooltip-bubble {
+    position: absolute;
+    z-index: 50;
+    padding: 6px 8px;
+    font-size: 12px;
+    line-height: 1;
+    white-space: nowrap;
+    color: #fff;
+    background: rgba(17, 24, 39, 0.95); /* near-black */
+    border-radius: 6px;
+    box-shadow: 0 4px 10px rgba(0,0,0,.18);
+    opacity: 0;
+    transform: translate(-50%, 4px) scale(.98);
+    transition: opacity .12s ease, transform .12s ease;
+    pointer-events: none; /* don't steal hover from the trigger */
+  }
+
+  /* Positions */
+  .tooltip-top .tooltip-bubble   { bottom: calc(100% + 8px); left: 50%; transform: translate(-50%, 4px) scale(.98); }
+  .tooltip-bottom .tooltip-bubble{ top: calc(100% + 8px);    left: 50%; transform: translate(-50%, -4px) scale(.98); }
+  .tooltip-left .tooltip-bubble  { right: calc(100% + 8px);   top: 50%;  transform: translate(4px, -50%) scale(.98); }
+  .tooltip-right .tooltip-bubble { left:  calc(100% + 8px);   top: 50%;  transform: translate(-4px, -50%) scale(.98); }
+
+  /* Arrow */
+  .tooltip-bubble .tooltip-arrow {
+    position: absolute;
+    width: 8px; height: 8px;
+    background: rgba(17, 24, 39, 0.95);
+    transform: rotate(45deg);
+    box-shadow: -1px -1px 1px rgba(0,0,0,.05);
+  }
+
+  /* Arrow positions */
+  .tooltip-top    .tooltip-arrow { bottom: -4px; left: 50%; transform: translateX(-50%) rotate(45deg); }
+  .tooltip-bottom .tooltip-arrow { top:    -4px; left: 50%; transform: translateX(-50%) rotate(45deg); }
+  .tooltip-left   .tooltip-arrow { right:  -4px; top:  50%;  transform: translateY(-50%) rotate(45deg); }
+  .tooltip-right  .tooltip-arrow { left:   -4px; top:  50%;  transform: translateY(-50%) rotate(45deg); }
+
+  /* Show on hover or focus (keyboard accessible) */
+  .tooltip-wrapper:hover .tooltip-bubble,
+  .tooltip-wrapper:focus-within .tooltip-bubble {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+  .tooltip-bottom:hover .tooltip-bubble,
+  .tooltip-bottom:focus-within .tooltip-bubble {
+    transform: translate(-50%, 0) scale(1);
+  }
+  .tooltip-left:hover .tooltip-bubble,
+  .tooltip-left:focus-within .tooltip-bubble,
+  .tooltip-right:hover .tooltip-bubble,
+  .tooltip-right:focus-within .tooltip-bubble {
+    transform: translate(0, -50%) scale(1);
+  }
+  /* ======================================== */
 }

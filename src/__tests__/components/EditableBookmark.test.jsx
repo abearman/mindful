@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 
 import { EditableBookmark } from '@/components/EditableBookmark'; 
-import { AppContext } from '@/scripts/AppContext'; 
+import { AppContext } from '@/scripts/AppContextProvider'; 
 import { useBookmarkManager } from '@/scripts/useBookmarkManager'; 
 
 // Mock the custom hook and utility functions
