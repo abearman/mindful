@@ -1,14 +1,13 @@
 import React, { useContext, useState, useRef, useEffect } from 'react';
 
 /* CSS styles */
-import '../styles/EditableBookmarkGroupHeading.css';
+import '@/styles/EditableBookmarkGroupHeading.css';
 
 /* Constants */
-import { EMPTY_GROUP_IDENTIFIER } from "../scripts/Constants.js";
+import { EMPTY_GROUP_IDENTIFIER } from "@/scripts/Constants.js";
 
 /* Hooks and Utilities */
-import { useBookmarkManager } from '../scripts/useBookmarkManager';
-import { AppContext } from '../scripts/AppContext.jsx';
+import { useBookmarkManager } from '@/scripts/useBookmarkManager';
 
 const NEW_GROUP_NAME = "+ Add a group"; 
 

@@ -2,10 +2,10 @@ import React, { useContext, useState } from "react"; // Add useState
 import { DndContext, closestCorners, useSensor, useSensors, PointerSensor, DragOverlay } from '@dnd-kit/core'; // Add DragOverlay
 import { SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
 
-import { BookmarkGroup } from './BookmarkGroup';
-import { BookmarkItem } from './BookmarkItem'; // Import BookmarkItem to render in the overlay
-import { AppContext } from "../scripts/AppContext.jsx";
-import { useBookmarkManager } from '../scripts/useBookmarkManager.js';
+import { BookmarkGroup } from '@/components/BookmarkGroup';
+import { BookmarkItem } from '@/components/BookmarkItem'; // Import BookmarkItem to render in the overlay
+import { AppContext } from "@/scripts/AppContext.jsx";
+import { useBookmarkManager } from '@/scripts/useBookmarkManager.js';
 
 const DraggableGrid = () => {
   const { bookmarkGroups, setBookmarkGroups, userId, storageType, setStorageType } = useContext(AppContext);  

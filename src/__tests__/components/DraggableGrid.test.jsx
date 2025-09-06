@@ -1,12 +1,12 @@
-/* __tests__/DraggableGrid.test.jsx */
+/* __tests__/DraggableGrid.test */
 
 import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
-import DraggableGrid from '../../components/DraggableGrid';
-import { AppContext } from '../../scripts/AppContext';
-import { useBookmarkManager } from '../../scripts/useBookmarkManager';
+import DraggableGrid from '@/components/DraggableGrid';
+import { AppContext } from '@/scripts/AppContext';
+import { useBookmarkManager } from '@/scripts/useBookmarkManager';
 
 // --- FIXED & EXPANDED MOCKS ---
 
@@ -28,12 +28,12 @@ jest.mock('@dnd-kit/core', () => ({
 }));
 
 // Mock the custom hook `useBookmarkManager`.
-jest.mock('../../scripts/useBookmarkManager.js', () => ({
+jest.mock('@/scripts/useBookmarkManager', () => ({
   useBookmarkManager: jest.fn(),
 }));
 
 // Mock child components to simplify testing.
-jest.mock('../../components/BookmarkGroup', () => ({
+jest.mock('@/components/BookmarkGroup', () => ({
   BookmarkGroup: ({ bookmarkGroup, handleDeleteBookmarkGroup, groupIndex }) => (
     <div data-testid={`bookmark-group-${bookmarkGroup.id}`}>
       <h3>{bookmarkGroup.groupName}</h3>
@@ -48,7 +48,7 @@ jest.mock('../../components/BookmarkGroup', () => ({
 }));
 
 // Add a mock for BookmarkItem, which is used by the DragOverlay.
-jest.mock('../../components/BookmarkItem', () => ({
+jest.mock('@/components/BookmarkItem', () => ({
     BookmarkItem: ({ bookmark }) => <div data-testid={`overlay-bookmark-${bookmark.id}`}>{bookmark.name}</div>,
 }));
 

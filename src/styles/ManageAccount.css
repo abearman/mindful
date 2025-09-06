@@ -1,0 +1,214 @@
+:root {
+  --ma-bg: #0f1115;
+  --ma-card: #171a21;
+  --ma-border: #262b36;
+  --ma-soft: #2c3240;
+  --ma-text: #e8ecf3;
+  --ma-muted: #a9b2c3;
+  --ma-accent: #4f8cff; /* primary */
+}
+
+.ma-container {
+  max-width: 880px;
+  margin: 32px auto 80px;
+  padding: 0 20px;
+  color: var(--ma-text);
+}
+
+.ma-header h1 {
+  margin: 0 0 6px;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.ma-subtle { color: var(--ma-muted); font-size: 14px; }
+
+.ma-card {
+  background: var(--ma-card);
+  border: 1px solid var(--ma-border);
+  border-radius: 12px;
+  padding: 18px;
+  margin-top: 18px;
+}
+
+.ma-card-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.ma-card-title {
+  margin: 0;
+  font-size: 16px;
+  letter-spacing: .2px;
+}
+
+.ma-visibility {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--ma-muted);
+  font-size: 13px;
+}
+
+.ma-select, .ma-input {
+  background: #0e1117;
+  border: 1px solid var(--ma-soft);
+  color: var(--ma-text);
+  border-radius: 8px;
+  padding: 8px 10px;
+  outline: none;
+  width: 100%;
+}
+
+.ma-select:focus, .ma-input:focus {
+  border-color: var(--ma-accent);
+  box-shadow: 0 0 0 3px rgba(79,140,255,.15);
+}
+
+.ma-banner {
+  position: relative;
+  border: 1px dashed var(--ma-soft);
+  border-radius: 12px;
+  height: 140px;
+  background: linear-gradient(90deg, #f6c147, #ffd67a);
+  display: flex;
+  align-items: flex-end;
+  padding: 14px;
+}
+
+.ma-avatar {
+  width: 76px;
+  height: 76px;
+  border-radius: 999px;
+  background: #0f172a;
+  color: #ffc14d;
+  border: 3px solid #ffdb86;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  font-size: 26px;
+  transform: translateY(20px);
+}
+
+.ma-banner-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+}
+
+.ma-btn {
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--ma-soft);
+  background: var(--ma-accent);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+.ma-btn:disabled { opacity: .7; cursor: default; }
+
+.ma-btn-ghost {
+  background: transparent;
+  color: var(--ma-text);
+}
+
+.ma-form { margin-top: 6px; }
+
+.ma-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 16px;
+}
+@media (max-width: 720px) {
+  .ma-grid { grid-template-columns: 1fr; }
+}
+
+.ma-row {
+  display: contents; /* label wraps row, children define grid cells */
+}
+
+.ma-label {
+  grid-column: 1 / 2;
+  color: var(--ma-muted);
+  font-size: 13px;
+}
+
+.ma-field {
+  grid-column: 2 / 3;
+}
+
+@media (max-width: 720px) {
+  .ma-label, .ma-field { grid-column: auto; }
+}
+
+.ma-actions {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ma-saved {
+  font-size: 13px;
+  color: var(--ma-muted);
+}
+
+.ma-footer-note {
+  margin-top: 18px;
+}
+
+/* === Phone input === */
+
+/* Phone input should hug content so flag sits next to number */
+.phone-field .PhoneInput {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;  /* push flag + number to the right edge */
+  gap: 0.4rem;
+  width: 100%;
+}
+
+.phone-field .PhoneInputInput {
+  flex: 0 1 auto;
+  text-align: right !important;
+}
+
+/* Never let the flag column grow (we already have size rules for the icon/img) */
+.phone-field .PhoneInputCountry {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto !important;
+}
+
+/* Hard size the icon box itself */
+.phone-field .PhoneInputCountryIcon {
+  width: 18px !important;
+  height: 14px !important;
+  display: inline-block !important;
+  overflow: hidden;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.08);
+  flex: 0 0 18px !important; /* explicit */
+}
+
+/* Whatever the library puts inside (img/svg/span), limit to the 18×14 box */
+.phone-field .PhoneInputCountryIcon *,
+.phone-field .PhoneInputCountryIconImg,
+.phone-field .PhoneInputCountryIcon > img,
+.phone-field .PhoneInputCountryIcon > svg {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  object-fit: cover;
+}
+
+/* Minimal native select */
+.phone-field select.PhoneInputCountrySelect {
+  background: transparent;
+  border: none;
+  padding: 0;
+}

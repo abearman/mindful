@@ -1,7 +1,8 @@
 import React, { useContext, useState, useEffect, useRef } from 'react';
-import { AppContext } from "../scripts/AppContext.jsx";
 
-import '../styles/TopBanner.css';
+/* Scripts */
+import { AppContext } from "@/scripts/AppContext.jsx";
+
 
 const TopBanner = ({ 
   onLoadBookmarks, 
@@ -45,8 +46,18 @@ const TopBanner = ({
   return (
     <div className="top-banner">
       <div className="logo-container">
-        <div className="logo-text">Mindful</div>
-      </div>
+        <div
+          className="logo-text cursor-pointer"
+          onClick={() => {
+            const url = chrome?.runtime?.getURL
+              ? chrome.runtime.getURL("newtab.html")
+              : "newtab.html"; // fallback for dev
+            window.location.href = url;
+          }}
+        >
+          Mindful
+        </div>
+      </div> 
       <div className="icon-container">
         <button onClick={onLoadBookmarks} className="icon-button" title="Load Bookmarks">
           <i className="fas fa-upload"></i>
@@ -59,7 +70,7 @@ const TopBanner = ({
         {isSignedIn && userAttributes ? (
           <div className="avatar-container" ref={dropdownRef}>
             <button onClick={() => setDropdownOpen(!isDropdownOpen)} className="avatar-button" title="User Menu">
-              <div className="avatar-icon">
+              <div className="h-9 w-9 rounded-full bg-gray-200 grid place-items-center text-gray-700 font-bold text-l">
                 {userAttributes.given_name[0] + userAttributes.family_name[0]}
               </div>
             </button>
@@ -81,6 +92,19 @@ const TopBanner = ({
                   </div>
                 </div> 
                 <hr className="dropdown-divider" />
+
+                <button
+                  onClick={() => {
+                    const url = chrome?.runtime?.getURL
+                      ? chrome.runtime.getURL("ManageAccount.html")
+                      : "ManageAccount.html"; // fallback for web/debug
+                    window.location.href = url;
+                  }}
+                  className="dropdown-item"
+                >
+                  Manage Account
+                </button>
+
                 <button onClick={handleLogout} className="dropdown-item">
                   Logout
                 </button>

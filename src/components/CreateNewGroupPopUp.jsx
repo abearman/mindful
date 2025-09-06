@@ -2,19 +2,16 @@ import React, { useContext } from 'react';
 import Modal from 'react-modal';
 
 /* CSS styles */
-import '../styles/NewTab.css';
+import '@/styles/NewTab.css';
 
 /* Utilities */
-import {
-  constructValidURL,
-} from "../scripts/Utilities.js";
+import { constructValidURL } from "@/scripts/Utilities.js";
 
 /* Bookmark Storage */
-import { useBookmarkManager } from '../scripts/useBookmarkManager.js';
-import { AppContext } from '../scripts/AppContext.jsx';
+import { useBookmarkManager } from '@/scripts/useBookmarkManager.js';
 
 /* Constants */
-import { URL_PATTERN } from '../scripts/Constants.js';
+import { URL_PATTERN } from '@/scripts/Constants.js';
 
 
 function CreateNewGroupPopUp(props) {

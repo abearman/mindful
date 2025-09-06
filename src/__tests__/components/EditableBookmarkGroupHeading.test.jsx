@@ -2,16 +2,16 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
-import { EditableBookmarkGroupHeading } from '../../components/EditableBookmarkGroupHeading';
-import { AppContext } from '../../scripts/AppContext';
-import { useBookmarkManager } from '../../scripts/useBookmarkManager';
-import { EMPTY_GROUP_IDENTIFIER } from "../../scripts/Constants";
+import { EditableBookmarkGroupHeading } from '@/components/EditableBookmarkGroupHeading';
+import { AppContext } from '@/scripts/AppContext';
+import { useBookmarkManager } from '@/scripts/useBookmarkManager';
+import { EMPTY_GROUP_IDENTIFIER } from "@/scripts/Constants";
 
 // Mock the CSS import
-jest.mock('../../styles/EditableBookmarkGroupHeading.css', () => ({}));
+jest.mock('@/styles/EditableBookmarkGroupHeading.css', () => ({}));
 
 // Mock the custom hook
-jest.mock('../../scripts/useBookmarkManager', () => ({
+jest.mock('@/scripts/useBookmarkManager', () => ({
   useBookmarkManager: jest.fn(),
 }));
 

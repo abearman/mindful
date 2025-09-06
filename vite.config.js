@@ -5,6 +5,7 @@ import { resolve } from 'path';
 
 
 export default defineConfig({
+  base: "",  // important for extensions (relative URLs)
   plugins: [
     react(),
     tailwind(),
@@ -17,9 +18,10 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: {
-        index: './index.html',  // Entry point for the Mindful landing page 
-        newtab: './src/newtab.jsx', // Entry point for the new tab page
-        popup: './src/popup.jsx',   // Entry point for the popup window
+        index: resolve(__dirname, 'index.html'),  // Entry point for the Mindful landing page 
+        ManageAccount: resolve(__dirname, 'ManageAccount.html'),  // Entry point for Manage Account page
+        NewTab: resolve(__dirname, 'NewTab.html'),  // Entry point for the new tab page
+        PopUp: resolve(__dirname, 'PopUp.html'),   // Entry point for the popup window
       },
       output: {
         entryFileNames: '[name].js', // Maintain separate output files

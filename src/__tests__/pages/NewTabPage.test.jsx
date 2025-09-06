@@ -3,17 +3,17 @@ import { render, screen, act, waitFor, fireEvent, cleanup } from '@testing-libra
 import '@testing-library/jest-dom';
 
 // The component to test
-import { NewTabUI } from '../../components/NewTabComponent';
+import { NewTabPage } from '@/pages/NewTabPage';
 
 // Mock dependencies
-import { AppContextProvider, AppContext } from '../../scripts/AppContext';
-import * as useBookmarkManager from '../../scripts/useBookmarkManager';
-import * as Utilities from '../../scripts/Utilities';
+import { AppContextProvider, AppContext } from '@/scripts/AppContext';
+import * as useBookmarkManager from '@/scripts/useBookmarkManager';
+import * as Utilities from '@/scripts/Utilities';
 import { fetchUserAttributes, fetchAuthSession } from 'aws-amplify/auth';
-import { EMPTY_GROUP_IDENTIFIER, StorageType } from '../../scripts/Constants'; // ✅ Import StorageType
+import { EMPTY_GROUP_IDENTIFIER, StorageType } from '@/scripts/Constants'; 
 
 // Mock child components for isolation
-jest.mock('../../components/TopBanner.jsx', () => (props) => (
+jest.mock('@/components/TopBanner', () => (props) => (
   <div data-testid="top-banner">
     <button onClick={props.onLoadBookmarks}>Load Bookmarks</button>
     <button onClick={props.onExportBookmarks}>Export Bookmarks</button>
@@ -23,7 +23,7 @@ jest.mock('../../components/TopBanner.jsx', () => (props) => (
   </div>
 ));
 
-jest.mock('../../components/DraggableGrid.jsx', () => ({ bookmarkGroups }) => (
+jest.mock('@/components/DraggableGrid', () => ({ bookmarkGroups }) => (
   <div data-testid="draggable-grid">
     {bookmarkGroups?.map(group => <div key={group.groupName}>{group.groupName}</div>)}
   </div>
@@ -31,11 +31,11 @@ jest.mock('../../components/DraggableGrid.jsx', () => ({ bookmarkGroups }) => (
 
 // Mock external modules
 jest.mock('aws-amplify/auth');
-jest.mock('../../scripts/useBookmarkManager.js', () => ({
+jest.mock('@/scripts/useBookmarkManager', () => ({
   loadInitialBookmarks: jest.fn(),
   useBookmarkManager: jest.fn(),
 }));
-jest.mock('../../scripts/Utilities.js', () => ({
+jest.mock('@/scripts/Utilities', () => ({
   getUserStorageKey: jest.fn(),
 }));
 
@@ -66,7 +66,7 @@ const mockBookmarkGroupsWithEmpty = [
 describe.each([
   { storageType: StorageType.LOCAL, description: 'local' },
   { storageType: StorageType.REMOTE, description: 'remote' },
-])('NewTabUI Component with $description storage', ({ storageType }) => {
+])('NewTabPage Component with $description storage', ({ storageType }) => {
   let mockSignOut;
   let consoleErrorSpy;
   let mockAddEmptyBookmarkGroup;
@@ -108,13 +108,13 @@ describe.each([
   it('should load bookmarks and user attributes when a user is present', async () => {
     render(
       <AppContextProvider>
-        <NewTabUI user={mockUser} signOut={mockSignOut} />
+        <NewTabPage user={mockUser} signOut={mockSignOut} />
       </AppContextProvider>
     );
 
     await screen.findByTestId('top-banner');
     
-    // This assertion now checks the call from the AppContext, not NewTabUI
+    // This assertion now checks the call from the AppContext, not NewTabPage
     expect(fetchUserAttributes).toHaveBeenCalledTimes(1);
     
     await waitFor(() => {
@@ -132,7 +132,7 @@ describe.each([
 
     render(
       <AppContextProvider>
-        <NewTabUI user={null} />
+        <NewTabPage user={null} />
       </AppContextProvider>
     );
 
@@ -148,7 +148,7 @@ describe.each([
     useBookmarkManager.loadInitialBookmarks.mockResolvedValue(mockBookmarkGroups);
     render(
         <AppContextProvider>
-            <NewTabUI user={mockUser} />
+            <NewTabPage user={mockUser} />
         </AppContextProvider>
     );
 
@@ -162,7 +162,7 @@ describe.each([
     it('should listen for storage changes and reload data accordingly', async () => {
       render(
         <AppContextProvider>
-          <NewTabUI user={mockUser} />
+          <NewTabPage user={mockUser} />
         </AppContextProvider>
       );
 
@@ -187,7 +187,7 @@ describe.each([
     it('should clean up the storage listener on unmount', async () => {
       const { unmount } = render(
         <AppContextProvider>
-          <NewTabUI user={mockUser} />
+          <NewTabPage user={mockUser} />
         </AppContextProvider>
       );
       
@@ -201,7 +201,7 @@ describe.each([
   it('should handle interactions from the TopBanner component', async () => {
     render(
       <AppContextProvider>
-        <NewTabUI user={mockUser} signOut={mockSignOut} />
+        <NewTabPage user={mockUser} signOut={mockSignOut} />
       </AppContextProvider>
     );
 

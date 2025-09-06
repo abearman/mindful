@@ -1,15 +1,24 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 
-// Import Amplify and configure it 
+/* Configure Amplify */
 import { Amplify } from 'aws-amplify';
-import config from '../amplify_outputs.json';
+import config from '/amplify_outputs.json';
 Amplify.configure(config);
+
+/* Amplify auth */
 import { Authenticator } from '@aws-amplify/ui-react';
 
-import { NewTabUI } from "./components/NewTabComponent.jsx"; 
-import { AppContextProvider } from "./scripts/AppContext.jsx";
-import formFields from "./config/formFields.js";
+/* Components */
+import { NewTabPage } from "@/pages/NewTabPage.jsx"; 
+
+/* Scripts */ 
+import { AppContextProvider } from "@/scripts/AppContext.jsx";
+import formFields from "@/config/formFields.js";
+
+/* CSS styles */
+import "@/styles/Index.css"; 
+import "@/styles/NewTab.css";
 
 const container = document.getElementById("root");
 const root = createRoot(container);
@@ -19,7 +28,7 @@ root.render(
     <Authenticator formFields={formFields}>
       {({ signIn, signOut, user }) => (
         <AppContextProvider user={user}>
-          <NewTabUI user={user} signIn={signIn} signOut={signOut} />
+          <NewTabPage user={user} signIn={signIn} signOut={signOut} />
         </AppContextProvider>
       )}
     </Authenticator>

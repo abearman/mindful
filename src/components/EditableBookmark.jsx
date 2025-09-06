@@ -1,12 +1,12 @@
 import React, { useState, useRef, useContext } from 'react';
 
 /* CSS styles */
-import '../styles/NewTab.css';
+import '@/styles/NewTab.css';
 
 /* Hooks and Utilities */
-import { useBookmarkManager } from '../scripts/useBookmarkManager.js';
-import { AppContext } from '../scripts/AppContext.jsx';
-import { createUniqueID } from "../scripts/Utilities.js";
+import { useBookmarkManager } from '@/scripts/useBookmarkManager.js';
+import { AppContext } from '@/scripts/AppContext.jsx';
+import { createUniqueID } from "@/scripts/Utilities.js";
 
 
 function EditableBookmark(props) {
@@ -79,6 +79,7 @@ function EditableBookmark(props) {
         target="_blank"
         rel="noopener noreferrer"
         ref={aRef}
+        className="text-base"
       >
         {text}
       </a>
