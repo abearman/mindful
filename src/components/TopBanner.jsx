@@ -54,18 +54,20 @@ const TopBanner = ({
             window.location.href = url;
           }}>
           <img src="/assets/icon-no-bg-128.png" className="w-[30px] h-[30px] object-cover" />
-          <span className="text-lg font-semibold tracking-tight">Mindful</span>
+          <span className="text-neutral-900 dark:text-white text-lg font-semibold tracking-tight">Mindful</span>
           <Badge className="ml-2 bg-neutral-800 text-neutral-300 hover:bg-neutral-800">Bookmarks</Badge>
         </div>
         <nav className="hidden items-right gap-6 md:flex">
           <Tooltip label="Load bookmarks">
-            <button onClick={onLoadBookmarks} className="icon-button" aria-label="Load bookmarks">
-              <i className="fas fa-upload"></i>
+            <button onClick={onLoadBookmarks} className="icon-button text-neutral-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400
+               p-2 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60" aria-label="Load bookmarks">
+              <i className="fas fa-upload fa-lg"></i>
             </button>
           </Tooltip>
           <Tooltip label="Export bookmarks">
-            <button onClick={onExportBookmarks} className="icon-button" aria-label="Export bookmarks">
-              <i className="fas fa-download"></i>
+            <button onClick={onExportBookmarks} className="icon-button text-neutral-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400
+               p-2 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60" aria-label="Export bookmarks">
+              <i className="fas fa-download fa-lg"></i>
             </button>
           </Tooltip>
 

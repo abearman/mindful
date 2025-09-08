@@ -7,17 +7,16 @@ body, html {
 
 /* Bookmark grid wrapper */
 .bookmark-groups-container {
-  display: grid;
-  gap: 10px;
-  padding: 20px;
-  grid-template-columns: 25% 1fr 1fr 1fr;
+  @apply grid gap-2.5 p-5 grid-cols-[25%_1fr_1fr_1fr] bg-white dark:bg-neutral-950
 }
 
 /* Card */
 .bookmark-group-box {
   @apply relative rounded-lg p-6 pt-10 flex flex-col 
-         bg-white text-neutral-900 border border-neutral-200 shadow
-         dark:bg-neutral-900 dark:text-neutral-100 dark:border-neutral-700;
+         bg-white text-neutral-900 border border-neutral-200 shadow;
+}
+@media (prefers-color-scheme: dark) {
+  .bookmark-group-box { @apply bg-neutral-900 text-neutral-100 border-neutral-700; }
 }
 
 /* Header + content spacing */
