@@ -14,26 +14,21 @@ const TopBanner = ({
   onSignIn, 
   onSignOut, 
   isSignedIn,
-  onStorageTypeChange // Added: Function to handle toggle change
+  onStorageTypeChange
 }) => {
-  // Consume state from the context 
   const { storageType } = useContext(AppContext);
 
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setDropdownOpen(false);
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const handleLogout = () => {
@@ -54,60 +49,93 @@ const TopBanner = ({
           onClick={() => {
             const url = chrome?.runtime?.getURL
               ? chrome.runtime.getURL("newtab.html")
-              : "newtab.html"; // fallback for dev
+              : "newtab.html";
             window.location.href = url;
           }}
         >
           Mindful
         </div>
       </div> 
+
       <div className="icon-container">
+        {/* Load Bookmarks */}
         <Tooltip label="Load bookmarks">
-          <button onClick={onLoadBookmarks} className="icon-button" title="Load Bookmarks">
+          <button onClick={onLoadBookmarks} className="icon-button" aria-label="Load bookmarks">
             <i className="fas fa-upload"></i>
           </button>
         </Tooltip>
-        <button onClick={onExportBookmarks} className="icon-button" title="Export Bookmarks">
-          <i className="fas fa-download"></i>
-        </button>
 
-        {/* Conditional rendering for User Avatar / SignIn Button */}
+        {/* Export Bookmarks */}
+        <Tooltip label="Export bookmarks">
+          <button onClick={onExportBookmarks} className="icon-button" aria-label="Export bookmarks">
+            <i className="fas fa-download"></i>
+          </button>
+        </Tooltip>
+
+        {/* User avatar or Sign in */}
         {isSignedIn && userAttributes ? (
           <div className="avatar-container" ref={dropdownRef}>
-            <button onClick={() => setDropdownOpen(!isDropdownOpen)} className="avatar-button" title="User Menu">
-              <div className="h-9 w-9 rounded-full bg-gray-200 grid place-items-center text-gray-700 font-bold text-l">
-                {userAttributes.given_name[0] + userAttributes.family_name[0]}
-              </div>
-            </button>
+            {!isDropdownOpen && (
+              <Tooltip label="Manage account" align="right">
+                <button
+                  onClick={() => setDropdownOpen(!isDropdownOpen)}
+                  className="avatar-button"
+                  aria-haspopup="menu"
+                  aria-expanded={isDropdownOpen}
+                  aria-label="Manage account"
+                >
+                  <div className="h-9 w-9 rounded-full bg-gray-200 grid place-items-center text-gray-700 font-bold text-l">
+                    {(userAttributes.given_name?.[0] || "") +
+                      (userAttributes.family_name?.[0] || "")}
+                  </div>
+                </button>
+              </Tooltip>
+            )}
+
+            {isDropdownOpen && (
+              <button
+                onClick={() => setDropdownOpen(false)}
+                className="avatar-button"
+                aria-haspopup="menu"
+                aria-expanded={isDropdownOpen}
+                aria-label="Manage account"
+              >
+                <div className="h-9 w-9 rounded-full bg-gray-200 grid place-items-center text-gray-700 font-bold text-l">
+                  {(userAttributes.given_name?.[0] || "") +
+                    (userAttributes.family_name?.[0] || "")}
+                </div>
+              </button>
+            )}
+
             {isDropdownOpen && (
               <div className="dropdown-menu">
                 <div className="dropdown-control-group">
-                  <div className="dropdown-label">Storage type</div> 
+                  <div className="dropdown-label">Storage type</div>
                   <div className="storage-toggle">
-                    <span className={storageType === 'local' ? 'active' : ''}>Local</span>
+                    <span className={storageType === "local" ? "active" : ""}>Local</span>
                     <label className="switch">
                       <input
                         type="checkbox"
-                        checked={storageType === 'remote'}
+                        checked={storageType === "remote"}
                         onChange={handleToggleChange}
                       />
                       <span className="slider round"></span>
                     </label>
-                    <span className={storageType === 'remote' ? 'active' : ''}>Remote</span>
+                    <span className={storageType === "remote" ? "active" : ""}>Remote</span>
                   </div>
-                </div> 
+                </div>
                 <hr className="dropdown-divider" />
 
                 <button
                   onClick={() => {
                     const url = chrome?.runtime?.getURL
                       ? chrome.runtime.getURL("ManageAccount.html")
-                      : "ManageAccount.html"; // fallback for web/debug
+                      : "ManageAccount.html";
                     window.location.href = url;
                   }}
                   className="dropdown-item"
                 >
-                  Manage Account
+                  Manage account
                 </button>
 
                 <button onClick={handleLogout} className="dropdown-item">
@@ -117,9 +145,16 @@ const TopBanner = ({
             )}
           </div>
         ) : (
-          <button onClick={onSignIn} className="icon-button" title="Login">
-            <i className="fas fa-user"></i>
-          </button>
+          <Tooltip label="Sign in" align="right">
+            <button
+              onClick={onSignIn}
+              className="icon-button"
+              aria-describedby="tt-login"
+              aria-label="Sign in"
+            >
+              <i className="fas fa-user"></i>
+            </button>
+          </Tooltip>
         )}
       </div>
     </div>

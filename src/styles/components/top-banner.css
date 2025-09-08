@@ -256,5 +256,13 @@
   .tooltip-right:focus-within .tooltip-bubble {
     transform: translate(0, -50%) scale(1);
   }
+
+  .top-banner,
+  .icon-container,
+  .avatar-container {
+    position: relative; 
+    overflow: visible;   /* prevent tooltip clipping */
+    z-index: 10;
+  }
   /* ======================================== */
 }
