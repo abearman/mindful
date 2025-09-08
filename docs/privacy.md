@@ -64,7 +64,7 @@ Mindful Bookmarks is not intended for children under 13.
 ## Contact
 
 Questions or requests (including data deletion/export)?
-Email: `amylbearman@gmail.com`
+Email: `amy@mindfulbookmarks.com`
 
 ## Changes to This Policy
 
