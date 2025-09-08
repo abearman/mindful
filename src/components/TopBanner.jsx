@@ -59,7 +59,7 @@ const TopBanner = ({
           <Tooltip label="Load bookmarks">
             <button
               onClick={onLoadBookmarks}
-              className="icon-button text-neutral-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400
+              className="cursor-pointer text-neutral-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400
                          p-2 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60"
               aria-label="Load bookmarks"
             >
@@ -70,7 +70,7 @@ const TopBanner = ({
           <Tooltip label="Export bookmarks">
             <button
               onClick={onExportBookmarks}
-              className="icon-button text-neutral-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400
+              className="cursor-pointer text-neutral-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400
                          p-2 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60"
               aria-label="Export bookmarks"
             >
@@ -84,7 +84,7 @@ const TopBanner = ({
               <Tooltip label="Manage account" align="right">
                 <button
                   onClick={() => setDropdownOpen((v) => !v)}
-                  className="avatar-button"
+                  className="cursor-pointer"
                   aria-haspopup="menu"
                   aria-expanded={isDropdownOpen}
                   aria-label="Manage account"
@@ -107,7 +107,7 @@ const TopBanner = ({
                       Storage type
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className={`text-sm ${storageType === "local" ? "font-semibold" : "text-neutral-500"}`}>Local</span>
+                      <span className={`text-sm ${storageType === "local" ? "font-semibold" : "text-neutral-500 dark:text-neutral-400"}`}>Local</span>
                       <label className="relative inline-flex h-5 w-9 items-center rounded-full border transition
                                          bg-gray-300 border-gray-300 data-[state=on]:bg-blue-600 data-[state=on]:border-blue-600">
                         <input
@@ -119,7 +119,7 @@ const TopBanner = ({
                         <span className="absolute left-1 inline-block h-4 w-4 transform rounded-full bg-white shadow transition
                                           peer-checked:translate-x-4" />
                       </label>
-                      <span className={`text-sm ${storageType === "remote" ? "font-semibold" : "text-neutral-500"}`}>Remote</span>
+                      <span className={`text-sm ${storageType === "remote" ? "font-semibold" : "text-neutral-500 dark:text-neutral-400"}`}>Remote</span>
                     </div>
                   </div>
 
@@ -132,7 +132,7 @@ const TopBanner = ({
                         : "ManageAccount.html";
                       window.location.href = url;
                     }}
-                    className="w-full text-left px-3 py-2 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-800"
+                    className="cursor-pointer w-full text-left px-3 py-2 rounded-lg text-neutral-500 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800"
                     role="menuitem"
                   >
                     Manage account
@@ -140,7 +140,7 @@ const TopBanner = ({
 
                   <button
                     onClick={handleLogout}
-                    className="w-full text-left px-3 py-2 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-800"
+                    className="cursor-pointer w-full text-left px-3 py-2 rounded-lg text-neutral-500 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800"
                     role="menuitem"
                   >
                     Logout
@@ -150,7 +150,7 @@ const TopBanner = ({
             </div>
           ) : (
             <Tooltip label="Sign in" align="right">
-              <button onClick={onSignIn} className="icon-button" aria-label="Sign in">
+              <button onClick={onSignIn} className="icon-button cursor-pointer" aria-label="Sign in">
                 <i className="fas fa-user" />
               </button>
             </Tooltip>
