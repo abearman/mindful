@@ -22,6 +22,8 @@ import { AppContext } from "@/scripts/AppContextProvider";
 /* Components */
 import TopBanner from "@/components/TopBanner.jsx";
 import DraggableGrid from '@/components/DraggableGrid.jsx';
+import EmptyBookmarksState from '@/components/EmptyBookmarksState.jsx';
+
 
 export function NewTabPage({ user, signIn, signOut }) {
   // Consume state from the context
@@ -33,6 +35,16 @@ export function NewTabPage({ user, signIn, signOut }) {
     isMigrating,
     userAttributes
   } = useContext(AppContext);
+
+  // Treat only the placeholder group (with no bookmarks) as empty.
+  const isEmptyDashboard =
+    !bookmarkGroups ||
+    bookmarkGroups.length === 0 ||
+    bookmarkGroups.every(
+    (g) =>
+      g.groupName === EMPTY_GROUP_IDENTIFIER &&
+      (!g.bookmarks || g.bookmarks.length === 0)
+    );
 
   // Get all actions from the custom bookmarks hook
   const {
@@ -109,6 +121,20 @@ export function NewTabPage({ user, signIn, signOut }) {
         user={user}
         bookmarkGroups={bookmarkGroups}
       />
+     {isEmptyDashboard ? (
+       <EmptyBookmarksState
+         onCreateGroup={() => {
+           // Creates an empty group card; if you prefer a named group, call your “createGroup('New Group')” instead.
+           addEmptyBookmarkGroup();
+         }}
+         onImport={handleLoadBookmarks}
+         storageTypeLabel={
+           storageType === StorageType.REMOTE ? "Encrypted Sync" : "Local"
+         }
+       />
+     ) : (
+       <DraggableGrid user={user} bookmarkGroups={bookmarkGroups} />
+     )}
     </div>
   );
 }
