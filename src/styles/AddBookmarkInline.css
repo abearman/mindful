@@ -1,100 +1,79 @@
-@import "./NewTab.css";
+@reference "@/styles/Index.css"; /* so utilities are available here */
+/*@import "./NewTab.css";*/
 
-.add-link-inline-container {
-  position: "relative";
-}
+.add-link-inline-container { @apply relative; }
 
 .bookmark-group-box .add-bookmark-button-1 {
-  font-size: 14px;
-  padding: 10px;
-  background-color: #fff;
-  color: #cccccc;
-  border: none;
-  border-radius: 5px;
-  width: 100%;
-  margin-top: auto;
-  text-align: left;
-  padding-left: 20px;
+  @apply cursor-pointer mt-auto w-full text-left text-sm p-2.5 pl-5 rounded-md border-0
+         bg-white text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600
+         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60;
+}
+@media (prefers-color-scheme: dark) {
+  .bookmark-group-box .add-bookmark-button-1 {
+    @apply bg-neutral-900 text-neutral-400 hover:bg-neutral-800 hover:text-neutral-200;
+  }
 }
 
-.add-bookmark-button-1:hover {
-  cursor: pointer;
-  background-color: #f5f5f5;
-  color: #484848;
+.create-new-bookmark-component { @apply relative rounded-lg p-2.5 bg-neutral-100; }
+@media (prefers-color-scheme: dark) {
+  .create-new-bookmark-component { @apply bg-neutral-800; }
 }
 
-.create-new-bookmark-component {
-  position: "relative";
-  background-color: #f5f5f5;
-  border-radius: 10px;
-  padding: 10px 10px;
+.create-new-bookmark-component { @apply relative rounded-lg p-2.5 bg-neutral-100; }
+@media (prefers-color-scheme: dark) {
+  .create-new-bookmark-component { @apply bg-neutral-800; }
 }
 
 .form-container {
-  position: "absolute";
-  background-color: white;
-  border-radius: 5px;
-  padding: 10px 10px;
-  margin-bottom: 10px;
+  @apply static mb-2.5 rounded-md p-2.5 border shadow
+         bg-white border-neutral-200;
+}
+@media (prefers-color-scheme: dark) {
+  .form-container { @apply bg-neutral-900 border-neutral-700; }
 }
 
-form {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  max-width: 100%;
-  min-width: 200px;
-  box-sizing: border-box;
-  border-radius: 10px;
-}
+form { @apply flex flex-col gap-1.5 w-full min-w-[200px] box-border rounded-lg; }
 
 input[type="text"] {
-  font-size: 14px;
-  padding: 5px 0px;
-  max-width: 100%;
-  margin-bottom: 0px;
-  border: none;
-  border-radius: 0px;
-  box-shadow: none;
+  @apply w-full text-sm py-1.5 px-0 mb-0 border-0 rounded-none shadow-none
+         bg-white text-neutral-900 placeholder:text-neutral-400
+         focus:outline-none focus:ring-0;
+}
+@media (prefers-color-scheme: dark) {
+  input[type="text"] {
+    @apply bg-neutral-900;          
+    @apply text-neutral-100 placeholder:text-neutral-400;
+  }
 }
 
-input:focus {
-  outline: none;
+/* If we also have textareas, include them too */
+@media (prefers-color-scheme: dark) {
+  textarea {
+    @apply bg-black text-neutral-100 placeholder:text-neutral-400
+           ring-1 ring-white/10 focus:ring-2 focus:ring-white/20;
+  }
+}
+
+/* Optional: tame Chrome autofill yellow in dark mode */
+@media (prefers-color-scheme: dark) {
+  input[type="text"]:-webkit-autofill {
+    -webkit-text-fill-color: #e5e5e5;
+    -webkit-box-shadow: 0 0 0 1000px #000 inset;
+    caret-color: #e5e5e5;
+  }
 }
 
 .add-bookmark-button-2 {
-  font-size: 14px;
-  padding: 10px;
-  background-color: rgb(40, 112, 220);
-  color: white;
-  border: none;
-  border-radius: 5px;
-  margin-top: auto;
-  text-align: left;
-}
-
-.add-bookmark-button-2:hover {
-  cursor: pointer;
-  background-color: rgb(9, 71, 165);
-  color: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  @apply mt-auto text-left text-sm p-2.5 rounded-md border-0
+         bg-blue-600 text-white hover:bg-blue-700 hover:shadow
+         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60;
 }
 
 .close-form-button {
-  border: none;
-  background-color: #f5f5f5;  
-  width: 36px;
-  height: 36px;
-  margin-left: auto;
-  padding: 0px;
+  @apply ml-auto w-9 h-9 p-0 rounded-md border-0 cursor-pointer
+         bg-neutral-100 hover:bg-neutral-200;
 }
-
-.close-form-button img {
-  width: 20px;
-  height: 20px;
-  vertical-align: middle;
-}
-
-.close-form-button:hover {
-  cursor: pointer;
+.close-form-button img { @apply w-5 h-5 align-middle; }
+@media (prefers-color-scheme: dark) {
+  .close-form-button { @apply bg-neutral-800 hover:bg-neutral-700; }
 }
