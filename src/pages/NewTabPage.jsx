@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useRef } from "react";
 
 // Import Amplify and the Authenticator UI component
 import { Amplify } from 'aws-amplify';
@@ -35,6 +35,8 @@ export function NewTabPage({ user, signIn, signOut }) {
     isMigrating,
     userAttributes
   } = useContext(AppContext);
+
+  const gridRef = useRef(null);
 
   // Treat only the placeholder group (with no bookmarks) as empty.
   const isEmptyDashboard =
@@ -118,6 +120,7 @@ export function NewTabPage({ user, signIn, signOut }) {
         onStorageTypeChange={changeStorageType}
       />
       <DraggableGrid
+        ref={gridRef}
         user={user}
         bookmarkGroups={bookmarkGroups}
       />
@@ -132,9 +135,13 @@ export function NewTabPage({ user, signIn, signOut }) {
            storageType === StorageType.REMOTE ? "Encrypted Sync" : "Local"
          }
        />
-     ) : (
-       <DraggableGrid user={user} bookmarkGroups={bookmarkGroups} />
-     )}
+      ) : (
+        <DraggableGrid 
+          ref={gridRef}
+          user={user}
+          bookmarkGroups={bookmarkGroups} 
+        />
+      )}
     </div>
   );
 }
