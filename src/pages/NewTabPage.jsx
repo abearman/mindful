@@ -128,10 +128,8 @@ export function NewTabPage({ user, signIn, signOut }) {
         <EmptyBookmarksState
           onCreateGroup={() => {
             console.log("Got to onCreateGroup");
-            // 👇 Trigger rename mode on the “+ Add a group” card
+            // Trigger rename mode on the “+ Add a group” card
             gridRef.current?.startCreateGroup({ prefill: 'My first bookmarks group', select: 'all' });
-            // (omit args if you don’t need prefill/caret control)
-            // gridRef.current?.startCreateGroup();
           }}
           onImport={handleLoadBookmarks}
           storageTypeLabel={storageType === StorageType.REMOTE ? "Encrypted Sync" : "Local"}

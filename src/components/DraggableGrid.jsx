@@ -42,8 +42,6 @@ const DraggableGrid = forwardRef(function DraggableGrid(_, ref) {
   // ⬇️ Imperative method that: ensures +Add group exists, switches it to edit, selects text
   useImperativeHandle(ref, () => ({
     async startCreateGroup({ prefill, select = 'all' } = {}) {
-      console.log("Got to startCreateGroup");
-      
       // Find the placeholder group or create it
       let target = bookmarkGroups?.find(
         (g) => g.groupName === EMPTY_GROUP_IDENTIFIER
@@ -57,7 +55,6 @@ const DraggableGrid = forwardRef(function DraggableGrid(_, ref) {
       
       const id = String(target.id);
       setEditingGroupId(id);
-      console.log("id: ", id);
   
       // After it mounts, focus + set text + position caret/selection
       setTimeout(() => {
