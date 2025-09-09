@@ -65,7 +65,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     await Promise.allSettled(deletions); // idempotent: treat not-found as success
 
     return {
-      statusCode: 200, // No Content
+      statusCode: 204, // No Content
       headers: cors.headers,
       body: "",
     };
