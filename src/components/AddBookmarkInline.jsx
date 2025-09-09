@@ -16,7 +16,7 @@ function AddBookmarkInline(props) {
     groupIndex,
     autoFocus = false,     // open + focus automatically
     inputRef,              // exposes the main input element to parent (Grid)
-    focusField = 'url',    // 'url' | 'name'
+    focusField = 'name',    // 'url' | 'name'
     onDone,                // called after submit/close
     // NEW: optional explicit prefills (take precedence over clipboard)
     prefillUrl,
@@ -76,7 +76,7 @@ function CreateNewBookmark(props) {
     setLinkBeingEdited,
     autoFocus = false,
     inputRef,
-    focusField = 'url',
+    focusField = 'name',
     onDone,
     prefillUrl,
     prefillName,
