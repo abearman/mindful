@@ -121,7 +121,7 @@ export function NewTabPage({ user, signIn, signOut }) {
         user={user}
         bookmarkGroups={bookmarkGroups}
       />
-     {/* {isEmptyDashboard ? (
+     {isEmptyDashboard ? (
        <EmptyBookmarksState
          onCreateGroup={() => {
            // Creates an empty group card; if you prefer a named group, call your “createGroup('New Group')” instead.
@@ -134,7 +134,7 @@ export function NewTabPage({ user, signIn, signOut }) {
        />
      ) : (
        <DraggableGrid user={user} bookmarkGroups={bookmarkGroups} />
-     )} */}
+     )}
     </div>
   );
 }
