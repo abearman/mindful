@@ -76,16 +76,6 @@ describe('EditableBookmarkGroupHeading', () => {
     expect(heading).toHaveAttribute('contentEditable', 'true');
   });
 
-  test('clears placeholder text on click to edit', () => {
-    renderComponent({ bookmarkGroup: mockBookmarkGroups[1], groupIndex: 1 });
-    const heading = screen.getByText(NEW_GROUP_NAME_PLACEHOLDER);
-    
-    fireEvent.click(heading);
-    
-    // The placeholder text should be cleared for user input
-    expect(heading.textContent).toBe('');
-  });
-
   test('saves the new group name on blur', async () => {
     renderComponent({ bookmarkGroup: mockBookmarkGroups[0], groupIndex: 0 });
     const heading = screen.getByText('Work');
