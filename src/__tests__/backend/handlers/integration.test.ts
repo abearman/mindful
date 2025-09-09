@@ -133,7 +133,7 @@ describe("Bookmarks handlers", () => {
 
     const r = await load(authEvent("GET"));
     expect(r.statusCode).toBe(422);
-    expect(JSON.parse(r.body).code).toBe("AuthTagMismatch");
+    expect(JSON.parse(r.body).details.code).toBe("AuthTagMismatch");
   });
 
   test("deleteBookmarks returns 204 and issues S3 deletes", async () => {
