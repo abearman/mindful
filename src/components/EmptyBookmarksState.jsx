@@ -1,5 +1,10 @@
-// components/EmptyBookmarksState.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext, useMemo } from "react";
+
+/* Scripts */
+import { AppContext } from "@/scripts/AppContextProvider";
+
+/* Constants */
+import { EMPTY_GROUP_IDENTIFIER } from "@/scripts/Constants";
 
 const DISMISS_KEY = "mindful.emptyStateDismissed";
 
@@ -9,13 +14,72 @@ export default function EmptyBookmarksState({
   storageTypeLabel = "Local or Encrypted Sync",
   onClose, // optional: parent can listen if desired
 }) {
+  const { bookmarkGroups } = useContext(AppContext);
+
   const [checklist, setChecklist] = useState({
     createdGroup: false,
     addedBookmark: false,
     triedStorage: false,
   });
 
-  // NEW: persistently dismiss panel
+  /* Load saved checklist once */
+  useEffect(() => {
+    const saved = localStorage.getItem("mindful.emptyStateChecklist");
+    if (saved) setChecklist(JSON.parse(saved));
+  }, []);
+
+  /* Persist checklist on change */
+  useEffect(() => {
+    localStorage.setItem(
+      "mindful.emptyStateChecklist",
+      JSON.stringify(checklist)
+    );
+  }, [checklist]);
+
+  /* Has at least one real (named) group? */
+  const hasNamedGroup = useMemo(
+    () =>
+      Array.isArray(bookmarkGroups) &&
+      bookmarkGroups.some(
+        (g) => g?.groupName && g.groupName !== EMPTY_GROUP_IDENTIFIER
+      ),
+    [bookmarkGroups]
+  );
+
+  /* Auto-check "Create a group" once a real group exists */
+  useEffect(() => {
+    if (hasNamedGroup) {
+      setChecklist((c) => (c.createdGroup ? c : { ...c, createdGroup: true }));
+    }
+  }, [hasNamedGroup]);
+
+  /* Has at least one real bookmark in a group? */
+  const hasAnyBookmark = useMemo(
+    () => (bookmarkGroups || []).some((g) => (g.bookmarks?.length || 0) > 0),
+    [bookmarkGroups]
+  );
+
+  /* Auto-check "Add a bookmark" once at least one bookmark exists */
+  useEffect(() => {
+    if (hasAnyBookmark) {
+      setChecklist((c) => (c.addedBookmark ? c : { ...c, addedBookmark: true }));
+    }
+  }, [hasAnyBookmark]);
+
+  /* “Truly empty” = no groups OR only placeholder group(s) with zero bookmarks */
+  const isTrulyEmpty = useMemo(
+    () =>
+      !Array.isArray(bookmarkGroups) ||
+      bookmarkGroups.length === 0 ||
+      bookmarkGroups.every(
+        (g) =>
+          g?.groupName === EMPTY_GROUP_IDENTIFIER &&
+          (!g.bookmarks || g.bookmarks.length === 0)
+      ),
+    [bookmarkGroups]
+  );
+
+  /* Manual dismiss (X) */
   const [dismissed, setDismissed] = useState(false);
   useEffect(() => {
     setDismissed(localStorage.getItem(DISMISS_KEY) === "1");
@@ -26,16 +90,15 @@ export default function EmptyBookmarksState({
     onClose?.();
   };
 
-  useEffect(() => {
-    const saved = localStorage.getItem("mindful.emptyStateChecklist");
-    if (saved) setChecklist(JSON.parse(saved));
-  }, []);
-  useEffect(() => {
-    localStorage.setItem(
-      "mindful.emptyStateChecklist",
-      JSON.stringify(checklist)
-    );
-  }, [checklist]);
+  /* Only self-dismiss when ALL steps are checked */
+  const allChecked =
+    checklist.createdGroup && checklist.addedBookmark && checklist.triedStorage;
+
+  /* Visibility rule:
+     - Hide if manually dismissed
+     - Else show if dashboard is truly empty OR not all steps are checked */
+  const shouldShow = !dismissed && (isTrulyEmpty || !allChecked);
+  if (!shouldShow) return null;
 
   const Step = ({ id, label }) => (
     <label className="block">
@@ -62,9 +125,6 @@ export default function EmptyBookmarksState({
       </div>
     </label>
   );
-
-  // Hide entirely if dismissed
-  if (dismissed) return null;
 
   return (
     <section
@@ -152,7 +212,7 @@ export default function EmptyBookmarksState({
         </p>
         <div className="flex flex-col gap-2">
           <Step id="createdGroup" label="Create a group" />
-          <Step id="addedBookmark" label="Add a bookmark" />
+          <Step id="addedBookmark" label="Add a link" />
           <Step id="triedStorage" label="Try Local ↔︎ Sync" />
         </div>
       </div>

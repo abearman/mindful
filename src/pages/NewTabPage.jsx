@@ -12,7 +12,11 @@ Amplify.configure(config);
 import "@/styles/Login.css";
 
 /* Constants */
-import { EMPTY_GROUP_IDENTIFIER, StorageType } from "@/scripts/Constants"; 
+import { 
+  EMPTY_GROUP_IDENTIFIER, 
+  ONBOARDING_NEW_GROUP_PREFILL, 
+  StorageType 
+} from "@/scripts/Constants"; 
 
 /* Hooks and Utilities */
 import { getUserStorageKey } from '@/scripts/Utilities.js';
@@ -37,16 +41,6 @@ export function NewTabPage({ user, signIn, signOut }) {
   } = useContext(AppContext);
 
   const gridRef = useRef(null);
-
-  // Treat only the placeholder group (with no bookmarks) as empty.
-  const isEmptyDashboard =
-    !bookmarkGroups ||
-    bookmarkGroups.length === 0 ||
-    bookmarkGroups.every(
-    (g) =>
-      g.groupName === EMPTY_GROUP_IDENTIFIER &&
-      (!g.bookmarks || g.bookmarks.length === 0)
-    );
 
   // Get all actions from the custom bookmarks hook
   const {
@@ -124,17 +118,11 @@ export function NewTabPage({ user, signIn, signOut }) {
         user={user}
         bookmarkGroups={bookmarkGroups}
       />
-      {isEmptyDashboard && (
-        <EmptyBookmarksState
-          onCreateGroup={() => {
-            console.log("Got to onCreateGroup");
-            // Trigger rename mode on the “+ Add a group” card
-            gridRef.current?.startCreateGroup({ prefill: 'My first bookmarks group', select: 'all' });
-          }}
-          onImport={handleLoadBookmarks}
-          storageTypeLabel={storageType === StorageType.REMOTE ? "Encrypted Sync" : "Local"}
-        />
-      )} 
+      <EmptyBookmarksState
+        onCreateGroup={() => gridRef.current?.startCreateGroup({ prefill: ONBOARDING_NEW_GROUP_PREFILL, select: 'all' })}
+        onImport={handleLoadBookmarks}
+        storageTypeLabel={storageType === StorageType.REMOTE ? "Encrypted Sync" : "Local"}
+      />
     </div>
   );
 }
