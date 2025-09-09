@@ -116,3 +116,19 @@ form .add-bookmark-button {
 .editable-heading:hover {
   cursor: text;
 }
+
+.group-drag-handle {
+  position: absolute;
+  top: 10px;
+  left: 10px;         /* put it where you like */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: transparent;
+  border: 0;
+  cursor: grab;
+}
+.group-drag-handle:active { cursor: grabbing; }

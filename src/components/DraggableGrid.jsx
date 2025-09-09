@@ -208,29 +208,32 @@ const DraggableGrid = forwardRef(function DraggableGrid(_, ref) {
         strategy={rectSortingStrategy}
       >
         <div className="bookmark-groups-container">
-          {bookmarkGroups.map((bookmarkGroup, groupIndex) => (
+        {bookmarkGroups.map((bookmarkGroup, groupIndex) => {
+          const editing = String(editingGroupId) === String(bookmarkGroup.id);
+          return (
             <BookmarkGroup
               key={bookmarkGroup.id}
               bookmarkGroup={bookmarkGroup}
               groupIndex={groupIndex}
               handleDeleteBookmarkGroup={handleDeleteBookmarkGroup}
-
-              // ⬇️ NEW: wire editing + ref
-              isTitleEditing={String(editingGroupId) === String(bookmarkGroup.id)}
-              titleInputRef={(el) => {
-                const key = String(bookmarkGroup.id);
-                if (el) titleInputRefs.current.set(key, el);
-                else titleInputRefs.current.delete(key); // clean up on unmount
-              }} 
-              onCommitTitle={(newName) => {
-                if (newName && newName !== bookmarkGroup.groupName) {
-                  editBookmarkGroupHeading(bookmarkGroup.id, newName);
-                }
-                setEditingGroupId(null);
-              }}
-              onCancelTitleEdit={() => setEditingGroupId(null)} 
+              {...(editing ? {
+                isTitleEditing: true,
+                titleInputRef: (el) => {
+                  const key = String(bookmarkGroup.id);
+                  if (el) titleInputRefs.current.set(key, el);
+                  else titleInputRefs.current.delete(key);
+                },
+                onCommitTitle: (newName) => {
+                  if (newName && newName !== bookmarkGroup.groupName) {
+                    editBookmarkGroupHeading(bookmarkGroup.id, newName);
+                  }
+                  setEditingGroupId(null);
+                },
+                onCancelTitleEdit: () => setEditingGroupId(null),
+              } : {})}
             />
-          ))}
+          );
+        })} 
         </div>
       </SortableContext>
 

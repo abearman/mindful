@@ -11,8 +11,8 @@ export const BookmarkGroup = ({
   groupIndex,
   handleDeleteBookmarkGroup,
 
-  // ⬇️ NEW: optional, used when parent (DraggableGrid) wants to force rename mode
-  isTitleEditing = false,
+  // optional props from DraggableGrid when forcing edit mode
+  isTitleEditing,
   titleInputRef,
   onCommitTitle,
   onCancelTitleEdit,
@@ -21,16 +21,16 @@ export const BookmarkGroup = ({
     attributes,
     listeners,
     setNodeRef,
+    setActivatorNodeRef,    // ⬅️ NEW: use a handle for dragging
     transform,
     transition,
     isDragging,
   } = useSortable({ id: bookmarkGroup.id });
 
-  // Dynamic styles for dnd-kit animations MUST remain inline
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0 : 1, // Hide the original component when it's being dragged
+    opacity: isDragging ? 0 : 1,
   };
 
   const headingIsEntered =
@@ -38,19 +38,37 @@ export const BookmarkGroup = ({
 
   const bookmarkIds = bookmarkGroup.bookmarks.map((bookmark) => bookmark.id);
 
-  const stopPropagation = (event) => {
-    event.stopPropagation();
-  };
+  const stopPropagation = (event) => event.stopPropagation();
 
   return (
     <div
       ref={setNodeRef}
       style={style}
       className="bookmark-group-box"
-      {...attributes}
-      {...listeners}
+      // IMPORTANT: do NOT spread {...attributes} {...listeners} here anymore
     >
-      {/* Delete button */}
+      {/* Drag handle (only this starts group dragging) */}
+      <button
+        ref={setActivatorNodeRef}
+        {...attributes}
+        {...listeners}
+        className="group-drag-handle"
+        aria-label="Drag group"
+        title="Drag group"
+        onPointerDown={stopPropagation} // don’t bubble into header/content
+      >
+        {/* a simple 6-dot grip, or your own icon */}
+        <svg width="16" height="16" viewBox="0 0 16 16" className="opacity-60">
+          <circle cx="4" cy="4" r="1.5" />
+          <circle cx="8" cy="4" r="1.5" />
+          <circle cx="12" cy="4" r="1.5" />
+          <circle cx="4" cy="8" r="1.5" />
+          <circle cx="8" cy="8" r="1.5" />
+          <circle cx="12" cy="8" r="1.5" />
+        </svg>
+      </button>
+
+      {/* Delete button remains positioned relative to the group box */}
       {headingIsEntered && (
         <button
           className="delete-bookmark-group-button"
@@ -61,13 +79,12 @@ export const BookmarkGroup = ({
         </button>
       )}
 
-      {/* Header Section */}
+      {/* Header — now free to become contentEditable on click */}
       <div onPointerDown={stopPropagation} className="bookmark-group-header">
         <EditableBookmarkGroupHeading
           bookmarkGroup={bookmarkGroup}
           groupIndex={groupIndex}
-
-          /* ⬇️ NEW: let the heading switch to an input + expose its ref */
+          // optional external control (only passed for the one active group)
           isEditing={isTitleEditing}
           inputRef={titleInputRef}
           onCommit={onCommitTitle}
@@ -75,7 +92,7 @@ export const BookmarkGroup = ({
         />
       </div>
 
-      {/* Scrollable Content Section */}
+      {/* Content */}
       <div onPointerDown={stopPropagation} className="bookmark-group-content">
         <SortableContext items={bookmarkIds} strategy={verticalListSortingStrategy}>
           {bookmarkGroup.bookmarks.map((bookmark, bookmarkIndex) => (
