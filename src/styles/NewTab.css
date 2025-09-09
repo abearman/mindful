@@ -7,7 +7,7 @@ body, html {
 
 /* Bookmark grid wrapper */
 .bookmark-groups-container {
-  @apply grid gap-2.5 p-5 grid-cols-[25%_1fr_1fr_1fr] bg-white dark:bg-neutral-950
+  @apply grid gap-2.5 p-5 grid-cols-[25%_1fr_1fr_1fr] bg-gray-100 dark:bg-neutral-950
 }
 
 /* Card */

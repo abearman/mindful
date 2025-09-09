@@ -105,26 +105,29 @@ export default function ManageAccountComponent({ user, signIn, signOut }) {
   };
 
   return (
-    <div className="min-h-screen bg-[#f5f5f5] py-10 px-4 flex justify-center">
+    <div className="min-h-screen bg-gray-100 dark:bg-neutral-950 py-10 px-4 flex justify-center">
       <main className="w-full max-w-2xl">
-        <div className="rounded-2xl bg-white shadow-xl p-6">
+        <div className="rounded-2xl bg-white dark:bg-neutral-900 shadow-xl
+                        ring-1 ring-black/5 dark:ring-white/10 p-6">
           {/* Header row */}
           <div className="flex items-center gap-4">
             <Avatar initials={initials} />
             <div className="flex-1">
-              <div className="text-base font-semibold text-gray-900">{given_name + " " + family_name}</div>
-              <div className="text-sm text-gray-500">{email}</div>
+              <div className="text-base font-semibold text-neutral-800 dark:text-neutral-200">
+                {given_name + " " + family_name}
+              </div>
+              <div className="text-sm text-neutral-500 dark:text-neutral-400">{email}</div> 
             </div>
-            {/* Close icon placeholder
-            <button className="text-gray-400 hover:text-gray-600">✕</button>
-            */}
           </div>
 
           {/* Fields */}
-          <div className="text-sm mt-6 divide-y divide-gray-200">
+          <div className="text-sm mt-6 divide-y divide-gray-200 dark:divide-white/10"> 
             <FieldRow label="Given name">
               <input
-                className="w-full bg-transparent text-right text-gray-700 placeholder-gray-400 focus:outline-none"
+                className="w-full bg-transparent text-right
+                         text-neutral-500 dark:text-neutral-400
+                          placeholder-neutral-400 dark:placeholder-neutral/30
+                          focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20 rounded-md"
                 value={form.given_name}
                 onChange={handle("given_name")}
                 placeholder="Your given name"
@@ -132,7 +135,10 @@ export default function ManageAccountComponent({ user, signIn, signOut }) {
             </FieldRow>
             <FieldRow label="Family name">
               <input
-                className="w-full bg-transparent text-right text-gray-700 placeholder-gray-400 focus:outline-none"
+                className="w-full bg-transparent text-right
+                         text-neutral-500 dark:text-neutral-400
+                         placeholder-neutral-400 dark:placeholder-neutral/30
+                           focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20 rounded-md"
                 value={form.family_name}
                 onChange={handle("family_name")}
                 placeholder="Your family name"
@@ -141,7 +147,10 @@ export default function ManageAccountComponent({ user, signIn, signOut }) {
             <FieldRow label="Email account">
               <input
                 type="email"
-                className="w-full bg-transparent text-right text-gray-700 placeholder-gray-400 focus:outline-none"
+                className="w-full bg-transparent text-right
+                          text-neutral-500 dark:text-neutral-400
+                          placeholder-neutral-400 dark:placeholder-neutral/30 
+                           focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20 rounded-md"
                 value={form.email}
                 onChange={handle("email")}
                 placeholder="yourname@gmail.com"
@@ -156,8 +165,9 @@ export default function ManageAccountComponent({ user, signIn, signOut }) {
                   onChange={(value) => handle('phone')({ target: { value } })}
                   countryCallingCodeEditable={false}
                   numberInputProps={{
-                    className: 'bg-transparent text-gray-700 placeholder-gray-400 focus:outline-none',
-                    placeholder: 'Add number',
+                    className: "w-full bg-transparent text-right text-neutral-500 dark:text-neutral-400 placeholder-neutral-400 dark:placeholder-neutral/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20 rounded-md",
+                    //'400 placeholder-gray-400 focus:outline-none',
+                    placeholder: "Add number",
                   }}
                 />
               </div>
@@ -170,11 +180,16 @@ export default function ManageAccountComponent({ user, signIn, signOut }) {
             </FieldRow>
           </div>
 
+          {/* Save button  */}
           <div className="text-sm pt-6">
             <button
               onClick={save}
               disabled={saving}
-              className="inline-flex items-center justify-center rounded-xl bg-[#2196f3] px-5 py-2.5 text-white font-semibold shadow hover:bg-blue-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              className="cursor-pointer inline-flex items-center justify-center rounded-xl
+                        bg-blue-600 hover:bg-blue-500 text-white font-semibold
+                        px-5 py-2.5 shadow-md shadow-black/10 dark:shadow-black/20
+                        ring-1 ring-black/5 dark:ring-white/10
+                        disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {saving ? "Saving…" : "Save Changes"}
             </button>
@@ -183,7 +198,7 @@ export default function ManageAccountComponent({ user, signIn, signOut }) {
 
         {pendingVerify && (
           <div className="mt-6 rounded-xl border border-gray-200 p-4">
-            <div className="text-sm font-medium text-gray-700 mb-2">
+            <div className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
               Enter the code sent to your {pendingVerify === "email" ? "email" : "phone"}:
             </div>
             <div className="flex gap-3">
@@ -224,14 +239,11 @@ export default function ManageAccountComponent({ user, signIn, signOut }) {
 }
 
 /* ---------- Little helpers ---------- */
-
 function FieldRow({ label, children }) {
   return (
     <div className="flex items-center justify-between py-4">
-      <div className="text-gray-700 font-medium">{label}</div>
-      <div className="ml-6 w-1/2 sm:w-2/5 flex justify-end">
-        {children}
-      </div>
+      <div className="text-neutral-500 dark:text-neutral-400 font-medium">{label}</div>
+      <div className="ml-6 w-1/2 sm:w-2/5 flex justify-end">{children}</div>
     </div>
   );
 }
@@ -246,8 +258,8 @@ function CompactStorageToggle({ value = StorageType.LOCAL, onChange, disabled })
         disabled={disabled}
         onClick={() => onChange?.(StorageType.LOCAL)}
         className={`transition ${
-          !isRemote ? "font-medium text-gray-900" : "text-gray-500"
-        } hover:text-gray-900 disabled:opacity-50`}
+          !isRemote ? "font-bold text-neutral-500 dark:text-neutral-400" : "text-neutral-500 dark:text-neutral-400"
+        } hover:text-neutral-900 disabled:opacity-50`}
       >
         Local
       </button>
@@ -258,15 +270,14 @@ function CompactStorageToggle({ value = StorageType.LOCAL, onChange, disabled })
         disabled={disabled}
         onClick={() => onChange?.(isRemote ? StorageType.LOCAL : StorageType.REMOTE)}
         aria-pressed={isRemote}
-        className={`relative inline-flex h-5 w-9 items-center rounded-full border transition
-          ${isRemote ? "bg-[#2196f3] border-[#2196f3]" : "bg-gray-300 border-gray-300"}
-          focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60
+        className={`cursor-pointer relative inline-flex h-5 w-9 items-center rounded-full border transition
+          ${isRemote
+            ? "bg-blue-600 border-blue-600"
+            : "bg-zinc-300 dark:bg-zinc-700 border-zinc-300 dark:border-zinc-700"}
+          focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20
           disabled:opacity-50`}
       >
-        <span
-          className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition
-            ${isRemote ? "translate-x-4" : "translate-x-1"}`}
-        />
+        <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow ${isRemote ? "translate-x-4" : "translate-x-1"}`} />
       </button>
 
       <button
@@ -274,8 +285,8 @@ function CompactStorageToggle({ value = StorageType.LOCAL, onChange, disabled })
         disabled={disabled}
         onClick={() => onChange?.(StorageType.REMOTE)}
         className={`transition ${
-          isRemote ? "font-medium text-gray-900" : "text-gray-500"
-        } hover:text-gray-900 disabled:opacity-50`}
+          isRemote ? "font-bold text-neutral-500 dark:text-neutral-400" : "text-neutral-500 dark:text-neutral-400"
+        } hover:text-neutral-900 disabled:opacity-50`}
       >
         Remote
       </button>

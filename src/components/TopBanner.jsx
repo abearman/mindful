@@ -37,7 +37,7 @@ const TopBanner = ({
   };
 
   return (
-    <header className="sticky top-0 z-30 backdrop-blur supports-[backdrop-filter]:bg-neutral-950/50">
+    <header className="sticky top-0 z-30 backdrop-blur bg-gray-100 dark:bg-neutral-950">
       <div className="flex w-full items-center justify-between px-[20px] py-4">
         {/* Left: logo */}
         <div
@@ -51,7 +51,7 @@ const TopBanner = ({
         >
           <img src="/assets/icon-no-bg-128.png" className="w-[30px] h-[30px] object-cover" />
           <span className="text-neutral-900 dark:text-white text-lg font-semibold tracking-tight">Mindful</span>
-          <Badge className="ml-2 bg-neutral-800 text-neutral-300 hover:bg-neutral-800">Bookmarks</Badge>
+          <Badge variant="secondary" className="ml-2">Bookmarks</Badge>
         </div>
 
         {/* Right: icons + avatar */}
