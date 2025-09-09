@@ -156,13 +156,18 @@ export const useBookmarkManager = () => {
     await updateAndPersistGroups(prevGroups => prevGroups.filter((_, index) => index !== groupIndex));
   };
 
-  const editBookmarkGroupHeading = async (groupIndex, newHeadingName) => {
+  const editBookmarkGroupHeading = async (groupIdentifier, newHeadingName) => {
     await updateAndPersistGroups(prevGroups =>
-      prevGroups.map((group, index) =>
-        index === groupIndex ? { ...group, groupName: newHeadingName } : group
-      )
+      prevGroups.map((group, index) => {
+        const isMatch =
+          typeof groupIdentifier === "number"
+            ? index === groupIdentifier
+            : group.id === groupIdentifier;
+  
+        return isMatch ? { ...group, groupName: newHeadingName } : group;
+      })
     );
-  };
+  }; 
 
   const reorderBookmarkGroups = async (oldIndex, newIndex) => {
     await updateAndPersistGroups(prevGroups => arrayMove(prevGroups, oldIndex, newIndex));

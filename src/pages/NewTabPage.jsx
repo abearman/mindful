@@ -124,24 +124,19 @@ export function NewTabPage({ user, signIn, signOut }) {
         user={user}
         bookmarkGroups={bookmarkGroups}
       />
-     {isEmptyDashboard ? (
-       <EmptyBookmarksState
-         onCreateGroup={() => {
-           // Creates an empty group card; if you prefer a named group, call your “createGroup('New Group')” instead.
-           addEmptyBookmarkGroup();
-         }}
-         onImport={handleLoadBookmarks}
-         storageTypeLabel={
-           storageType === StorageType.REMOTE ? "Encrypted Sync" : "Local"
-         }
-       />
-      ) : (
-        <DraggableGrid 
-          ref={gridRef}
-          user={user}
-          bookmarkGroups={bookmarkGroups} 
+      {isEmptyDashboard && (
+        <EmptyBookmarksState
+          onCreateGroup={() => {
+            console.log("Got to onCreateGroup");
+            // 👇 Trigger rename mode on the “+ Add a group” card
+            gridRef.current?.startCreateGroup({ prefill: 'Reading List', select: 'all' });
+            // (omit args if you don’t need prefill/caret control)
+            // gridRef.current?.startCreateGroup();
+          }}
+          onImport={handleLoadBookmarks}
+          storageTypeLabel={storageType === StorageType.REMOTE ? "Encrypted Sync" : "Local"}
         />
-      )}
+      )} 
     </div>
   );
 }
