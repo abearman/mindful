@@ -54,23 +54,6 @@ export const BookmarkGroup = ({
       {...attributes}
       {...listeners} 
     >
-      {/* Drag handle */}
-      <button
-        className="group-drag-handle"
-        aria-label="Drag group"
-        title="Drag group"
-        onPointerDown={stopPropagation}  // optional; purely visual now
-      >
-        <svg width="16" height="16" viewBox="0 0 16 16" className="opacity-60">
-          <circle cx="4" cy="4" r="1.5" />
-          <circle cx="8" cy="4" r="1.5" />
-          <circle cx="12" cy="4" r="1.5" />
-          <circle cx="4" cy="8" r="1.5" />
-          <circle cx="8" cy="8" r="1.5" />
-          <circle cx="12" cy="8" r="1.5" />
-        </svg>
-      </button>
-
       {/* Delete */}
       {headingIsEntered && (
         <button
