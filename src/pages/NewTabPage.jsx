@@ -129,7 +129,7 @@ export function NewTabPage({ user, signIn, signOut }) {
           onCreateGroup={() => {
             console.log("Got to onCreateGroup");
             // 👇 Trigger rename mode on the “+ Add a group” card
-            gridRef.current?.startCreateGroup({ prefill: 'Reading List', select: 'all' });
+            gridRef.current?.startCreateGroup({ prefill: 'My first bookmarks group', select: 'all' });
             // (omit args if you don’t need prefill/caret control)
             // gridRef.current?.startCreateGroup();
           }}
