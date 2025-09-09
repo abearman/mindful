@@ -25,3 +25,23 @@ This is all controlled by whatever file is named `amplify_outputs.json`.
 
 ### To work on sandbox
 1. Run `npx ampx sandbox` to have `amplify_outputs.json` generated for you.
+
+## How to cut a new release for the Chrome Extensions store
+```
+# cut release
+git switch main
+git pull
+git switch -c release/chrome-1.7.0
+
+# bump manifest + changelog, commit
+git commit -am "chore(release): prepare chrome 1.7.0"
+
+# build + zip for CWS, submit...
+
+# after approval
+git tag v1.7.0
+git push --tags
+git switch main
+git merge --no-ff release/chrome-1.7.0 || true
+git branch -d release/chrome-1.7.0
+```
