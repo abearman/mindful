@@ -28,14 +28,8 @@ export const BookmarkGroup = ({
   // when true, we're in onboarding (use constants + allow clipboard)
   autofillFromClipboard = false,
 }) => {
-  const {
-    attributes,          // put ARIA/tabIndex on container
-    listeners,           // put on drag handle only
-    setNodeRef,
-    setActivatorNodeRef,
-    transform,
-    transition,
-    isDragging,
+  const { 
+    attributes, listeners, setNodeRef, transform, transition, isDragging 
   } = useSortable({ id: bookmarkGroup.id });
 
   const style = {
@@ -57,16 +51,15 @@ export const BookmarkGroup = ({
       ref={setNodeRef}
       style={style}
       className="bookmark-group-box"
-      {...attributes}  // safe here; do NOT add listeners on the container
+      {...attributes}
+      {...listeners} 
     >
       {/* Drag handle */}
       <button
-        ref={setActivatorNodeRef}
-        {...listeners}
         className="group-drag-handle"
         aria-label="Drag group"
         title="Drag group"
-        onPointerDown={stopPropagation}
+        onPointerDown={stopPropagation}  // optional; purely visual now
       >
         <svg width="16" height="16" viewBox="0 0 16 16" className="opacity-60">
           <circle cx="4" cy="4" r="1.5" />
