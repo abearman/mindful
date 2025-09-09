@@ -4,6 +4,8 @@ export const URL_PATTERN = "^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\
 export const EMPTY_GROUP_IDENTIFIER = "EMPTY_GROUP_IDENTIFIER";
 export const STORAGE_TYPE_CUSTOM_ATTRIBUTE = "custom:storage_type";
 export const ONBOARDING_NEW_GROUP_PREFILL = "My first bookmarks group";
+export const ONBOARDING_BOOKMARK_NAME_PREFILL = "Google";
+export const ONBOARDING_BOOKMARK_URL_PREFILL = "https://www.google.com";
 
 /* Enum for storage types */
 export const StorageType = {
