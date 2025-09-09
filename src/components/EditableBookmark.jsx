@@ -4,9 +4,9 @@ import React, { useState, useRef, useContext } from 'react';
 import '@/styles/NewTab.css';
 
 /* Hooks and Utilities */
-import { useBookmarkManager } from '@/scripts/useBookmarkManager.js';
-import { AppContext } from '@/scripts/AppContext.jsx';
-import { createUniqueID } from "@/scripts/Utilities.js";
+import { useBookmarkManager } from '@/scripts/useBookmarkManager';
+import { AppContext } from '@/scripts/AppContextProvider';
+import { createUniqueID } from "@/scripts/Utilities";
 
 
 function EditableBookmark(props) {

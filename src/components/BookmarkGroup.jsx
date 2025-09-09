@@ -1,34 +1,50 @@
 import React from 'react';
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { BookmarkItem } from '@/components/BookmarkItem.jsx';
-import { EditableBookmarkGroupHeading } from '@/components/EditableBookmarkGroupHeading.jsx';
-import { AddBookmarkInline } from '@/components/AddBookmarkInline.jsx';
-import { EMPTY_GROUP_IDENTIFIER } from '@/scripts/Constants.js';
+import { BookmarkItem } from '@/components/BookmarkItem';
+import { EditableBookmarkGroupHeading } from '@/components/EditableBookmarkGroupHeading';
+import { AddBookmarkInline } from '@/components/AddBookmarkInline';
+import { 
+  EMPTY_GROUP_IDENTIFIER,
+  ONBOARDING_BOOKMARK_NAME_PREFILL, 
+  ONBOARDING_BOOKMARK_URL_PREFILL
+} from '@/scripts/Constants';
 
-export const BookmarkGroup = ({ bookmarkGroup, groupIndex, handleDeleteBookmarkGroup }) => {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging, 
+export const BookmarkGroup = ({
+  bookmarkGroup,
+  groupIndex,
+  handleDeleteBookmarkGroup,
+
+  // external control for title editing (active group only)
+  isTitleEditing,
+  titleInputRef,
+  onCommitTitle,
+  onCancelTitleEdit,
+
+  // inline add-link control
+  autoAddLink = false,
+  addLinkInputRef,
+  onAddLinkDone,
+  // when true, we're in onboarding (use constants + allow clipboard)
+  autofillFromClipboard = false,
+}) => {
+  const { 
+    attributes, listeners, setNodeRef, transform, transition, isDragging 
   } = useSortable({ id: bookmarkGroup.id });
 
-  // Dynamic styles for dnd-kit animations MUST remain inline
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0 : 1, // Hide the original component when it's being dragged
+    opacity: isDragging ? 0 : 1,
   };
 
-  const headingIsEntered = bookmarkGroup.groupName && bookmarkGroup.groupName !== EMPTY_GROUP_IDENTIFIER;
-  const bookmarkIds = bookmarkGroup.bookmarks.map((bookmark) => bookmark.id);
+  const headingIsEntered =
+    bookmarkGroup.groupName && bookmarkGroup.groupName !== EMPTY_GROUP_IDENTIFIER;
 
-  const stopPropagation = (event) => {
-    event.stopPropagation();
-  };
+  const bookmarks = Array.isArray(bookmarkGroup.bookmarks) ? bookmarkGroup.bookmarks : [];
+  const bookmarkIds = bookmarks.map((b) => b.id);
+
+  const stopPropagation = (e) => e.stopPropagation();
 
   return (
     <div
@@ -36,35 +52,35 @@ export const BookmarkGroup = ({ bookmarkGroup, groupIndex, handleDeleteBookmarkG
       style={style}
       className="bookmark-group-box"
       {...attributes}
-      {...listeners}
+      {...listeners} 
     >
-      {/* The delete button is now a direct child of the group box,
-          allowing it to be positioned absolutely relative to it. */}
+      {/* Delete */}
       {headingIsEntered && (
         <button
           className="delete-bookmark-group-button"
           onClick={(event) => handleDeleteBookmarkGroup(event, groupIndex)}
           onPointerDown={stopPropagation}
         >
-          <img src="./assets/delete-icon.svg" alt="Delete Group" />
+          <img src="./assets/delete-icon.svg" alt="Delete group" />
         </button>
       )}
 
-      {/* Header Section */}
+      {/* Header */}
       <div onPointerDown={stopPropagation} className="bookmark-group-header">
         <EditableBookmarkGroupHeading
           bookmarkGroup={bookmarkGroup}
           groupIndex={groupIndex}
+          isEditing={isTitleEditing}
+          inputRef={titleInputRef}
+          onCommit={onCommitTitle}
+          onCancel={onCancelTitleEdit}
         />
       </div>
 
-      {/* Scrollable Content Section */}
-      <div
-        onPointerDown={stopPropagation}
-        className="bookmark-group-content"
-      >
+      {/* Content */}
+      <div onPointerDown={stopPropagation} className="bookmark-group-content">
         <SortableContext items={bookmarkIds} strategy={verticalListSortingStrategy}>
-          {bookmarkGroup.bookmarks.map((bookmark, bookmarkIndex) => (
+          {bookmarks.map((bookmark, bookmarkIndex) => (
             <BookmarkItem
               key={bookmark.id}
               bookmark={bookmark}
@@ -73,7 +89,22 @@ export const BookmarkGroup = ({ bookmarkGroup, groupIndex, handleDeleteBookmarkG
             />
           ))}
         </SortableContext>
-        {headingIsEntered && <AddBookmarkInline groupIndex={groupIndex} />}
+
+        {/* Inline add link: shown only when the group has a real title */}
+        {headingIsEntered && (
+          <AddBookmarkInline
+            groupIndex={groupIndex}
+            autoFocus={autoAddLink}
+            inputRef={addLinkInputRef}
+            onDone={onAddLinkDone}
+
+            /* Only during onboarding: pass constant prefills
+               (explicit prefills take precedence over clipboard inside the component) */
+            prefillName={autofillFromClipboard ? ONBOARDING_BOOKMARK_NAME_PREFILL : undefined}
+            prefillUrl={autofillFromClipboard ? ONBOARDING_BOOKMARK_URL_PREFILL : undefined}
+            autofillFromClipboard={autofillFromClipboard}
+          />
+        )}
       </div>
     </div>
   );

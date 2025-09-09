@@ -1,78 +1,9 @@
-/* src/styles/components/top-banner.css */
 @layer components {
-  .top-banner {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 20px 10px 20px;  /* Top, right, bottom, left*/
-    background-color: #0f0f42;
-    border-bottom: 1px solid #dee2e6;
-    width: 100%;
-    box-sizing: border-box; 
-    font-size: 14px; 
-    line-height: 1.25;
-  }
-
-  .top-banner .logo-text, .avatar-icon {
-    font-family: system-ui, sans-serif; 
-  }
-
-  .top-banner .logo-text {
-    font-size: 20px;
-    font-weight: 700;
-    color: #F0F8FF;
-    letter-spacing: -0.01em;
-  }
-
-  .top-banner .icon-container {
-    display: flex;
-    gap: 15px;
-  }
-
-  /* stable hit-area for the buttons */
-  .top-banner .icon-button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 35px;           
-    height: 35px;
-    padding: 0;            /* avoid page-level padding rules */
-    line-height: 1;
-    background: none;
-    border: none;
-    color: #F0F8FF;
+  .avatar-container {
     cursor: pointer;
   }
 
-  /* pin the icon’s size independent of page fonts */
-  .top-banner .icon-button i {
-    font-size: 18px;       /* use px or rem (e.g., 1.125rem), not em */
-    line-height: 1;        /* prevent extra vertical space */
-    width: 1em;            /* consistent square box */
-    height: 1em;
-    display: inline-block; 
-    vertical-align: middle;
-  }
-
-  .top-banner .icon-button:hover { 
-    color: #007bff; 
-  }
-
-  /* Style for the button containing the avatar */
-  .top-banner .avatar-button {
-    cursor: pointer;
-  }
-
-  /* Style for the avatar icon itself */
-  .top-banner .avatar-icon {
-    text-transform: uppercase;
-  }
-
-  .top-banner .avatar-container {
-    position: relative;
-    display: inline-block;
-  }
-
+  /* Dropdown menu stuff */
   .top-banner .dropdown-menu {
     position: absolute;
     top: 100%;

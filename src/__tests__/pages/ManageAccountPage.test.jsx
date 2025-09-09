@@ -16,7 +16,7 @@ jest.mock("@/components/TopBanner.jsx", () => {
   };
 });
 
-jest.mock("@/components/ManageAccountComponent.jsx", () => {
+jest.mock("@/components/ManageAccountComponent", () => {
   const React = require("react");
   return function ManageAccountComponentMock(props) {
     mockManageAccountSpy(props);
@@ -24,18 +24,18 @@ jest.mock("@/components/ManageAccountComponent.jsx", () => {
   };
 });
 
-jest.mock("@/scripts/useBookmarkManager.js", () => ({
+jest.mock("@/scripts/useBookmarkManager", () => ({
   useBookmarkManager: () => mockHookReturn,
 }));
 
-jest.mock("@/scripts/AppContext.jsx", () => {
+jest.mock("@/scripts/AppContextProvider", () => {
   const React = require("react");
   return { AppContext: React.createContext({}) };
 });
 
 // ----- Under test (import after mocks) -----
-import ManageAccountPage from "@/pages/ManageAccountPage.jsx";
-import { AppContext } from "@/scripts/AppContext.jsx";
+import ManageAccountPage from "@/pages/ManageAccountPage";
+import { AppContext } from "@/scripts/AppContextProvider"
 
 function renderWithCtx(ui, value) {
   return render(<AppContext.Provider value={value}>{ui}</AppContext.Provider>);

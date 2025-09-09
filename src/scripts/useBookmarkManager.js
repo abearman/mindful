@@ -1,10 +1,10 @@
 import { useContext } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { arrayMove } from '@dnd-kit/sortable';
-import { AppContext } from './AppContext.jsx';
-import { EMPTY_GROUP_IDENTIFIER, StorageType } from './Constants.js';
-import { refreshOtherMindfulTabs } from './Utilities.js';
-import { Storage } from './Storage.js';
+import { AppContext } from '@/scripts/AppContextProvider';
+import { EMPTY_GROUP_IDENTIFIER, StorageType } from '@/scripts/Constants';
+import { refreshOtherMindfulTabs } from '@/scripts/Utilities';
+import { Storage } from '@/scripts/Storage';
 import amplify_outputs from '/amplify_outputs.json';
 
 const API_HOST_PATTERN = `https://${new URL(amplify_outputs.custom.API.bookmarks.endpoint).host}/*`;
@@ -156,13 +156,18 @@ export const useBookmarkManager = () => {
     await updateAndPersistGroups(prevGroups => prevGroups.filter((_, index) => index !== groupIndex));
   };
 
-  const editBookmarkGroupHeading = async (groupIndex, newHeadingName) => {
+  const editBookmarkGroupHeading = async (groupIdentifier, newHeadingName) => {
     await updateAndPersistGroups(prevGroups =>
-      prevGroups.map((group, index) =>
-        index === groupIndex ? { ...group, groupName: newHeadingName } : group
-      )
+      prevGroups.map((group, index) => {
+        const isMatch =
+          typeof groupIdentifier === "number"
+            ? index === groupIdentifier
+            : group.id === groupIdentifier;
+  
+        return isMatch ? { ...group, groupName: newHeadingName } : group;
+      })
     );
-  };
+  }; 
 
   const reorderBookmarkGroups = async (oldIndex, newIndex) => {
     await updateAndPersistGroups(prevGroups => arrayMove(prevGroups, oldIndex, newIndex));

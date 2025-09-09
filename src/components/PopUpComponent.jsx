@@ -1,9 +1,9 @@
 import React, { useContext, useState, useEffect } from 'react';
 
 /* Hooks and Utilities */
-import { AppContext } from "@/scripts/AppContext.jsx";
-import { constructValidURL } from '@/scripts/Utilities.js';
-import { useBookmarkManager } from '@/scripts/useBookmarkManager.js'; 
+import { AppContext } from "@/scripts/AppContextProvider";
+import { constructValidURL } from '@/scripts/Utilities';
+import { useBookmarkManager } from '@/scripts/useBookmarkManager'; 
 
 /* Constants */
 import { URL_PATTERN, EMPTY_GROUP_IDENTIFIER } from '@/scripts/Constants.js';

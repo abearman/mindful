@@ -30,7 +30,7 @@ jest.mock('/amplify_outputs.json', () => ({}), { virtual: true });
 jest.mock('aws-amplify/auth');
 
 // Provide a tiny AppContext + Provider so the inner component can consume groups
-jest.mock('@/scripts/AppContext', () => {
+jest.mock('@/scripts/AppContextProvider', () => {
   const React = require('react');
   const AppContext = React.createContext({});
   const AppContextProvider = ({ children }) => (

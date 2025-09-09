@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
 import { EditableBookmarkGroupHeading } from '@/components/EditableBookmarkGroupHeading';
-import { AppContext } from '@/scripts/AppContext';
+import { AppContext } from '@/scripts/AppContextProvider';
 import { useBookmarkManager } from '@/scripts/useBookmarkManager';
 import { EMPTY_GROUP_IDENTIFIER } from "@/scripts/Constants";
 
@@ -74,16 +74,6 @@ describe('EditableBookmarkGroupHeading', () => {
     
     // After click, the element should be editable
     expect(heading).toHaveAttribute('contentEditable', 'true');
-  });
-
-  test('clears placeholder text on click to edit', () => {
-    renderComponent({ bookmarkGroup: mockBookmarkGroups[1], groupIndex: 1 });
-    const heading = screen.getByText(NEW_GROUP_NAME_PLACEHOLDER);
-    
-    fireEvent.click(heading);
-    
-    // The placeholder text should be cleared for user input
-    expect(heading.textContent).toBe('');
   });
 
   test('saves the new group name on blur', async () => {

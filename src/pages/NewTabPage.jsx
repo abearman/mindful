@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useRef } from "react";
 
 // Import Amplify and the Authenticator UI component
 import { Amplify } from 'aws-amplify';
@@ -12,16 +12,22 @@ Amplify.configure(config);
 import "@/styles/Login.css";
 
 /* Constants */
-import { EMPTY_GROUP_IDENTIFIER, StorageType } from "@/scripts/Constants.js"; // Note: Added StorageType here
+import { 
+  EMPTY_GROUP_IDENTIFIER, 
+  ONBOARDING_NEW_GROUP_PREFILL, 
+  StorageType 
+} from "@/scripts/Constants"; 
 
 /* Hooks and Utilities */
 import { getUserStorageKey } from '@/scripts/Utilities.js';
-import { loadInitialBookmarks, useBookmarkManager } from '@/scripts/useBookmarkManager.js';
-import { AppContext } from "@/scripts/AppContext.jsx";
+import { loadInitialBookmarks, useBookmarkManager } from '@/scripts/useBookmarkManager';
+import { AppContext } from "@/scripts/AppContextProvider";
 
 /* Components */
 import TopBanner from "@/components/TopBanner.jsx";
 import DraggableGrid from '@/components/DraggableGrid.jsx';
+import EmptyBookmarksState from '@/components/EmptyBookmarksState.jsx';
+
 
 export function NewTabPage({ user, signIn, signOut }) {
   // Consume state from the context
@@ -33,6 +39,8 @@ export function NewTabPage({ user, signIn, signOut }) {
     isMigrating,
     userAttributes
   } = useContext(AppContext);
+
+  const gridRef = useRef(null);
 
   // Get all actions from the custom bookmarks hook
   const {
@@ -95,7 +103,7 @@ export function NewTabPage({ user, signIn, signOut }) {
   }, [userId, storageType, setBookmarkGroups, isMigrating]); // Re-runs if user or storageType changes
 
   return (
-    <div className="min-h-screen bg-[#f5f5f5] text-[#484848]">
+    <div className="min-h-screen bg-gray-100 dark:bg-neutral-950">
       <TopBanner
         onLoadBookmarks={handleLoadBookmarks}
         onExportBookmarks={exportBookmarksToJSON}
@@ -106,8 +114,14 @@ export function NewTabPage({ user, signIn, signOut }) {
         onStorageTypeChange={changeStorageType}
       />
       <DraggableGrid
+        ref={gridRef}
         user={user}
         bookmarkGroups={bookmarkGroups}
+      />
+      <EmptyBookmarksState
+        onCreateGroup={() => gridRef.current?.startCreateGroup({ prefill: ONBOARDING_NEW_GROUP_PREFILL, select: 'all' })}
+        onImport={handleLoadBookmarks}
+        storageTypeLabel={storageType === StorageType.REMOTE ? "Encrypted Sync" : "Local"}
       />
     </div>
   );

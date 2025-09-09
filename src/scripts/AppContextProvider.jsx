@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useState, useEffect, useCallback, useRef } from 'react';
 import { StorageType } from '@/scripts/Constants.js';
 import { loadInitialBookmarks } from "@/scripts/useBookmarkManager.js";
 import { fetchAuthSession, fetchUserAttributes, updateUserAttribute } from 'aws-amplify/auth';
@@ -12,6 +12,14 @@ export function AppContextProvider({ children }) {
   const [storageType, setStorageType] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isMigrating, setIsMigrating] = useState(false); // prevent race conditions
+
+  // NEW: track whether we've completed the very first hydration.
+  const [hasHydrated, setHasHydrated] = useState(false);
+
+  // tiny deep-equal to avoid replacing identical data
+  const deepEqual = (a, b) => {
+    try { return JSON.stringify(a) === JSON.stringify(b); } catch { return false; }
+  };
 
   // Effect for fetching the user's identity and storage preference
   useEffect(() => {
@@ -65,12 +73,15 @@ export function AppContextProvider({ children }) {
       setIsLoading(true);
       try {
         const initialBookmarks = await loadInitialBookmarks(userId, storageType);
-        setBookmarkGroups(initialBookmarks);
+        // Avoid UI churn if nothing actually changed
+        setBookmarkGroups(prev => (deepEqual(prev, initialBookmarks) ? prev : initialBookmarks));
       } catch (error) {
         console.error("Error loading bookmarks:", error);
         setBookmarkGroups([]);
       } finally {
         setIsLoading(false);
+        // NEW: after the first completed load attempt, mark hydrated so we don't blank the UI later
+        setHasHydrated(true);
       }
     };
 
@@ -83,8 +94,9 @@ export function AppContextProvider({ children }) {
 
     const reload = async () => {
       try {
+        // IMPORTANT: do not flip isLoading here; just refresh data in place to prevent "full page refresh" feel
         const fresh = await loadInitialBookmarks(userId, storageType);
-        setBookmarkGroups(fresh);
+        setBookmarkGroups(prev => (deepEqual(prev, fresh) ? prev : fresh));
       } catch (e) {
         console.error("Reload after update failed:", e);
       }
@@ -122,6 +134,7 @@ export function AppContextProvider({ children }) {
 
   // Handler for updating the storage type preference
   const handleStorageTypeChange = useCallback(async (newStorageType) => {
+    // This is an explicit user action: we *can* show loading once here (keeps first-load logic consistent)
     setStorageType(newStorageType);
     if (userId) {
       try {
@@ -137,7 +150,8 @@ export function AppContextProvider({ children }) {
     }
   }, [userId]);
 
-  if (isLoading && !bookmarkGroups.length) {
+  // Only show the full-screen Loading *before first hydration*.
+  if (isLoading && !bookmarkGroups.length && !hasHydrated) {
     return <div>Loading...</div>;
   }
 

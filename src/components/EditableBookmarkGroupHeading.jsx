@@ -4,92 +4,149 @@ import React, { useContext, useState, useRef, useEffect } from 'react';
 import '@/styles/EditableBookmarkGroupHeading.css';
 
 /* Constants */
-import { EMPTY_GROUP_IDENTIFIER } from "@/scripts/Constants.js";
+import { EMPTY_GROUP_IDENTIFIER } from "@/scripts/Constants";
 
 /* Hooks and Utilities */
 import { useBookmarkManager } from '@/scripts/useBookmarkManager';
 
-const NEW_GROUP_NAME = "+ Add a group"; 
-
+const NEW_GROUP_NAME = "+ Add a group";
 
 function EditableBookmarkGroupHeading(props) {
-  // Get all actions from the custom bookmarks hook
-  const { 
-    editBookmarkGroupHeading,
-  } = useBookmarkManager();  
+  const {
+    bookmarkGroup,
+    groupIndex,
 
-  const { bookmarkGroup, groupIndex } = props;
-  
-  const hasTitle = bookmarkGroup && bookmarkGroup.groupName && bookmarkGroup.groupName !== EMPTY_GROUP_IDENTIFIER;
+    // NEW: optional external controls
+    isEditing: externalIsEditing,
+    inputRef: externalInputRef,
+    onCommit,
+    onCancel,
+  } = props;
 
-  // State to control when the heading is editable
-  const [isEditing, setIsEditing] = useState(false);
-  // State to track if the content is a placeholder
+  const { editBookmarkGroupHeading } = useBookmarkManager();
+
+  const hasTitle =
+    bookmarkGroup &&
+    bookmarkGroup.groupName &&
+    bookmarkGroup.groupName !== EMPTY_GROUP_IDENTIFIER;
+
+  // Uncontrolled fallback editing state
+  const [internalIsEditing, setInternalIsEditing] = useState(false);
+  const editing = externalIsEditing ?? internalIsEditing;
+
+  // Placeholder state
   const [isPlaceholder, setIsPlaceholder] = useState(!hasTitle);
+
+  // Local ref, but we also forward it to the parent
   const headingRef = useRef(null);
-
-  // Effect to focus the element and select its text when editing starts
-  useEffect(() => {
-    if (isEditing && headingRef.current) {
-      headingRef.current.focus();
+  const setMergedRef = (node) => {
+    headingRef.current = node;
+    if (typeof externalInputRef === 'function') {
+      externalInputRef(node);
+    } else if (externalInputRef && 'current' in externalInputRef) {
+      externalInputRef.current = node;
     }
-  }, [isEditing]);
+  };
 
-  // Handle blur to save changes and exit edit mode
+  // Focus + select all text when editing starts
+  useEffect(() => {
+    if (!editing || !headingRef.current) return;
+
+    // Focus first
+    headingRef.current.focus();
+
+    // Select all text (so typing replaces "+ Add a group")
+    // Defer to the next tick so contentEditable is fully ready.
+    const t = setTimeout(() => {
+      const el = headingRef.current;
+      if (!el) return;
+      const selection = window.getSelection && window.getSelection();
+      if (!selection) return;
+
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }, 0);
+
+    return () => clearTimeout(t);
+  }, [editing]);
+
+  // Handle blur -> commit or revert
   async function handleBlur(event) {
-    setIsEditing(false);
     const newGroupName = event.target.textContent.trim();
 
-    if (newGroupName === '') {
-      // If the heading is empty, revert to the original name and bookmark identifier
-      headingRef.current.textContent = hasTitle ? bookmarkGroup.groupName : NEW_GROUP_NAME;
-      bookmarkGroup.groupName = EMPTY_GROUP_IDENTIFIER;
+    const doCancel = () => {
+      // Revert text & placeholder
+      if (headingRef.current) {
+        headingRef.current.textContent = hasTitle ? bookmarkGroup.groupName : NEW_GROUP_NAME;
+      }
       setIsPlaceholder(!hasTitle);
-    } else {
-      // Otherwise, save the new heading
+      onCancel?.();
+      if (externalIsEditing === undefined) setInternalIsEditing(false);
+    };
+
+    const doCommit = async (name) => {
       setIsPlaceholder(false);
-      await editBookmarkGroupHeading(groupIndex, newGroupName);
+      if (onCommit) {
+        onCommit(name);
+      } else {
+        await editBookmarkGroupHeading(groupIndex, name);
+      }
+      if (externalIsEditing === undefined) setInternalIsEditing(false);
+    };
+
+    if (newGroupName === '') {
+      // Empty -> cancel/revert to placeholder or original
+      doCancel();
+    } else {
+      await doCommit(newGroupName);
     }
   }
 
-  // Handle Enter and Escape keys for better UX
+  // Keyboard UX
   function handleKeyDown(event) {
+    if (!editing) return;
     if (event.key === 'Enter') {
-      event.preventDefault(); // prevent creating a new line
-      event.target.blur();    // trigger blur to save
+      event.preventDefault(); // no newline
+      event.currentTarget.blur();
     } else if (event.key === 'Escape') {
-      // Revert text and placeholder state
-      event.target.textContent = hasTitle ? bookmarkGroup.groupName : NEW_GROUP_NAME;
+      // Revert immediately and cancel
+      if (headingRef.current) {
+        headingRef.current.textContent = hasTitle ? bookmarkGroup.groupName : NEW_GROUP_NAME;
+      }
       setIsPlaceholder(!hasTitle);
-      setIsEditing(false); // exit edit mode
+      onCancel?.();
+      if (externalIsEditing === undefined) setInternalIsEditing(false);
     }
   }
 
-  // NEW: Handle input to dynamically update placeholder state
   function handleInput(event) {
-    // If there's any text content, it's not a placeholder
-    setIsPlaceholder(event.target.textContent.trim() === '');
+    if (!editing) return;
+    setIsPlaceholder(event.currentTarget.textContent.trim() === '');
   }
-  
-  // Conditionally set the onClick handler
+
+  // Click to start editing (only when uncontrolled)
   const handleClick = () => {
-    // If the current text is the placeholder, clear it for editing
-    if (headingRef.current && isPlaceholder) {
-      headingRef.current.textContent = '';
+    if (externalIsEditing === undefined) {
+      if (headingRef.current && isPlaceholder) {
+        // Optional: clear placeholder on first click
+        // (we still select all on focus, so this is not required)
+        // headingRef.current.textContent = '';
+      }
+      setInternalIsEditing(true);
     }
-    setIsEditing(true);
   };
 
   return (
     <h2
-      ref={headingRef}
-      contentEditable={isEditing}
+      ref={setMergedRef}                        // ⬅️ forward the ref to parent
+      contentEditable={editing}
       onBlur={handleBlur}
-      onKeyDown={isEditing ? handleKeyDown : undefined}
-      onInput={isEditing ? handleInput : undefined} // Add the onInput handler
+      onKeyDown={editing ? handleKeyDown : undefined}
+      onInput={editing ? handleInput : undefined}
       onClick={handleClick}
       onPointerDown={(e) => e.stopPropagation()}
-      // Use the new state to control the class
       className={`editable-heading ${isPlaceholder ? 'placeholder-text' : ''}`}
       suppressContentEditableWarning={true}
     >

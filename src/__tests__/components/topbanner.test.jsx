@@ -1,39 +1,33 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import TopBanner from '@/components/TopBanner'; 
-import { AppContext } from '@/scripts/AppContext'; 
+import TopBanner from '@/components/TopBanner';
+import { AppContext } from '@/scripts/AppContextProvider';
 
-// Mock CSS imports for Jest
+// Mock CSS imports for Jest (adjust path if your CSS file differs)
 jest.mock('@/styles/components/top-banner.css', () => ({}));
 
 describe('TopBanner Component', () => {
-  // Mock handler functions that are passed as props
   const mockOnLoadBookmarks = jest.fn();
   const mockOnExportBookmarks = jest.fn();
   const mockOnSignIn = jest.fn();
   const mockOnSignOut = jest.fn();
   const mockChangeStorageType = jest.fn();
 
-  // Mock user data for the signed-in state
   const mockUserAttributes = {
     given_name: 'Jane',
     family_name: 'Doe',
   };
 
-  // Reset all mocks before each test to ensure test isolation
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  // --- Test Suite for Signed-Out State ---
+  // --- Signed-Out ---
   describe('when user is signed out', () => {
     beforeEach(() => {
-      const mockContext = {
-        storageType: 'local', 
-      };
+      const mockContext = { storageType: 'local' };
 
-      // Render the component in a signed-out state
       render(
         <AppContext.Provider value={mockContext}>
           <TopBanner
@@ -49,39 +43,38 @@ describe('TopBanner Component', () => {
       );
     });
 
-    it('should render the logo and main action buttons', () => {
+    it('renders logo and main action buttons', () => {
       expect(screen.getByText('Mindful')).toBeInTheDocument();
-      expect(screen.getByTitle('Load Bookmarks')).toBeInTheDocument();
-      expect(screen.getByTitle('Export Bookmarks')).toBeInTheDocument();
+      // Buttons are labeled via aria-label (no title attribute anymore)
+      expect(screen.getByRole('button', { name: /load bookmarks/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /export bookmarks/i })).toBeInTheDocument();
     });
 
-    it('should display a login button and not the user avatar', () => {
-      expect(screen.getByTitle('Login')).toBeInTheDocument();
-      expect(screen.queryByTitle('User Menu')).not.toBeInTheDocument();
+    it('shows a Sign in button and not the user avatar', () => {
+      expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument();
+      // Avatar button has aria-label "Manage account" when signed in; ensure it's not present
+      expect(screen.queryByRole('button', { name: /manage account/i })).not.toBeInTheDocument();
     });
 
-    it('should call the correct handlers when buttons are clicked', async () => {
+    it('calls the correct handlers when buttons are clicked', async () => {
       const user = userEvent.setup();
-      
-      await user.click(screen.getByTitle('Load Bookmarks'));
+
+      await user.click(screen.getByRole('button', { name: /load bookmarks/i }));
       expect(mockOnLoadBookmarks).toHaveBeenCalledTimes(1);
 
-      await user.click(screen.getByTitle('Export Bookmarks'));
+      await user.click(screen.getByRole('button', { name: /export bookmarks/i }));
       expect(mockOnExportBookmarks).toHaveBeenCalledTimes(1);
 
-      await user.click(screen.getByTitle('Login'));
+      await user.click(screen.getByRole('button', { name: /sign in/i }));
       expect(mockOnSignIn).toHaveBeenCalledTimes(1);
     });
   });
 
-  // --- Test Suite for Signed-In State ---
+  // --- Signed-In ---
   describe('when user is signed in', () => {
     beforeEach(() => {
-      const mockContext = {
-        storageType: 'remote', 
-      };
+      const mockContext = { storageType: 'remote' };
 
-      // Render the component in a signed-in state
       render(
         <AppContext.Provider value={mockContext}>
           <TopBanner
@@ -97,77 +90,72 @@ describe('TopBanner Component', () => {
       );
     });
 
-    it('should render the user avatar with correct initials and not the login button', () => {
-      expect(screen.getByText('JD')).toBeInTheDocument(); // Initials for Jane Doe
-      expect(screen.queryByTitle('Login')).not.toBeInTheDocument();
+    const getAvatarButton = () =>
+      screen.getAllByRole('button', { name: /manage account/i })
+            .find(el => el.getAttribute('aria-haspopup') === 'menu');
+
+    it('renders the user avatar initials and not the Sign in button', () => {
+      expect(screen.getByText('JD')).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /sign in/i })).not.toBeInTheDocument();
     });
 
-    it('should toggle the user dropdown menu when the avatar is clicked', async () => {
+    it('toggles the user dropdown when the avatar is clicked', async () => {
       const user = userEvent.setup();
-      
-      // Dropdown is initially closed
+
+      // Initially closed
       expect(screen.queryByText('Logout')).not.toBeInTheDocument();
 
-      // Click to open the dropdown
-      await user.click(screen.getByTitle('User Menu'));
-      expect(screen.getByText('Logout')).toBeInTheDocument();
+      // Open
+      await user.click(getAvatarButton());
+      expect(await screen.findByText('Logout')).toBeInTheDocument();
 
-      // Click again to close the dropdown
-      await user.click(screen.getByTitle('User Menu'));
-      expect(screen.queryByText('Logout')).not.toBeInTheDocument();
+      // Close
+      await user.click(getAvatarButton());
+      await waitFor(() =>
+        expect(screen.queryByText('Logout')).not.toBeInTheDocument()
+      );
     });
 
-    it('should call onSignOut and close the dropdown when logout is clicked', async () => {
+    it('calls onSignOut and closes the dropdown on Logout click', async () => {
       const user = userEvent.setup();
-      
-      // Open the dropdown first
-      await user.click(screen.getByTitle('User Menu'));
-      
-      // Click the logout button
+
+      // Open
+      await user.click(getAvatarButton());
+      // Logout
       await user.click(screen.getByText('Logout'));
-      
-      // Assert that onSignOut was called and the menu is closed
+
       expect(mockOnSignOut).toHaveBeenCalledTimes(1);
       expect(screen.queryByText('Logout')).not.toBeInTheDocument();
     });
 
-    it('should close the dropdown menu when clicking outside the component', async () => {
-        const user = userEvent.setup();
-        
-        // Open the dropdown
-        await user.click(screen.getByTitle('User Menu'));
-        expect(screen.getByText('Logout')).toBeInTheDocument();
+    it('closes the dropdown when clicking outside', async () => {
+      const user = userEvent.setup();
 
-        // Simulate a click on the document body (outside the menu)
-        await user.click(document.body);
-        
-        // Assert that the menu is now closed
-        expect(screen.queryByText('Logout')).not.toBeInTheDocument();
+      // Open
+      await user.click(getAvatarButton());
+      expect(screen.getByText('Logout')).toBeInTheDocument();
+
+      // Click outside
+      await user.click(document.body);
+
+      expect(screen.queryByText('Logout')).not.toBeInTheDocument();
     });
 
-    it('should display the storage toggle in the correct state', async () => {
-      // First, open the dropdown. Otherwise the storage toggle won't be visible in the DOM.
+    it('displays storage toggle checked when storageType is remote', async () => {
       const user = userEvent.setup();
-      await user.click(screen.getByTitle('User Menu'));
+      await user.click(getAvatarButton());
 
-      // Find the toggle switch. Querying by role is robust and good for accessibility.
       const storageToggle = screen.getByRole('checkbox');
-
-      // Based on the initial render where storageType is 'remote', it should be checked
       expect(storageToggle).toBeChecked();
     });
 
-    it('should call onStorageTypeChange when the toggle is clicked', async () => {
-      // First, open the dropdown. Otherwise the storage toggle won't be visible in the DOM.
+    it('calls onStorageTypeChange when the toggle is clicked', async () => {
       const user = userEvent.setup();
-      await user.click(screen.getByTitle('User Menu'));
+      await user.click(getAvatarButton());
 
-      const storageToggle = screen.getByRole('checkbox');
-
-      // Simulate the user clicking the toggle
+      const storageToggle = await screen.findByRole('checkbox');
       await user.click(storageToggle);
-      
-      // Assert that the mock handler passed in via props was called
+
       expect(mockChangeStorageType).toHaveBeenCalledTimes(1);
     });
   });
