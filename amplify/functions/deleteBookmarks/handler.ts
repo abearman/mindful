@@ -21,7 +21,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     idsCsv: env.ALLOWED_EXTENSION_IDS,
     legacyOrigin: env.ALLOWED_ORIGIN,
   });
-  
+
   // Handle preflight early
   const maybePreflight = preflightIfNeeded(cors);
   if (maybePreflight) return maybePreflight;
@@ -49,27 +49,27 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
   }
 
   const bookmarkPath = `private/${userId}/${process.env.BOOKMARKS_FILE_NAME}`;
-  const keyPath = `private/${userId}/${process.env.KEY_FILE_NAME}`;
+  const keyFileName = process.env.KEY_FILE_NAME; // may be undefined once you fully migrate off V1
 
   try {
-    // Delete both objects; treat "not found" as success (idempotent delete)
-    await Promise.all([
+    const deletions: Promise<any>[] = [
       s3Client.send(new DeleteObjectCommand({ Bucket: bucket, Key: bookmarkPath })),
-      s3Client.send(new DeleteObjectCommand({ Bucket: bucket, Key: keyPath })),
-    ]);
+    ];
+
+    // Optional legacy cleanup: only attempt if KEY_FILE_NAME is configured
+    if (keyFileName) {
+      const keyPath = `private/${userId}/${keyFileName}`;
+      deletions.push(s3Client.send(new DeleteObjectCommand({ Bucket: bucket, Key: keyPath })));
+    }
+
+    await Promise.allSettled(deletions); // idempotent: treat not-found as success
 
     return {
-      statusCode: 204, // No Content
+      statusCode: 200, // No Content
       headers: cors.headers,
       body: "",
     };
   } catch (error) {
-    // If either key doesn't exist, S3 may still succeed; but just in case:
-    const name = (error as any)?.name;
-    if (name === "NoSuchKey" || name === "NotFound") {
-      return { statusCode: 204, headers: cors.headers, body: "" };
-    }
-
     console.error("Error deleting bookmarks:", error);
     return {
       statusCode: 500,
