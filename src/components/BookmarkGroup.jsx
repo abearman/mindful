@@ -15,7 +15,7 @@ export const BookmarkGroup = ({
   groupIndex,
   handleDeleteBookmarkGroup,
 
-  // optional external control for title editing (only passed for active group)
+  // external control for title editing (active group only)
   isTitleEditing,
   titleInputRef,
   onCommitTitle,
@@ -25,18 +25,19 @@ export const BookmarkGroup = ({
   autoAddLink = false,
   addLinkInputRef,
   onAddLinkDone,
+  // when true, we're in onboarding (use constants + allow clipboard)
+  autofillFromClipboard = false,
 }) => {
   const {
-    attributes,          // 👉 apply these to the DRAGGABLE CONTAINER (ARIA, tabIndex, etc.)
-    listeners,           // 👉 apply these ONLY on the HANDLE
+    attributes,          // put ARIA/tabIndex on container
+    listeners,           // put on drag handle only
     setNodeRef,
-    setActivatorNodeRef, // 👉 HANDLE ref
+    setActivatorNodeRef,
     transform,
     transition,
     isDragging,
   } = useSortable({ id: bookmarkGroup.id });
 
-  // dnd-kit transforms must stay inline
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -56,19 +57,17 @@ export const BookmarkGroup = ({
       ref={setNodeRef}
       style={style}
       className="bookmark-group-box"
-      // ⚠️ Keep attributes on the container (safe). Do NOT put listeners here.
-      {...attributes}
+      {...attributes}  // safe here; do NOT add listeners on the container
     >
-      {/* Drag handle — only this starts dragging */}
+      {/* Drag handle */}
       <button
         ref={setActivatorNodeRef}
         {...listeners}
         className="group-drag-handle"
         aria-label="Drag group"
         title="Drag group"
-        onPointerDown={stopPropagation} // don’t bubble into header/content
+        onPointerDown={stopPropagation}
       >
-        {/* a simple 6-dot grip; style via CSS */}
         <svg width="16" height="16" viewBox="0 0 16 16" className="opacity-60">
           <circle cx="4" cy="4" r="1.5" />
           <circle cx="8" cy="4" r="1.5" />
@@ -79,7 +78,7 @@ export const BookmarkGroup = ({
         </svg>
       </button>
 
-      {/* Delete button is positioned relative to the group box */}
+      {/* Delete */}
       {headingIsEntered && (
         <button
           className="delete-bookmark-group-button"
@@ -90,12 +89,11 @@ export const BookmarkGroup = ({
         </button>
       )}
 
-      {/* Header — free to handle clicks/contentEditable */}
+      {/* Header */}
       <div onPointerDown={stopPropagation} className="bookmark-group-header">
         <EditableBookmarkGroupHeading
           bookmarkGroup={bookmarkGroup}
           groupIndex={groupIndex}
-          // external control (only passed for the active group from the Grid)
           isEditing={isTitleEditing}
           inputRef={titleInputRef}
           onCommit={onCommitTitle}
@@ -120,11 +118,15 @@ export const BookmarkGroup = ({
         {headingIsEntered && (
           <AddBookmarkInline
             groupIndex={groupIndex}
-            autoFocus={autoAddLink}     // Grid toggles this when placeholder → named
-            inputRef={addLinkInputRef}  // Grid can also focus/select
-            onDone={onAddLinkDone}      // clear auto-add flag after submit/close
-            prefillName={ONBOARDING_BOOKMARK_NAME_PREFILL}
-            prefillUrl={ONBOARDING_BOOKMARK_URL_PREFILL}
+            autoFocus={autoAddLink}
+            inputRef={addLinkInputRef}
+            onDone={onAddLinkDone}
+
+            /* Only during onboarding: pass constant prefills
+               (explicit prefills take precedence over clipboard inside the component) */
+            prefillName={autofillFromClipboard ? ONBOARDING_BOOKMARK_NAME_PREFILL : undefined}
+            prefillUrl={autofillFromClipboard ? ONBOARDING_BOOKMARK_URL_PREFILL : undefined}
+            autofillFromClipboard={autofillFromClipboard}
           />
         )}
       </div>

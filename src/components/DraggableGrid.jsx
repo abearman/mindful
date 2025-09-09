@@ -1,12 +1,6 @@
 // components/DraggableGrid.jsx
 import React, {
-  useContext,
-  useState,
-  useRef,
-  useEffect,
-  useLayoutEffect,
-  forwardRef,
-  useImperativeHandle,
+  useContext, useState, useRef, useEffect, useLayoutEffect, forwardRef, useImperativeHandle, useMemo
 } from "react";
 import {
   DndContext,
@@ -41,6 +35,12 @@ const DraggableGrid = forwardRef(function DraggableGrid(_, ref) {
   // Refs to the inline "add link" input (URL or Name field)
   const addInputRefs = useRef(new Map()); // Map<string, HTMLInputElement | HTMLElement>
 
+  // Are there any bookmarks anywhere?
+  const hasAnyBookmark = useMemo(
+    () => (bookmarkGroups || []).some((g) => (g.bookmarks?.length || 0) > 0),
+    [bookmarkGroups]
+  );
+  
   const {
     deleteBookmarkGroup,
     reorderBookmarkGroups,
@@ -55,6 +55,48 @@ const DraggableGrid = forwardRef(function DraggableGrid(_, ref) {
   useEffect(() => {
     groupsRef.current = bookmarkGroups;
   }, [bookmarkGroups]);
+
+  // ── Onboarding gating (read from localStorage) ───────────────────────────────
+  const [checklistSnap, setChecklistSnap] = useState({
+    createdGroup: false, addedBookmark: false, triedStorage: false,
+  });
+  const [dismissedOnboarding, setDismissedOnboarding] = useState(false);
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("mindful.emptyStateChecklist");
+      if (saved) setChecklistSnap(JSON.parse(saved));
+    } catch {}
+    setDismissedOnboarding(localStorage.getItem("mindful.emptyStateDismissed") === "1");
+
+    // keep in sync if another tab updates it
+    const onStorage = (e) => {
+      if (e.key === "mindful.emptyStateChecklist" && e.newValue) {
+        try { setChecklistSnap(JSON.parse(e.newValue)); } catch {}
+      }
+      if (e.key === "mindful.emptyStateDismissed") {
+        setDismissedOnboarding(e.newValue === "1");
+      }
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
+  const isTrulyEmpty = useMemo(
+    () =>
+      !Array.isArray(bookmarkGroups) ||
+      bookmarkGroups.length === 0 ||
+      bookmarkGroups.every(
+        (g) => g?.groupName === EMPTY_GROUP_IDENTIFIER && (!g.bookmarks || g.bookmarks.length === 0)
+      ),
+    [bookmarkGroups]
+  );
+  const allChecked =
+    checklistSnap.createdGroup && checklistSnap.addedBookmark && checklistSnap.triedStorage;
+  const onboardingActive = !dismissedOnboarding && (isTrulyEmpty || !allChecked);
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  // Only prefill for the very first link ever:
+  const shouldAutofillFirstLink = onboardingActive && !hasAnyBookmark;
 
   // Imperative API: ensure placeholder exists, enter rename mode, focus/select
   useImperativeHandle(ref, () => ({
@@ -296,6 +338,8 @@ const DraggableGrid = forwardRef(function DraggableGrid(_, ref) {
                   if (el) addInputRefs.current.set(idKey, el);
                   else addInputRefs.current.delete(idKey);
                 }}
+                // Only prefill (clipboard) during onboarding
+                autofillFromClipboard={shouldAutofillFirstLink}
                 onAddLinkDone={() => setAddingToGroupId(null)}
               />
             );
