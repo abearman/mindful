@@ -107,19 +107,33 @@ const TopBanner = ({
                       Storage type
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className={`text-sm ${storageType === "local" ? "font-semibold" : "text-neutral-500 dark:text-neutral-400"}`}>Local</span>
-                      <label className="relative inline-flex h-5 w-9 items-center rounded-full border transition
-                                         bg-gray-300 border-gray-300 data-[state=on]:bg-blue-600 data-[state=on]:border-blue-600">
-                        <input
-                          type="checkbox"
-                          checked={storageType === "remote"}
-                          onChange={handleToggleChange}
-                          className="peer sr-only"
-                        />
-                        <span className="absolute left-1 inline-block h-4 w-4 transform rounded-full bg-white shadow transition
-                                          peer-checked:translate-x-4" />
-                      </label>
-                      <span className={`text-sm ${storageType === "remote" ? "font-semibold" : "text-neutral-500 dark:text-neutral-400"}`}>Remote</span>
+                      <span className={`text-sm text-neutral-500 dark:text-neutral-400 ${storageType === "local" ? "font-semibold" : "font-normal"}`}>Local</span>
+                        <div className="relative inline-flex h-5 w-9 items-center">
+                          {/* the peer comes first */}
+                          <input
+                            id="storageToggle"
+                            type="checkbox"
+                            checked={storageType === "remote"}
+                            onChange={(e) => onStorageTypeChange(e.target.checked ? "remote" : "local")}
+                            className="peer sr-only"
+                          />
+
+                          {/* track */}
+                          <label
+                            htmlFor="storageToggle"
+                            className="absolute inset-0 rounded-full border transition cursor-pointer
+                                      bg-gray-300 border-gray-300
+                                      peer-checked:bg-blue-600 peer-checked:border-blue-600"
+                          />
+
+                          {/* thumb */}
+                          <span
+                            className="pointer-events-none absolute left-1 h-4 w-4 rounded-full bg-white shadow
+                                      transition transform peer-checked:translate-x-4"
+                          />
+                        </div>
+
+                      <span className={`text-sm text-neutral-500 dark:text-neutral-400 ${storageType === "remote" ? "font-semibold" : "font-normal"}`}>Remote</span>
                     </div>
                   </div>
 
