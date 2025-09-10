@@ -199,7 +199,7 @@ export default function EmptyBookmarksState({
                     dark:shadow-[0_1px_3px_0_rgba(255,255,255,0.1)]
                     dark:hover:bg-neutral-700 dark:hover:border-neutral-400 text-sm"
         >
-          Import bookmarks
+          Smart import
         </button>
       </div>
 

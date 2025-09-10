@@ -19,14 +19,14 @@ import {
 } from "@/scripts/Constants"; 
 
 /* Hooks and Utilities */
-import { getUserStorageKey } from '@/scripts/Utilities.js';
+import { getUserStorageKey } from '@/scripts/Utilities';
 import { loadInitialBookmarks, useBookmarkManager } from '@/scripts/useBookmarkManager';
 import { AppContext } from "@/scripts/AppContextProvider";
 
 /* Components */
-import TopBanner from "@/components/TopBanner.jsx";
-import DraggableGrid from '@/components/DraggableGrid.jsx';
-import EmptyBookmarksState from '@/components/EmptyBookmarksState.jsx';
+import TopBanner from "@/components/TopBanner";
+import DraggableGrid from '@/components/DraggableGrid';
+import EmptyBookmarksState from '@/components/EmptyBookmarksState';
 
 
 export function NewTabPage({ user, signIn, signOut }) {

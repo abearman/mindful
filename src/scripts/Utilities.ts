@@ -65,33 +65,37 @@ export async function refreshOtherMindfulTabs() {
   // 3) (Optional) If you already reload tabs, keep doing it here.
   // Wrap in try/catch so it’s a no-op without "tabs" permission.
   try {
-    // Adjust these URL patterns to your actual extension pages if you want
-    const tabs = await chrome?.tabs?.query?.({
+    const tabs = await chrome.tabs.query({
       url: [
         'chrome-extension://*/newtab.html',
         'chrome-extension://*/options.html',
       ],
     });
-    if (tabs?.length) {
-      for (const t of tabs) {
-        // Trigger a hard reload; listeners will still handle soft reloads.
-        try { chrome.tabs.reload(t.id); } catch {}
+  
+    for (const t of tabs) {
+      if (t.id !== undefined) {
+        chrome.tabs
+          .reload(t.id)
+          .catch((err) => {
+            // Handle only reload errors (not query errors)
+            console.warn(`Failed to reload tab ${t.id}:`, err);
+          });
       }
     }
-  } catch (e) {
-    // No "tabs" permission or not available in this context — ignore
+  } catch (err) {
+    // Handle query-level errors (e.g., no "tabs" permission)
+    console.warn("Unable to query tabs:", err);
   }
 }
 
-export function refreshActiveMindfulTab() {
+export async function refreshActiveMindfulTab() {
   // Reload the current active tab if it is pointed to newtab (aka Mindful page)
-  chrome.tabs.query({}, function(tabs) {
-    tabs.forEach(function(tab) {
-      if ((tab.url == CHROME_NEW_TAB) && tab.active)  {
-        chrome.tabs.reload(tab.id);
-      }    
-    });
-  });
+  const tabs = await chrome.tabs.query({}); // Promise<Tab[]>
+  for (const tab of tabs) {
+    if (tab.active && tab.url === CHROME_NEW_TAB && tab.id !== undefined) {
+      await chrome.tabs.reload(tab.id); // tab.id narrowed to number
+    }
+  }
 }
 
 export function toE164(p) {
@@ -100,4 +104,9 @@ export function toE164(p) {
   const digits = p.replace(/\D/g, "");
   if (digits.length === 10) return `+1${digits}`;
   return `+${digits}`;
+}
+
+async function ensureBookmarksPermission(): Promise<boolean> {
+  const granted = await chrome.permissions.request({ permissions: ['bookmarks'] });
+  return granted;
 }
