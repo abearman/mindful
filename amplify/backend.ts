@@ -27,6 +27,9 @@ const saveBookmarks = defineFunction({
     BOOKMARKS_FILE_NAME: BOOKMARKS_FILE_NAME,
     KEY_FILE_NAME: KEY_FILE_NAME,
   },
+  runtime: 20,
+  memoryMB: 1024,
+  timeoutSeconds: 10,
 });
 
 const loadBookmarks = defineFunction({
@@ -39,6 +42,9 @@ const loadBookmarks = defineFunction({
     BOOKMARKS_FILE_NAME: BOOKMARKS_FILE_NAME,
     KEY_FILE_NAME: KEY_FILE_NAME,
   },
+  runtime: 20,
+  memoryMB: 1024,
+  timeoutSeconds: 10,
 });
 
 const deleteBookmarks = defineFunction({
@@ -51,6 +57,9 @@ const deleteBookmarks = defineFunction({
     BOOKMARKS_FILE_NAME: BOOKMARKS_FILE_NAME,
     KEY_FILE_NAME: KEY_FILE_NAME,
   },
+  runtime: 20,
+  memoryMB: 1024,
+  timeoutSeconds: 10,
 });
 
 // ---------- 2) Backend ----------
