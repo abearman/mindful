@@ -8,7 +8,7 @@ import '@/styles/NewTab.css';
 import { constructValidURL } from "@/scripts/Utilities";
 
 /* Bookmark Storage */
-import { useBookmarkManager } from '@/scripts/useBookmarkManager';
+import { useBookmarkManager } from '@/hooks/useBookmarkManager';
 
 /* Constants */
 import { URL_PATTERN } from '@/scripts/Constants';

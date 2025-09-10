@@ -24,7 +24,7 @@ jest.mock("@/components/ManageAccountComponent", () => {
   };
 });
 
-jest.mock("@/scripts/useBookmarkManager", () => ({
+jest.mock("@/hooks/useBookmarkManager", () => ({
   useBookmarkManager: () => mockHookReturn,
 }));
 

@@ -5,7 +5,7 @@ import TopBanner from "@/components/TopBanner";
 import ManageAccountComponent from "@/components/ManageAccountComponent";
 
 /* Scripts */ 
-import { useBookmarkManager } from "@/scripts/useBookmarkManager";
+import { useBookmarkManager } from "@/hooks/useBookmarkManager";
 import { AppContext } from "@/scripts/AppContextProvider";
 
 

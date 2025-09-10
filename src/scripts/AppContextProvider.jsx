@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect, useCallback, useRef } from 'react';
 import { StorageType } from '@/scripts/Constants.js';
-import { loadInitialBookmarks } from "@/scripts/useBookmarkManager.js";
+import { loadInitialBookmarks } from "@/hooks/useBookmarkManager.js";
 import { fetchAuthSession, fetchUserAttributes, updateUserAttribute } from 'aws-amplify/auth';
 
 export const AppContext = createContext();

@@ -3,7 +3,7 @@ import React, { useContext, useState, useEffect } from 'react';
 /* Hooks and Utilities */
 import { AppContext } from "@/scripts/AppContextProvider";
 import { constructValidURL } from '@/scripts/Utilities';
-import { useBookmarkManager } from '@/scripts/useBookmarkManager'; 
+import { useBookmarkManager } from '@/hooks/useBookmarkManager'; 
 
 /* Constants */
 import { URL_PATTERN, EMPTY_GROUP_IDENTIFIER } from '@/scripts/Constants.js';

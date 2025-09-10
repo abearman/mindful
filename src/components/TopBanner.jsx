@@ -1,7 +1,15 @@
 import React, { useContext, useState, useEffect, useRef } from 'react';
+
+/* Scripts */
 import { AppContext } from "@/scripts/AppContextProvider";
+
+/* Hooks */
+import useImportBookmarks from '@/hooks/useImportBookmarks';
+
+/* Components */
 import Tooltip from "@/components/ui/Tooltip";
 import { Badge } from "@/components/ui/badge";
+
 
 const TopBanner = ({
   onLoadBookmarks,
@@ -15,6 +23,13 @@ const TopBanner = ({
   const { storageType } = useContext(AppContext);
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const containerRef = useRef(null);
+
+  const { openImport, renderModal } = useImportBookmarks({
+    // importAsSingleGroup,
+    // importMirrorFolders,
+    // importByDomain,
+    // importByTopic,
+  });
 
   useEffect(() => {
     const onDocClick = (e) => {
@@ -56,16 +71,15 @@ const TopBanner = ({
 
         {/* Right: icons + avatar */}
         <nav className="hidden items-right gap-6 md:flex">
-          <Tooltip label="Load bookmarks">
-            <button
-              onClick={onLoadBookmarks}
-              className="cursor-pointer text-neutral-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400
-                         p-2 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60"
-              aria-label="Load bookmarks"
-            >
-              <i className="fas fa-upload fa-lg" />
-            </button>
-          </Tooltip>
+        <Tooltip label="Load bookmarks">
+          <button
+            onClick={openImport}
+            className="cursor-pointer text-neutral-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 p-2 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60"
+            aria-label="Load bookmarks"
+          >
+            <i className="fas fa-upload fa-lg" />
+          </button>
+        </Tooltip>
 
           <Tooltip label="Export bookmarks">
             <button
@@ -170,6 +184,9 @@ const TopBanner = ({
             </Tooltip>
           )}
         </nav>
+
+        {/* The import bookmarks modal, when visible */}
+        {renderModal()}
       </div>
     </header>
   );

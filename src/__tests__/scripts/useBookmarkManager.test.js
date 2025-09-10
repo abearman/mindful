@@ -1,6 +1,6 @@
 import React from 'react';
 import { renderHook, act } from '@testing-library/react';
-import { useBookmarkManager } from '@/scripts/useBookmarkManager';
+import { useBookmarkManager } from '@/hooks/useBookmarkManager';
 import { AppContext } from '@/scripts/AppContextProvider';
 import { EMPTY_GROUP_IDENTIFIER, StorageType } from '@/scripts/Constants';
 

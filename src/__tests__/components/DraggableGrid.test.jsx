@@ -6,7 +6,7 @@ import '@testing-library/jest-dom';
 
 import DraggableGrid from '@/components/DraggableGrid';
 import { AppContext } from '@/scripts/AppContextProvider';
-import { useBookmarkManager } from '@/scripts/useBookmarkManager';
+import { useBookmarkManager } from '@/hooks/useBookmarkManager';
 
 // --- FIXED & EXPANDED MOCKS ---
 
@@ -28,7 +28,7 @@ jest.mock('@dnd-kit/core', () => ({
 }));
 
 // Mock the custom hook `useBookmarkManager`.
-jest.mock('@/scripts/useBookmarkManager', () => ({
+jest.mock('@/hooks/useBookmarkManager', () => ({
   useBookmarkManager: jest.fn(),
 }));
 

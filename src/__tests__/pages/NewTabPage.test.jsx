@@ -7,7 +7,7 @@ import { NewTabPage } from '@/pages/NewTabPage';
 
 // Mock dependencies
 import { AppContextProvider, AppContext } from '@/scripts/AppContextProvider';
-import * as useBookmarkManager from '@/scripts/useBookmarkManager';
+import * as useBookmarkManager from '@/hooks/useBookmarkManager';
 import * as Utilities from '@/scripts/Utilities';
 import { fetchUserAttributes, fetchAuthSession } from 'aws-amplify/auth';
 import { EMPTY_GROUP_IDENTIFIER, StorageType } from '@/scripts/Constants'; 
@@ -31,7 +31,7 @@ jest.mock('@/components/DraggableGrid', () => ({ bookmarkGroups }) => (
 
 // Mock external modules
 jest.mock('aws-amplify/auth');
-jest.mock('@/scripts/useBookmarkManager', () => ({
+jest.mock('@/hooks/useBookmarkManager', () => ({
   loadInitialBookmarks: jest.fn(),
   useBookmarkManager: jest.fn(),
 }));

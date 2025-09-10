@@ -4,7 +4,7 @@ import React, { useState, useRef, useContext, useMemo } from 'react';
 import '@/styles/NewTab.css';
 
 /* Hooks and Utilities */
-import { useBookmarkManager } from '@/scripts/useBookmarkManager';
+import { useBookmarkManager } from '@/hooks/useBookmarkManager';
 import { AppContext } from '@/scripts/AppContextProvider';
 import { createUniqueID } from "@/scripts/Utilities";
 

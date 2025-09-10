@@ -20,7 +20,7 @@ import {
 
 /* Hooks and Utilities */
 import { getUserStorageKey } from '@/scripts/Utilities';
-import { loadInitialBookmarks, useBookmarkManager } from '@/scripts/useBookmarkManager';
+import { loadInitialBookmarks, useBookmarkManager } from '@/hooks/useBookmarkManager';
 import { AppContext } from "@/scripts/AppContextProvider";
 
 /* Components */

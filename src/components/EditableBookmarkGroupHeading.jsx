@@ -7,7 +7,7 @@ import '@/styles/EditableBookmarkGroupHeading.css';
 import { EMPTY_GROUP_IDENTIFIER } from "@/scripts/Constants";
 
 /* Hooks and Utilities */
-import { useBookmarkManager } from '@/scripts/useBookmarkManager';
+import { useBookmarkManager } from '@/hooks/useBookmarkManager';
 
 const NEW_GROUP_NAME = "+ Add a group";
 

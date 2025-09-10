@@ -3,6 +3,9 @@ import React, { useState, useEffect, useContext, useMemo } from "react";
 /* Scripts */
 import { AppContext } from "@/scripts/AppContextProvider";
 
+/* Hooks */
+import useImportBookmarks from '@/hooks/useImportBookmarks';
+
 /* Constants */
 import { EMPTY_GROUP_IDENTIFIER } from "@/scripts/Constants";
 
@@ -15,6 +18,10 @@ export default function EmptyBookmarksState({
   onClose, // optional: parent can listen if desired
 }) {
   const { bookmarkGroups } = useContext(AppContext);
+
+  const { openImport, renderModal } = useImportBookmarks({
+    // same pipelines as above, or a subset
+  });
 
   const [checklist, setChecklist] = useState({
     createdGroup: false,
@@ -191,7 +198,7 @@ export default function EmptyBookmarksState({
         </button>
 
         <button
-          onClick={onImport}
+          onClick={openImport}
           className="cursor-pointer inline-flex items-center justify-center rounded-xl border px-5 py-2.5 transition
                     border-neutral-300 bg-white text-neutral-800 shadow-sm hover:bg-neutral-50
                     focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/70
@@ -201,6 +208,8 @@ export default function EmptyBookmarksState({
         >
           Smart import
         </button>
+        {/* Import bookmarks modal, when visible */}
+        {renderModal()}
       </div>
 
       {/* Mini checklist */}
