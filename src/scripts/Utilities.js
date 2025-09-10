@@ -48,10 +48,9 @@ export const isCurrentTabTheNewTab = () => {
  */
 export async function refreshOtherMindfulTabs() {
   // 1) Broadcast to all extension views (popup, new tab, options, background)
-  try {
-    chrome?.runtime?.sendMessage?.({ type: 'MINDFUL_BOOKMARKS_UPDATED' });
-  } catch (e) {
-    console.warn('runtime.sendMessage failed:', e);
+  if (chrome?.runtime?.sendMessage) {
+    await chrome.runtime.sendMessage({ type: 'MINDFUL_BOOKMARKS_UPDATED' })
+      .catch(() => { /* no listener is fine — silence this */ });
   }
 
   // 2) Broadcast to any non-extension pages that might be listening
