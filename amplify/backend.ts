@@ -10,6 +10,7 @@ import * as lambda from 'aws-cdk-lib/aws-lambda';
 import { auth } from './auth/resource';
 import { data } from './data/resource';
 import { storage } from './storage/resource';
+import { RUNTIME, MEMORY_MB, TIMEOUT_SECONDS } from './functions/_shared/constants';
 
 // ---------- 1) Lambdas ----------
 const BOOKMARKS_FILE_NAME = 'bookmarks.json.encrypted'
@@ -27,9 +28,9 @@ const saveBookmarks = defineFunction({
     BOOKMARKS_FILE_NAME: BOOKMARKS_FILE_NAME,
     KEY_FILE_NAME: KEY_FILE_NAME,
   },
-  runtime: 20,
-  memoryMB: 1024,
-  timeoutSeconds: 10,
+  runtime: RUNTIME,
+  memoryMB: MEMORY_MB,
+  timeoutSeconds: TIMEOUT_SECONDS,
 });
 
 const loadBookmarks = defineFunction({
@@ -42,9 +43,9 @@ const loadBookmarks = defineFunction({
     BOOKMARKS_FILE_NAME: BOOKMARKS_FILE_NAME,
     KEY_FILE_NAME: KEY_FILE_NAME,
   },
-  runtime: 20,
-  memoryMB: 1024,
-  timeoutSeconds: 10,
+  runtime: RUNTIME,
+  memoryMB: MEMORY_MB,
+  timeoutSeconds: TIMEOUT_SECONDS,
 });
 
 const deleteBookmarks = defineFunction({
@@ -57,9 +58,9 @@ const deleteBookmarks = defineFunction({
     BOOKMARKS_FILE_NAME: BOOKMARKS_FILE_NAME,
     KEY_FILE_NAME: KEY_FILE_NAME,
   },
-  runtime: 20,
-  memoryMB: 1024,
-  timeoutSeconds: 10,
+  runtime: RUNTIME,
+  memoryMB: MEMORY_MB,
+  timeoutSeconds: TIMEOUT_SECONDS,
 });
 
 // ---------- 2) Backend ----------
@@ -80,6 +81,27 @@ const s3Bucket = backend.storage.resources.bucket;
 const saveBookmarksFn = backend.saveBookmarks.resources.lambda as lambda.Function;
 const loadBookmarksFn = backend.loadBookmarks.resources.lambda as lambda.Function;
 const deleteBookmarksFn = backend.deleteBookmarks.resources.lambda as lambda.Function;
+
+// ---------- 3.1) Version + Alias + Provisioned Concurrency (loadBookmarks and saveBookmarks) ----------
+const loadVersion = new lambda.Version(stack, 'LoadBookmarksVersion', {
+  lambda: loadBookmarksFn,
+});
+const saveVersion = new lambda.Version(stack, 'SaveBookmarksVersion', {
+  lambda: saveBookmarksFn,
+});
+
+const loadAlias = new lambda.Alias(stack, 'LoadBookmarksLiveAlias', {
+  aliasName: 'live',
+  version: loadVersion,
+});
+const saveAlias = new lambda.Alias(stack, 'SaveBookmarksLiveAlias', {
+  aliasName: 'live',
+  version: saveVersion,
+});
+
+// Keep one warm container (bump to 2 if we see concurrent loads)
+loadAlias.addAutoScaling({ minCapacity: 1, maxCapacity: 1 });
+saveAlias.addAutoScaling({ minCapacity: 1, maxCapacity: 1 });
 
 // ---------- 4) KMS key (ID or ARN both work for GenerateDataKey) ----------
 const kmsKeyId = 'arn:aws:kms:us-west-1:534861782220:key/51a54516-e016-4d00-a6da-7aff429418ed';
@@ -141,14 +163,14 @@ const api = new apigwv2.HttpApi(stack, 'MyHttpApi', {
 api.addRoutes({
   path: '/bookmarks',
   methods: [apigwv2.HttpMethod.POST],
-  integration: new HttpLambdaIntegration('saveBookmarksIntegration', saveBookmarksFn),
+  integration: new HttpLambdaIntegration('saveBookmarksIntegration', saveAlias), // use alias for provisioned concurrency 
   authorizer,
 });
 
 api.addRoutes({
   path: '/bookmarks',
   methods: [apigwv2.HttpMethod.GET],
-  integration: new HttpLambdaIntegration('loadBookmarksIntegration', loadBookmarksFn),
+  integration: new HttpLambdaIntegration('loadBookmarksIntegration', loadAlias), // use alias for provisioned concurrency
   authorizer,
 });
 
