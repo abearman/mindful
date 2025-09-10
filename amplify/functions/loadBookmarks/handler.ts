@@ -4,6 +4,10 @@ import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { createDecipheriv } from "crypto";
 
+// NEW: keep-alive HTTP handler for AWS SDK v3
+import { NodeHttpHandler } from "@smithy/node-http-handler";
+import { Agent as HttpsAgent } from "https";
+
 import {
   ok, resp, getUserIdFromEvent, CorsPack, PayloadV1, PayloadV2
 } from "../_shared/http";
@@ -16,8 +20,17 @@ import {
   serverError,
 } from "../_shared/errors";
 
-const kmsClient = new KMSClient({});
-const s3Client  = new S3Client({});
+// --- Keep-alive setup (module scope so it's reused across invocations) ---
+const httpsAgent = new HttpsAgent({
+  keepAlive: true,
+  maxSockets: 50,
+  keepAliveMsecs: 30_000,
+});
+const requestHandler = new NodeHttpHandler({ httpsAgent });
+
+// Reuse clients across warm invokes + keep-alive enabled
+const kmsClient = new KMSClient({ requestHandler });
+const s3Client  = new S3Client({ requestHandler });
 
 // --- helpers ---
 const b64 = (s: string) => Buffer.from(s.replace(/-/g, '+').replace(/_/g, '/'), 'base64');

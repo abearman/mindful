@@ -2,11 +2,24 @@
 import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 
+// NEW: keep-alive for AWS SDK v3
+import { NodeHttpHandler } from "@smithy/node-http-handler";
+import { Agent as HttpsAgent } from "https";
+
 import { withCorsAndErrors } from "../_shared/safe";
 import { evalCors } from "../_shared/cors"; // for CorsPack type
 import { unauthorized, serverError } from "../_shared/errors";
 
-const s3Client = new S3Client({});
+// --- Keep-alive setup (module scope; reused across warm invokes) ---
+const httpsAgent = new HttpsAgent({
+  keepAlive: true,
+  maxSockets: 50,
+  keepAliveMsecs: 30_000,
+});
+const requestHandler = new NodeHttpHandler({ httpsAgent });
+
+// Reuse S3 client across invocations with keep-alive enabled
+const s3Client = new S3Client({ requestHandler });
 
 type CorsPack = ReturnType<typeof evalCors>;
 
@@ -50,6 +63,9 @@ const deleteBookmarksCore = async (
     headers: { ...cors.headers },
     body: "",
   };
+
+  // If you prefer JSON responses everywhere, switch to:
+  // return { statusCode: 200, headers: { ...cors.headers, "Content-Type": "application/json" }, body: JSON.stringify({ ok: true }) };
 };
 
 // Exported entrypoint — wrapper handles CORS, OPTIONS, and error shaping (HttpError or generic)

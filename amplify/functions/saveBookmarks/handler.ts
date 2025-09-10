@@ -4,14 +4,27 @@ import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { createCipheriv, randomBytes } from "crypto";
 
+// 👇 NEW: keep-alive HTTP handler for AWS SDK v3
+import { NodeHttpHandler } from "@smithy/node-http-handler";
+import { Agent as HttpsAgent } from "https";
+
 // Shared helpers
 import { withCorsAndErrors } from "../_shared/safe";
 import { resp, getUserIdFromEvent } from "../_shared/http";
 import { evalCors } from "../_shared/cors"; // for CorsPack type only
 import { unauthorized, badRequest, serverError } from "../_shared/errors";
 
-const kmsClient = new KMSClient({});
-const s3Client  = new S3Client({});
+// --- Keep-alive setup (module scope so it's reused across invocations) ---
+const httpsAgent = new HttpsAgent({
+  keepAlive: true,
+  maxSockets: 50,          // tune as needed
+  keepAliveMsecs: 30_000,  // optional
+});
+const requestHandler = new NodeHttpHandler({ httpsAgent });
+
+// Reuse clients across warm invokes + keep-alive enabled
+const kmsClient = new KMSClient({ requestHandler });
+const s3Client  = new S3Client({ requestHandler });
 
 type CorsPack = ReturnType<typeof evalCors>;
 
