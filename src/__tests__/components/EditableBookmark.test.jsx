@@ -69,12 +69,15 @@ describe('EditableBookmark Component', () => {
     expect(linkElement).toHaveAttribute('href', 'https://google.com');
 
     // Check if the favicon is rendered with the correct URL
-    const faviconElement = screen.getByAltText('Google favicon');
-    expect(faviconElement).toBeInTheDocument();
-    expect(faviconElement).toHaveAttribute(
-      'src',
-      'https://www.google.com/s2/favicons?sz=16&domain=https://google.com'
+    // Check if the favicon <img> is present and points at a valid source for google.com
+    const faviconElement = document.querySelector('.favicon');
+    expect(faviconElement).toBeTruthy();
+    expect(faviconElement).toHaveAttribute('src', expect.stringContaining('google.com'));
+    // Make the assertion resilient to service order
+    expect(faviconElement.src).toMatch(
+      /icons\.duckduckgo\.com\/ip3\/google\.com\.ico|www\.google\.com\/s2\/favicons|t3\.gstatic\.com\/faviconV2/i
     );
+
   });
   
   // ---

@@ -1,80 +1,72 @@
+// amplify/backend/function/deleteBookmarks/src/handler.ts
 import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
-import { env } from '$amplify/env/saveBookmarksFunc';
-import { ensureSecretsPresent, evalCors, preflightIfNeeded, assertCorsOr403 } from "../_shared/cors";
+import type { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 
-const s3Client = new S3Client({});
+// NEW: keep-alive for AWS SDK v3
+import { NodeHttpHandler } from "@smithy/node-http-handler";
+import { Agent as HttpsAgent } from "https";
+
+import { withCorsAndErrors } from "../_shared/safe";
+import { evalCors } from "../_shared/cors"; // for CorsPack type
+import { unauthorized, serverError } from "../_shared/errors";
+
+// --- Keep-alive setup (module scope; reused across warm invokes) ---
+const httpsAgent = new HttpsAgent({
+  keepAlive: true,
+  maxSockets: 50,
+  keepAliveMsecs: 30_000,
+});
+const requestHandler = new NodeHttpHandler({ httpsAgent });
+
+// Reuse S3 client across invocations with keep-alive enabled
+const s3Client = new S3Client({ requestHandler });
+
+type CorsPack = ReturnType<typeof evalCors>;
 
 // Works for REST API (v1) and HTTP API (v2)
 const getUserIdFromEvent = (event: any): string | undefined => {
-  const restSub = event?.requestContext?.authorizer?.claims?.sub;          // REST
-  const httpSub = event?.requestContext?.authorizer?.jwt?.claims?.sub;     // HTTP
+  const restSub = event?.requestContext?.authorizer?.claims?.sub;      // REST (v1)
+  const httpSub = event?.requestContext?.authorizer?.jwt?.claims?.sub; // HTTP (v2)
   return restSub ?? httpSub;
 };
 
-export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  // Ensure CORS secrets exist in prod (ALLOWED_EXTENSION_IDS CSV and/or ALLOWED_ORIGIN)
-  ensureSecretsPresent(env.ALLOWED_EXTENSION_IDS, env.ALLOWED_ORIGIN);
-
-  // Build CORS headers once; reuse for all responses
-  const cors = evalCors(event, {
-    idsCsv: env.ALLOWED_EXTENSION_IDS,
-    legacyOrigin: env.ALLOWED_ORIGIN,
-  });
-
-  // Handle preflight early
-  const maybePreflight = preflightIfNeeded(cors);
-  if (maybePreflight) return maybePreflight;
-
-  // Block disallowed origins in production
-  const maybe403 = assertCorsOr403(cors);
-  if (maybe403) return maybe403;
-
+const deleteBookmarksCore = async (
+  event: APIGatewayProxyEvent,
+  cors: CorsPack
+): Promise<APIGatewayProxyResult> => {
   const userId = getUserIdFromEvent(event);
-  if (!userId) {
-    return {
-      statusCode: 401,
-      headers: cors.headers,
-      body: JSON.stringify({ message: "Unauthorized: Missing authentication details" }),
-    };
-  }
+  if (!userId) throw unauthorized("Unauthorized: Missing authentication details");
 
   const bucket = process.env.S3_BUCKET_NAME;
-  if (!bucket) {
-    return {
-      statusCode: 500,
-      headers: cors.headers,
-      body: JSON.stringify({ message: "Server misconfiguration: missing S3_BUCKET_NAME" }),
-    };
+  if (!bucket) throw serverError("Server misconfiguration: missing S3_BUCKET_NAME");
+
+  const bookmarksKey = `private/${userId}/${process.env.BOOKMARKS_FILE_NAME}`;
+  const legacyKeyName = process.env.KEY_FILE_NAME; // optional (legacy V1)
+
+  // Build deletions (idempotent)
+  const deletions: Promise<any>[] = [
+    s3Client.send(new DeleteObjectCommand({ Bucket: bucket, Key: bookmarksKey })),
+  ];
+  if (legacyKeyName) {
+    const legacyKeyPath = `private/${userId}/${legacyKeyName}`;
+    deletions.push(
+      s3Client.send(new DeleteObjectCommand({ Bucket: bucket, Key: legacyKeyPath }))
+    );
   }
 
-  const bookmarkPath = `private/${userId}/${process.env.BOOKMARKS_FILE_NAME}`;
-  const keyFileName = process.env.KEY_FILE_NAME; // may be undefined once you fully migrate off V1
+  // Treat not-found as success
+  await Promise.allSettled(deletions);
 
-  try {
-    const deletions: Promise<any>[] = [
-      s3Client.send(new DeleteObjectCommand({ Bucket: bucket, Key: bookmarkPath })),
-    ];
+  // 204 No Content (keep CORS headers)
+  return {
+    statusCode: 204,
+    headers: { ...cors.headers },
+    body: "",
+  };
 
-    // Optional legacy cleanup: only attempt if KEY_FILE_NAME is configured
-    if (keyFileName) {
-      const keyPath = `private/${userId}/${keyFileName}`;
-      deletions.push(s3Client.send(new DeleteObjectCommand({ Bucket: bucket, Key: keyPath })));
-    }
-
-    await Promise.allSettled(deletions); // idempotent: treat not-found as success
-
-    return {
-      statusCode: 204, // No Content
-      headers: cors.headers,
-      body: "",
-    };
-  } catch (error) {
-    console.error("Error deleting bookmarks:", error);
-    return {
-      statusCode: 500,
-      headers: cors.headers,
-      body: JSON.stringify({ message: "Internal Server Error" }),
-    };
-  }
+  // If you prefer JSON responses everywhere, switch to:
+  // return { statusCode: 200, headers: { ...cors.headers, "Content-Type": "application/json" }, body: JSON.stringify({ ok: true }) };
 };
+
+// Exported entrypoint — wrapper handles CORS, OPTIONS, and error shaping (HttpError or generic)
+export const handler = withCorsAndErrors(deleteBookmarksCore);
