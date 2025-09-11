@@ -1,10 +1,10 @@
-// src/__tests__/components/PopupComponent.test.jsx
+// src/__tests__/components/PopUpComponent.test.jsx
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 /* Component & context */
-import PopupComponent from '@/components/PopupComponent';
+import PopUpComponent from '@/components/PopUpComponent';
 import { AppContext } from '@/scripts/AppContextProvider';
 
 /* Constants */
@@ -50,12 +50,12 @@ afterEach(() => {
 function renderWithContext(groups) {
   return render(
     <AppContext.Provider value={{ bookmarkGroups: groups }}>
-      <PopupComponent />
+      <PopUpComponent />
     </AppContext.Provider>
   );
 }
 
-describe('PopupComponent', () => {
+describe('PopUpComponent', () => {
   test('defaults to first non-empty group and submits with existing group', async () => {
     const groups = [
       { id: 'g0', groupName: EMPTY_GROUP_IDENTIFIER },
