@@ -1,7 +1,7 @@
 /**
- * @file src/__tests__/scripts/importers.test.ts
+ * @file src/__tests__/scripts/Importers.test.ts
  */
-import { importChromeBookmarksAsSingleGroup, importOpenTabsAsSingleGroup } from '@/scripts/importers';
+import { importChromeBookmarksAsSingleGroup, importOpenTabsAsSingleGroup } from '@/scripts/Importers';
 
 //
 // Minimal chrome API surface for these tests

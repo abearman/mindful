@@ -9,14 +9,13 @@
     "strict": true,
     "skipLibCheck": true,
     "paths": {
-      "$amplify/*": [
-        "../.amplify/generated/*"
-      ],
-      "@/*": ["src/*"]
+      "@/*": ["./src/*"],           
+      "$amplify/*": ["../.amplify/generated/*"]
     },
     "types": ["chrome"],
     "baseUrl": ".",
     "allowJs": true,
     "jsx": "react-jsx",
-  }
+  },
+  "include": ["src", "vite.config.ts", "jest.config.cjs"]
 }
