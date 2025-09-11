@@ -2,7 +2,7 @@ import React, { useContext, useState, useEffect, useRef } from 'react';
 
 /* Scripts */
 import { AppContext } from "@/scripts/AppContextProvider";
-import { importAsSingleGroup } from '@/scripts/Importers'; 
+import { importChromeBookmarksAsSingleGroup, importOpenTabsAsSingleGroup } from '@/scripts/Importers'; 
 
 /* Hooks */
 import useImportBookmarks from '@/hooks/useImportBookmarks';
@@ -27,7 +27,8 @@ const TopBanner = ({
   const containerRef = useRef(null);
 
   const { openImport, renderModal } = useImportBookmarks({
-    importAsSingleGroup,
+    importChromeBookmarksAsSingleGroup,       // bookmarks → flat
+    importOpenTabsAsSingleGroup,              // open tabs → flat    
     // importMirrorFolders,
     // importByDomain,
     // importByTopic,

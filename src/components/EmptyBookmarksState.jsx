@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext, useMemo } from "react";
 
 /* Scripts */
 import { AppContext } from "@/scripts/AppContextProvider";
-import { importAsSingleGroup } from '@/scripts/Importers'; 
+import { importChromeBookmarksAsSingleGroup } from '@/scripts/Importers'; 
 
 /* Hooks */
 import useImportBookmarks from '@/hooks/useImportBookmarks';
@@ -21,7 +21,7 @@ export default function EmptyBookmarksState({
   const { bookmarkGroups } = useContext(AppContext);
 
   const { openImport, renderModal } = useImportBookmarks({
-    importAsSingleGroup,
+    importChromeBookmarksAsSingleGroup,
   });
 
   const [checklist, setChecklist] = useState({

@@ -13,10 +13,14 @@ export type ImportChromeOpts = { mode: 'flat' | 'smart'; smartStrategy?: SmartSt
 
 export type ImportPipelines = {
   // Provide one or many of these; the hook will call the ones you pass
-  importAsSingleGroup?: (insertGroups: (groups: any[]) => Promise<void>) => Promise<void> | void,
+  importChromeBookmarksAsSingleGroup?: (insertGroups: (groups: any[]) => Promise<void>) => Promise<void> | void,
   importMirrorFolders?: (insertGroups: (groups: any[]) => Promise<void>) => Promise<void> | void,
   importByDomain?: (insertGroups: (groups: any[]) => Promise<void>) => Promise<void> | void,
   importByTopic?: (insertGroups: (groups: any[]) => Promise<void>) => Promise<void> | void,
+  importOpenTabsAsSingleGroup?: (
+    append:(gs:any[])=>Promise<void>,
+    opts?: { scope?: 'current'|'all'; includePinned?: boolean; includeDiscarded?: boolean }
+  ) => Promise<void> | void,
 };
 
 /**
@@ -31,15 +35,6 @@ export function useImportBookmarks(pipelines?: ImportPipelines) {
   const [busy, setBusy] = useState(false);
 
   const { updateAndPersistGroups } = useBookmarkManager?.() ?? { updateAndPersistGroups: null };
-
-  function insertBeforeEmpty(prev: any[], incoming: any[]) {
-    const idx = prev.findIndex(
-      (g) => g.id === EMPTY_GROUP_IDENTIFIER || g.groupName === EMPTY_GROUP_IDENTIFIER
-    );
-    return idx === -1
-      ? [...prev, ...incoming]
-      : [...prev.slice(0, idx), ...incoming, ...prev.slice(idx)];
-  } 
 
   const insertGroups = useCallback(async (groups: any[]) => {
     if (typeof updateAndPersistGroups !== "function") {
@@ -89,8 +84,8 @@ export function useImportBookmarks(pipelines?: ImportPipelines) {
   // }, [updateAndPersistGroups]);
 
   const handleImportChrome = useCallback(async ({ mode, smartStrategy }: ImportChromeOpts) => {
-    if (mode === 'flat' && pipelines?.importAsSingleGroup) {
-      return pipelines.importAsSingleGroup(insertGroups);
+    if (mode === 'flat' && pipelines?.importChromeBookmarksAsSingleGroup) {
+      return pipelines.importChromeBookmarksAsSingleGroup(insertGroups);
     }
     if (mode === 'smart') {
       if (smartStrategy === 'folders' && pipelines?.importMirrorFolders) return pipelines.importMirrorFolders(insertGroups);
@@ -98,6 +93,13 @@ export function useImportBookmarks(pipelines?: ImportPipelines) {
       if (smartStrategy === 'topic' && pipelines?.importByTopic) return pipelines.importByTopic(insertGroups);
     }
     console.warn('No chrome import pipeline provided for', { mode, smartStrategy });
+  }, [insertGroups, pipelines]);
+
+  const handleImportOpenTabs = useCallback(async (opts:{scope?:'current'|'all'; includePinned?:boolean; includeDiscarded?:boolean}) => {
+    if (pipelines?.importOpenTabsAsSingleGroup) {
+      return pipelines.importOpenTabsAsSingleGroup(insertGroups, opts);
+    }
+    console.warn('No open-tabs import pipeline provided.');
   }, [insertGroups, pipelines]);
 
   const openImport = useCallback(() => setOpen(true), []);
@@ -109,8 +111,9 @@ export function useImportBookmarks(pipelines?: ImportPipelines) {
       onClose={closeImport}
       onUploadJson={async (f) => { setBusy(true); try { await handleUploadJson(f); closeImport(); } finally { setBusy(false); } }}
       onImportChrome={async (opts) => { setBusy(true); try { await handleImportChrome(opts); closeImport(); } finally { setBusy(false); } }}
+      onImportOpenTabs={async (opts) => { setBusy(true); try { await handleImportOpenTabs(opts); closeImport(); } finally { setBusy(false); } }}
     />
-  ), [isOpen, closeImport, handleUploadJson, handleImportChrome]);
+  ), [isOpen, closeImport, handleUploadJson, handleImportChrome, handleImportOpenTabs]);
 
   return {
     openImport,
@@ -123,7 +126,7 @@ export function useImportBookmarks(pipelines?: ImportPipelines) {
 export default useImportBookmarks;
 
 
-/* Helpers */
+/* Helpers ------------------------------ */
 type Group = {
   id: string;
   groupName: string;
@@ -167,3 +170,4 @@ function normalizeGroups(incoming: any[]): Group[] {
     })),
   }));
 }
+/* ------------------------------------- */
