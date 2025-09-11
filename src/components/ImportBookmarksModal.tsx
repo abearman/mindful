@@ -256,7 +256,7 @@ export default function ImportBookmarksModal({
                     <button
                       onClick={() => setSource('bookmarks')}
                       className={
-                        'px-3 py-1 rounded-md transition ' +
+                        'cursor-pointer px-3 py-1 rounded-md transition ' +
                         (source === 'bookmarks' ? 'bg-neutral-100 dark:bg-neutral-800' : 'hover:bg-neutral-50 dark:hover:bg-neutral-800/60')
                       }
                     >
@@ -265,7 +265,7 @@ export default function ImportBookmarksModal({
                     <button
                       onClick={() => setSource('tabs')}
                       className={
-                        'ml-1 px-3 py-1 rounded-md transition ' +
+                        'cursor-pointer ml-1 px-3 py-1 rounded-md transition ' +
                         (source === 'tabs' ? 'bg-neutral-100 dark:bg-neutral-800' : 'hover:bg-neutral-50 dark:hover:bg-neutral-800/60')
                       }
                     >
@@ -369,50 +369,60 @@ export default function ImportBookmarksModal({
                 ) : (
                   // Open tabs options
                   <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                    <div className="rounded-xl border border-neutral-200 p-3 dark:border-neutral-800">
-                      <div className="text-sm font-medium mb-2">Scope</div>
-                      <div className="flex items-center gap-3 text-sm">
-                        <label className="inline-flex items-center gap-2 cursor-pointer">
+                    {/* Scope card */}
+                    <div className="cursor-pointer rounded-xl border border-neutral-200 p-4 text-left transition 
+                                    dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700">
+                      <div className="mb-2 text-xs font-medium text-neutral-900 dark:text-neutral-100">Scope</div>
+                      <div className="flex flex-col items-start gap-1 not-first:text-neutral-700 dark:not-first:text-neutral-300">
+                        <label className="inline-flex items-center leading-tight">
                           <input
                             type="radio"
                             name="tabScope"
-                            checked={tabScope === 'current'}
-                            onChange={() => setTabScope('current')}
+                            checked={tabScope === "current"}
+                            onChange={() => setTabScope("current")}
+                            className="cursor-pointer h-3 w-3 accent-blue-600 mr-2.5"
                           />
-                          Current window
+                          <span className="text-sm">Current window</span>
                         </label>
-                        <label className="inline-flex items-center gap-2 cursor-pointer">
+                        <label className="inline-flex items-center leading-tight">                        
                           <input
                             type="radio"
                             name="tabScope"
-                            checked={tabScope === 'all'}
-                            onChange={() => setTabScope('all')}
+                            checked={tabScope === "all"}
+                            onChange={() => setTabScope("all")}
+                            className="cursor-pointer h-3 w-3 accent-blue-600 mr-2.5"
                           />
-                          All windows
+                          <span className="text-sm">All windows</span>
                         </label>
                       </div>
                     </div>
 
-                    <div className="rounded-xl border border-neutral-200 p-3 dark:border-neutral-800">
-                      <div className="text-sm font-medium mb-2">Filters</div>
-                      <label className="flex items-center gap-2 text-sm cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={includePinned}
-                          onChange={(e) => setIncludePinned(e.target.checked)}
-                        />
-                        Include pinned
-                      </label>
-                      <label className="mt-1 flex items-center gap-2 text-sm cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={includeDiscarded}
-                          onChange={(e) => setIncludeDiscarded(e.target.checked)}
-                        />
-                        Include discarded (sleeping) tabs
-                      </label>
+                    {/* Filters card */}
+                    <div className="cursor-pointer rounded-2xl border border-neutral-200 p-4 text-left transition 
+                                    dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700">
+                      <div className="mb-2 text-xs font-medium text-neutral-900 dark:text-neutral-100">Filters</div>
+                      <div className="flex flex-col gap-1 text-xs text-neutral-700 dark:text-neutral-300">
+                        <label className="inline-flex items-center leading-tight">     
+                          <input
+                            type="checkbox"
+                            checked={includePinned}
+                            onChange={(e) => setIncludePinned(e.target.checked)}
+                            className="cursor-pointer h-3 w-3 accent-blue-600 mr-2.5"
+                          />
+                          <span className="text-sm">Include pinned</span>
+                        </label>
+                        <label className="inline-flex items-center leading-tight"> 
+                          <input
+                            type="checkbox"
+                            checked={includeDiscarded}
+                            onChange={(e) => setIncludeDiscarded(e.target.checked)}
+                            className="cursor-pointer h-3 w-3 accent-blue-600 mr-2.5"
+                          />
+                          <span className="text-sm">Include discarded (sleeping) tabs</span>
+                        </label>
+                      </div>
                     </div>
-                  </div>
+                  </div> 
                 )}
               </div>
             )}
