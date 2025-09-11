@@ -456,7 +456,7 @@ export default function ImportBookmarksModal({
           {/* Footer */}
           <div className="flex items-center justify-between gap-3 border-t border-neutral-200 px-5 py-4 dark:border-neutral-800">
             <div className="text-xs text-neutral-500 dark:text-neutral-400">
-              {busy ? 'Importing… This may take a moment for large sets.' : 'You can undo from the snackbar after import.'}
+              {busy ? 'Importing… This may take a moment for large sets.' : '' /* 'You can undo from the snackbar after import.'*/ }
             </div>
             <div className="flex items-center gap-2">
               <button
