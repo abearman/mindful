@@ -27,8 +27,7 @@
   ],
 
   "optional_permissions": [
-    "bookmarks", 
-    "tabs"
+    "bookmarks"
   ],
 
   "optional_host_permissions": [

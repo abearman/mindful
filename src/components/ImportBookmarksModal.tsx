@@ -130,7 +130,6 @@ export default function ImportBookmarksModal({
       } else {
         // source === 'tabs'
         const ok = await ensureTabsPermission();
-        console.log("got here");
         if (!ok) throw new Error('Permission to read open tabs was not granted.');
         await onImportOpenTabs?.({
           scope: tabScope,
