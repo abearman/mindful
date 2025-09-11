@@ -338,13 +338,15 @@ export default function ImportBookmarksModal({
 
                           {mode === 'smart' && (
                             <div className="mt-3 flex flex-wrap items-center gap-2">
-                              <label className="text-xs uppercase tracking-wide text-neutral-500 dark:text-neutral-400">Strategy</label>
+                              {/* <label className="text-xs uppercase tracking-wide text-neutral-500 dark:text-neutral-400">Strategy</label> */}
+                              <span className="text-xs uppercase tracking-wide text-neutral-500 dark:text-neutral-400">Strategy</span>
                               <div className="inline-flex rounded-lg border border-neutral-200 bg-white p-1 text-sm dark:border-neutral-800 dark:bg-neutral-900">
                                 <button
                                   onClick={() => setSmartStrategy('folders')}
                                   className={
                                     'cursor-pointer px-3 py-1 rounded-md transition ' +
-                                    (smartStrategy === 'folders' ? 'bg-neutral-100 dark:bg-neutral-800' : 'hover:bg-neutral-50 dark:hover:bg-neutral-800/60')
+                                    (smartStrategy === 'folders' ? 'bg-white text-neutral-900 shadow-sm dark:bg-neutral-800 dark:text-neutral-100'
+                                    : 'text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-200')
                                   }
                                 >
                                   Folders
@@ -353,7 +355,8 @@ export default function ImportBookmarksModal({
                                   onClick={() => setSmartStrategy('domain')}
                                   className={
                                     'cursor-pointer ml-1 px-3 py-1 rounded-md transition ' +
-                                    (smartStrategy === 'domain' ? 'bg-neutral-100 dark:bg-neutral-800' : 'hover:bg-neutral-50 dark:hover:bg-neutral-800/60')
+                                    (smartStrategy === 'domain' ? 'bg-white text-neutral-900 shadow-sm dark:bg-neutral-800 dark:text-neutral-100'
+                                    : 'text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-200')
                                   }
                                 >
                                   Domain
@@ -362,7 +365,8 @@ export default function ImportBookmarksModal({
                                   onClick={() => setSmartStrategy('topic')}
                                   className={
                                     'cursor-pointer ml-1 px-3 py-1 rounded-md transition ' +
-                                    (smartStrategy === 'topic' ? 'bg-neutral-100 dark:bg-neutral-800' : 'hover:bg-neutral-50 dark:hover:bg-neutral-800/60')
+                                    (smartStrategy === 'topic' ? 'bg-white text-neutral-900 shadow-sm dark:bg-neutral-800 dark:text-neutral-100'
+                                    : 'text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-200')
                                   }
                                 >
                                   Topic
