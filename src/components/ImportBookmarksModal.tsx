@@ -228,10 +228,14 @@ export default function ImportBookmarksModal({
                   Import bookmarks from a JSON file exported from Mindful or another compatible manager.
                 </p>
                 <div className="rounded-xl border border-dashed border-neutral-300 p-4 dark:border-neutral-700">
-                  <label className="block text-sm font-medium text-neutral-800 dark:text-neutral-200 mb-2">
-                    Choose JSON file
-                  </label>
+                <label
+                  htmlFor="json-file-input"
+                  className="block text-sm font-medium text-neutral-800 dark:text-neutral-200 mb-2"
+                >
+                  Choose JSON file
+                </label>
                   <input
+                    id="json-file-input"
                     type="file"
                     accept="application/json,.json"
                     onChange={(e) => setJsonFile(e.target.files?.[0] ?? null)}
