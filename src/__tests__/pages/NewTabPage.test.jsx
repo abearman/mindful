@@ -182,8 +182,8 @@ describe.each([
       </AppContextProvider>
     );
   
-    // The real EmptyBookmarksState renders "Smart import"
-    const importBtn = await screen.findByRole('button', { name: /smart import/i });
+    // The real EmptyBookmarksState renders "Import bookmarks"
+    const importBtn = await screen.findByRole('button', { name: /Import bookmarks/i });
     fireEvent.click(importBtn);
     expect(mockOpenImport).toHaveBeenCalledTimes(1);
   });

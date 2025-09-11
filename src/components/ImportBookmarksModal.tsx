@@ -319,7 +319,8 @@ export default function ImportBookmarksModal({
                         </div>
                       </button>
 
-                      <button
+                      {/* TODO: Enable Import bookmarks mode */}
+                      {/* <button
                         type="button"
                         onClick={() => setMode('smart')}
                         className={
@@ -331,14 +332,13 @@ export default function ImportBookmarksModal({
                       >
                         <div className="mt-0.5 h-2.5 w-2.5 shrink-0 rounded-full bg-blue-600 ring-2 ring-blue-200 dark:bg-blue-400 dark:ring-blue-900" />
                         <div>
-                          <div className="font-medium text-neutral-900 dark:text-neutral-100">Smart import</div>
+                          <div className="font-medium text-neutral-900 dark:text-neutral-100">Import bookmarks</div>
                           <div className="text-sm text-neutral-600 dark:text-neutral-300">
                             Categorize by <span className="font-medium">folders</span>, <span className="font-medium">domain</span>, or <span className="font-medium">topic</span>.
                           </div>
 
                           {mode === 'smart' && (
                             <div className="mt-3 flex flex-wrap items-center gap-2">
-                              {/* <label className="text-xs uppercase tracking-wide text-neutral-500 dark:text-neutral-400">Strategy</label> */}
                               <span className="text-xs uppercase tracking-wide text-neutral-500 dark:text-neutral-400">Strategy</span>
                               <div className="inline-flex rounded-lg border border-neutral-200 bg-white p-1 text-sm dark:border-neutral-800 dark:bg-neutral-900">
                                 <button
@@ -375,7 +375,7 @@ export default function ImportBookmarksModal({
                             </div>
                           )}
                         </div>
-                      </button>
+                      </button> */}
                     </div>
 
                     {permGranted === false && (

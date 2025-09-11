@@ -73,7 +73,7 @@ describe('EmptyBookmarksState', () => {
 
     expect(screen.getByRole('heading', { name: /welcome to mindful/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /create your first group/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /smart import/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Import bookmarks/i })).toBeInTheDocument();
 
     // Checklist items are present
     const quickStart = within(region).getByText(/quick start/i);
@@ -93,12 +93,12 @@ describe('EmptyBookmarksState', () => {
     expect(onCreateGroup).toHaveBeenCalledTimes(1);
   });
 
-  test('Smart import triggers openImport and renders the hook-provided modal', async () => {
+  test('Import bookmarks triggers openImport and renders the hook-provided modal', async () => {
     const user = userEvent.setup();
 
     renderWithContext(<EmptyBookmarksState onCreateGroup={jest.fn()} />, { groups: placeholderOnly });
 
-    await user.click(screen.getByRole('button', { name: /smart import/i }));
+    await user.click(screen.getByRole('button', { name: /Import bookmarks/i }));
     expect(mockOpenImport).toHaveBeenCalledTimes(1);
 
     // The modal UI is controlled by the hook; we ensure renderModal() is being used

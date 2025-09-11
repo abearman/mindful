@@ -112,7 +112,7 @@ describe('ImportBookmarksModal', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  test('Chrome bookmarks smart import: requests permission if missing, passes smartStrategy', async () => {
+  test('Chrome bookmarks Import bookmarks: requests permission if missing, passes smartStrategy', async () => {
     const user = userEvent.setup();
     mockPermissions.contains.mockResolvedValue(false);
     mockPermissions.request.mockResolvedValue(true);
@@ -120,7 +120,7 @@ describe('ImportBookmarksModal', () => {
     const { onImportChrome, onClose } = renderModal();
 
     // Switch to Smart mode
-    const smartCard = screen.getByRole('button', { name: /Smart import/i });
+    const smartCard = screen.getByRole('button', { name: /Import bookmarks/i });
     await user.click(smartCard);
 
     // Choose "Domain" strategy
