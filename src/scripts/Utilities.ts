@@ -105,8 +105,3 @@ export function toE164(p) {
   if (digits.length === 10) return `+1${digits}`;
   return `+${digits}`;
 }
-
-async function ensureBookmarksPermission(): Promise<boolean> {
-  const granted = await chrome.permissions.request({ permissions: ['bookmarks'] });
-  return granted;
-}

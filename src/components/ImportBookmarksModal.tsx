@@ -21,7 +21,7 @@ export default function ImportBookmarksModal({
   onImportChrome,
 }) {
   const dialogRef = useRef(null);
-  const [tab, setTab] = useState<'json' | 'chrome'>('chrome');
+  const [tab, setTab] = useState<'chrome' | 'tabs' | 'json'>('chrome');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -62,6 +62,23 @@ export default function ImportBookmarksModal({
       return await chrome.permissions.request({ permissions: ['bookmarks'] });
     } catch (e) {
       console.warn('Permission check/request failed', e);
+      return false;
+    }
+  }
+
+  async function ensureTabsPermission(): Promise<boolean> {
+    try {
+      const has = await chrome.permissions.contains({
+        permissions: ['tabs'],
+        origins: ['<all_urls>'],
+      });
+      if (has) return true;
+      return await chrome.permissions.request({
+        permissions: ['tabs'],
+        origins: ['<all_urls>'],
+      });
+    } catch (e) {
+      console.warn('Tabs permission request failed', e);
       return false;
     }
   }
