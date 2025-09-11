@@ -46,7 +46,7 @@ function walk(
 }
 
 export async function importAsSingleGroup(
-  appendGroups: (groups: AppGroup[]) => Promise<void>
+  insertGroups: (groups: AppGroup[]) => Promise<void>
 ) {
   // Modal already asked for permissions; assume we have them.
   const tree = await chrome.bookmarks.getTree();
@@ -64,7 +64,7 @@ export async function importAsSingleGroup(
   });
 
   if (bookmarks.length === 0) {
-    await appendGroups([]); // no-op but keeps contract simple
+    await insertGroups([]); // no-op but keeps contract simple
     return;
   }
 
@@ -74,5 +74,5 @@ export async function importAsSingleGroup(
     bookmarks,
   };
 
-  await appendGroups([group]);
+  await insertGroups([group]);
 }

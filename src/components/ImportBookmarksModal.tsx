@@ -7,7 +7,7 @@ import { createPortal } from "react-dom";
  * Props
  * - isOpen: boolean
  * - onClose: () => void
- * - onUploadCsv: (file: File) => Promise<void> | void
+ * - onUploadJson: (file: File) => Promise<void> | void
  * - onImportChrome: (options: { mode: 'flat' | 'smart', smartStrategy?: 'folders' | 'domain' | 'topic' }) => Promise<void> | void
  *
  * Optional UX niceties
@@ -17,16 +17,16 @@ import { createPortal } from "react-dom";
 export default function ImportBookmarksModal({
   isOpen,
   onClose,
-  onUploadCsv,
+  onUploadJson,
   onImportChrome,
 }) {
   const dialogRef = useRef(null);
-  const [tab, setTab] = useState<'csv' | 'chrome'>('chrome');
+  const [tab, setTab] = useState<'json' | 'chrome'>('chrome');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // CSV state
-  const [csvFile, setCsvFile] = useState<File | null>(null);
+  // JSON state
+  const [jsonFile, setJsonFile] = useState<File | null>(null);
 
   // Chrome import state
   const [mode, setMode] = useState<'flat' | 'smart'>('flat');
@@ -37,7 +37,7 @@ export default function ImportBookmarksModal({
     if (!isOpen) {
       setError(null);
       setBusy(false);
-      setCsvFile(null);
+      setJsonFile(null);
       setMode('flat');
       setSmartStrategy('folders');
       setPermGranted(null);
@@ -66,12 +66,12 @@ export default function ImportBookmarksModal({
     }
   }
 
-  async function handleCsvImport() {
-    if (!csvFile) return;
+  async function handleJsonImport() {
+    if (!jsonFile) return;
     try {
       setBusy(true);
       setError(null);
-      await onUploadCsv?.(csvFile);
+      await onUploadJson?.(jsonFile); 
       onClose?.();
     } catch (e: any) {
       setError(e?.message || 'Import failed');
@@ -151,34 +151,34 @@ export default function ImportBookmarksModal({
               <button
                 className={
                   'cursor-pointer px-3 py-1.5 rounded-lg transition ' +
-                  (tab === 'csv'
+                  (tab === 'json'
                     ? 'bg-white text-neutral-900 shadow-sm dark:bg-neutral-800 dark:text-neutral-100'
                     : 'text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-200')
                 }
-                onClick={() => setTab('csv')}
+                onClick={() => setTab('json')}
               >
-                Upload CSV
+                Upload JSON 
               </button>
             </div>
           </div>
 
           {/* Body (scrolls if tall) */}
           <div className="px-5 py-4 overflow-y-auto">
-            {tab === 'csv' ? (
+            {tab === 'json' ? (
               <div className="space-y-4">
                 <p className="text-sm text-neutral-600 dark:text-neutral-300">
-                  Import bookmarks from a CSV file exported from your previous manager or browser.
+                  Import bookmarks from a JSON file exported from your previous manager or browser.
                 </p>
                 <div className="rounded-xl border border-dashed border-neutral-300 p-4 dark:border-neutral-700">
-                  <label className="block text-sm font-medium text-neutral-800 dark:text-neutral-200 mb-2">Choose CSV file</label>
+                  <label className="block text-sm font-medium text-neutral-800 dark:text-neutral-200 mb-2">Choose JSON file</label>
                   <input
                     type="file"
-                    accept=".csv,text/csv"
-                    onChange={(e) => setCsvFile(e.target.files?.[0] ?? null)}
+                    accept="application/json,.json" 
+                    onChange={(e) => setJsonFile(e.target.files?.[0] ?? null)}
                     className="cursor-pointer block w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-neutral-100 file:px-4 file:py-2 file:text-neutral-800 hover:file:bg-neutral-200 dark:file:bg-neutral-800 dark:file:text-neutral-100 dark:hover:file:bg-neutral-750/60"
                   />
-                  {csvFile && (
-                    <p className="mt-2 text-xs text-neutral-500 dark:text-neutral-400">Selected: {csvFile.name}</p>
+                  {jsonFile && (
+                    <p className="mt-2 text-xs text-neutral-500 dark:text-neutral-400">Selected: {jsonFile.name}</p>
                   )}
                 </div>
               </div>
@@ -283,13 +283,13 @@ export default function ImportBookmarksModal({
                 Cancel
               </button>
 
-              {tab === 'csv' ? (
+              {tab === 'json' ? (
                 <button
-                  onClick={handleCsvImport}
-                  disabled={!csvFile || busy}
+                  onClick={handleJsonImport}
+                  disabled={!jsonFile || busy}
                   className="cursor-pointer inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/70"
                 >
-                  {busy ? 'Importing…' : 'Import CSV'}
+                  {busy ? 'Importing…' : 'Import JSON'}
                 </button>
               ) : (
                 <button
