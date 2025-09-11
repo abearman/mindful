@@ -229,7 +229,7 @@ export default function EmptyBookmarksState({
       </div>
 
       {/* Tiny help link */}
-      <p className="mt-6 text-center text-sm text-neutral-500 dark:text-neutral-400">
+      {/* <p className="mt-6 text-center text-sm text-neutral-500 dark:text-neutral-400">
         New here?{" "}
         <a
           href="#how-it-works"
@@ -237,7 +237,7 @@ export default function EmptyBookmarksState({
         >
           See how Mindful works
         </a>
-      </p>
+      </p> */}
     </section>
   );
 }
