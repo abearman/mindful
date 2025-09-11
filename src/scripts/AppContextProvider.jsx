@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect, useCallback, useRef } from 'react';
-import { StorageType } from '@/scripts/Constants.js';
-import { loadInitialBookmarks } from "@/scripts/useBookmarkManager.js";
+import { StorageType, DEFAULT_STORAGE_TYPE } from '@/scripts/Constants.js';
+import { loadInitialBookmarks } from "@/hooks/useBookmarkManager.js";
 import { fetchAuthSession, fetchUserAttributes, updateUserAttribute } from 'aws-amplify/auth';
 
 export const AppContext = createContext();
@@ -37,7 +37,7 @@ export function AppContextProvider({ children }) {
         if (storedType) {
           setStorageType(storedType);
         } else {
-          setStorageType(StorageType.LOCAL);  // Default storage is local
+          setStorageType(DEFAULT_STORAGE_TYPE);  
           await updateUserAttribute({
             userAttribute: {
               attributeKey: 'custom:storage_type',

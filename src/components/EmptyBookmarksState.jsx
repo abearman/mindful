@@ -2,19 +2,27 @@ import React, { useState, useEffect, useContext, useMemo } from "react";
 
 /* Scripts */
 import { AppContext } from "@/scripts/AppContextProvider";
+import { importChromeBookmarksAsSingleGroup, importOpenTabsAsSingleGroup } from '@/scripts/Importers'; 
+
+/* Hooks */
+import useImportBookmarks from '@/hooks/useImportBookmarks';
 
 /* Constants */
-import { EMPTY_GROUP_IDENTIFIER } from "@/scripts/Constants";
+import { EMPTY_GROUP_IDENTIFIER, StorageType, StorageLabel } from "@/scripts/Constants";
 
 const DISMISS_KEY = "mindful.emptyStateDismissed";
 
 export default function EmptyBookmarksState({
   onCreateGroup,
   onImport, // optional
-  storageTypeLabel = "Local or Encrypted Sync",
   onClose, // optional: parent can listen if desired
 }) {
-  const { bookmarkGroups } = useContext(AppContext);
+  const { bookmarkGroups, storageType } = useContext(AppContext);
+
+  const { openImport, renderModal } = useImportBookmarks({
+    importChromeBookmarksAsSingleGroup,       // bookmarks → flat
+    importOpenTabsAsSingleGroup,              // open tabs → flat   
+  });
 
   const [checklist, setChecklist] = useState({
     createdGroup: false,
@@ -172,11 +180,13 @@ export default function EmptyBookmarksState({
       </h2>
       <p className="mx-auto mt-3 max-w-prose text-center text-sm sm:text-left text-neutral-600 dark:text-neutral-400">
         Organize your links into groups. Create your first group to get
-        started: add unlimited bookmarks and switch between{" "}
+        started. Add unlimited bookmarks and switch between{" "}
         <span className="font-medium text-neutral-800 dark:text-neutral-200">
-          {storageTypeLabel}
+          {StorageLabel[storageType]}
         </span>
-        .
+        {" "}and{" "} 
+        {storageType === StorageType.LOCAL ? StorageLabel[StorageType.REMOTE] : StorageLabel[StorageType.LOCAL]}
+        {" "}storage modes.
       </p>
 
       {/* Primary actions */}
@@ -191,7 +201,7 @@ export default function EmptyBookmarksState({
         </button>
 
         <button
-          onClick={onImport}
+          onClick={openImport}
           className="cursor-pointer inline-flex items-center justify-center rounded-xl border px-5 py-2.5 transition
                     border-neutral-300 bg-white text-neutral-800 shadow-sm hover:bg-neutral-50
                     focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/70
@@ -201,6 +211,8 @@ export default function EmptyBookmarksState({
         >
           Import bookmarks
         </button>
+        {/* Import bookmarks modal, when visible */}
+        {renderModal()}
       </div>
 
       {/* Mini checklist */}
@@ -218,7 +230,7 @@ export default function EmptyBookmarksState({
       </div>
 
       {/* Tiny help link */}
-      <p className="mt-6 text-center text-sm text-neutral-500 dark:text-neutral-400">
+      {/* <p className="mt-6 text-center text-sm text-neutral-500 dark:text-neutral-400">
         New here?{" "}
         <a
           href="#how-it-works"
@@ -226,7 +238,7 @@ export default function EmptyBookmarksState({
         >
           See how Mindful works
         </a>
-      </p>
+      </p> */}
     </section>
   );
 }

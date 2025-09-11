@@ -5,10 +5,10 @@ import '@testing-library/jest-dom';
 
 import { EditableBookmark } from '@/components/EditableBookmark'; 
 import { AppContext } from '@/scripts/AppContextProvider'; 
-import { useBookmarkManager } from '@/scripts/useBookmarkManager'; 
+import { useBookmarkManager } from '@/hooks/useBookmarkManager'; 
 
 // Mock the custom hook and utility functions
-jest.mock('@/scripts/useBookmarkManager');
+jest.mock('@/hooks/useBookmarkManager');
 jest.mock('@/scripts/Utilities', () => ({
   createUniqueID: jest.fn(() => 'unique-id-123'),
 }));

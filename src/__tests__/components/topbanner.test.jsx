@@ -31,7 +31,6 @@ describe('TopBanner Component', () => {
       render(
         <AppContext.Provider value={mockContext}>
           <TopBanner
-            onLoadBookmarks={mockOnLoadBookmarks}
             onExportBookmarks={mockOnExportBookmarks}
             userAttributes={mockUserAttributes}
             onSignIn={mockOnSignIn}
@@ -59,15 +58,28 @@ describe('TopBanner Component', () => {
     it('calls the correct handlers when buttons are clicked', async () => {
       const user = userEvent.setup();
 
-      await user.click(screen.getByRole('button', { name: /load bookmarks/i }));
-      expect(mockOnLoadBookmarks).toHaveBeenCalledTimes(1);
-
       await user.click(screen.getByRole('button', { name: /export bookmarks/i }));
       expect(mockOnExportBookmarks).toHaveBeenCalledTimes(1);
 
       await user.click(screen.getByRole('button', { name: /sign in/i }));
       expect(mockOnSignIn).toHaveBeenCalledTimes(1);
     });
+
+    it('opens the import modal from Load bookmarks', async () => {
+      const user = userEvent.setup();
+      await user.click(screen.getByRole('button', { name: /load bookmarks/i }));
+    
+      // Modal should appear (rendered via portal with aria-labelledby="import-title")
+      expect(screen.getByRole('dialog', { name: /import bookmarks/i })).toBeInTheDocument();
+    
+      // Old callback should not fire anymore
+      expect(mockOnLoadBookmarks).not.toHaveBeenCalled();
+    
+      // Export still works
+      await user.click(screen.getByRole('button', { name: /export bookmarks/i }));
+      expect(mockOnExportBookmarks).toHaveBeenCalledTimes(1);
+    });
+
   });
 
   // --- Signed-In ---
@@ -78,7 +90,6 @@ describe('TopBanner Component', () => {
       render(
         <AppContext.Provider value={mockContext}>
           <TopBanner
-            onLoadBookmarks={mockOnLoadBookmarks}
             onExportBookmarks={mockOnExportBookmarks}
             userAttributes={mockUserAttributes}
             onSignIn={mockOnSignIn}

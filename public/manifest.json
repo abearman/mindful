@@ -26,8 +26,13 @@
     "tabs"
   ],
 
+  "optional_permissions": [
+    "bookmarks"
+  ],
+
   "optional_host_permissions": [
-    "https://2rra98zl35.execute-api.us-west-1.amazonaws.com/*"
+    "https://2rra98zl35.execute-api.us-west-1.amazonaws.com/*",
+    "<all_urls>"
   ],
 
   "action": {

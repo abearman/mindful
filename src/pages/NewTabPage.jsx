@@ -19,14 +19,14 @@ import {
 } from "@/scripts/Constants"; 
 
 /* Hooks and Utilities */
-import { getUserStorageKey } from '@/scripts/Utilities.js';
-import { loadInitialBookmarks, useBookmarkManager } from '@/scripts/useBookmarkManager';
+import { getUserStorageKey } from '@/scripts/Utilities';
+import { loadInitialBookmarks, useBookmarkManager } from '@/hooks/useBookmarkManager';
 import { AppContext } from "@/scripts/AppContextProvider";
 
 /* Components */
-import TopBanner from "@/components/TopBanner.jsx";
-import DraggableGrid from '@/components/DraggableGrid.jsx';
-import EmptyBookmarksState from '@/components/EmptyBookmarksState.jsx';
+import TopBanner from "@/components/TopBanner";
+import DraggableGrid from '@/components/DraggableGrid';
+import EmptyBookmarksState from '@/components/EmptyBookmarksState';
 
 
 export function NewTabPage({ user, signIn, signOut }) {
@@ -105,7 +105,6 @@ export function NewTabPage({ user, signIn, signOut }) {
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-neutral-950">
       <TopBanner
-        onLoadBookmarks={handleLoadBookmarks}
         onExportBookmarks={exportBookmarksToJSON}
         userAttributes={userAttributes}
         onSignIn={signIn}
@@ -121,7 +120,6 @@ export function NewTabPage({ user, signIn, signOut }) {
       <EmptyBookmarksState
         onCreateGroup={() => gridRef.current?.startCreateGroup({ prefill: ONBOARDING_NEW_GROUP_PREFILL, select: 'all' })}
         onImport={handleLoadBookmarks}
-        storageTypeLabel={storageType === StorageType.REMOTE ? "Encrypted Sync" : "Local"}
       />
     </div>
   );

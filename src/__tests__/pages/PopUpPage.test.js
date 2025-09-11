@@ -8,7 +8,7 @@ import PopupPage from '@/pages/PopupPage';
 
 // Mocks
 import { getCurrentUser } from 'aws-amplify/auth';
-import { useBookmarkManager } from '@/scripts/useBookmarkManager';
+import { useBookmarkManager } from '@/hooks/useBookmarkManager';
 
 // --------------------
 // Shared mock data
@@ -42,7 +42,7 @@ jest.mock('@/scripts/AppContextProvider', () => {
 });
 
 // Mock bookmark manager hook
-jest.mock('@/scripts/useBookmarkManager', () => ({
+jest.mock('@/hooks/useBookmarkManager', () => ({
   useBookmarkManager: jest.fn(() => ({ addNamedBookmark: jest.fn() })),
   loadInitialBookmarks: jest.fn(),
 }));

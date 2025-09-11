@@ -4,11 +4,11 @@ import '@testing-library/jest-dom';
 
 import { AddBookmarkInline } from '@/components/AddBookmarkInline';
 import { AppContext } from '@/scripts/AppContextProvider';
-import { useBookmarkManager } from '@/scripts/useBookmarkManager';
+import { useBookmarkManager } from '@/hooks/useBookmarkManager';
 import { constructValidURL } from '@/scripts/Utilities';
 
 // Mock the custom hook and utilities
-jest.mock('@/scripts/useBookmarkManager');
+jest.mock('@/hooks/useBookmarkManager');
 jest.mock('@/scripts/Utilities');
 
 // Mock the AppContext

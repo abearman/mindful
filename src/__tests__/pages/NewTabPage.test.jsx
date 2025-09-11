@@ -7,7 +7,8 @@ import { NewTabPage } from '@/pages/NewTabPage';
 
 // Mock dependencies
 import { AppContextProvider, AppContext } from '@/scripts/AppContextProvider';
-import * as useBookmarkManager from '@/scripts/useBookmarkManager';
+import * as useBookmarkManager from '@/hooks/useBookmarkManager';
+import useImportBookmarks from '@/hooks/useImportBookmarks';
 import * as Utilities from '@/scripts/Utilities';
 import { fetchUserAttributes, fetchAuthSession } from 'aws-amplify/auth';
 import { EMPTY_GROUP_IDENTIFIER, StorageType } from '@/scripts/Constants'; 
@@ -15,7 +16,6 @@ import { EMPTY_GROUP_IDENTIFIER, StorageType } from '@/scripts/Constants';
 // Mock child components for isolation
 jest.mock('@/components/TopBanner', () => (props) => (
   <div data-testid="top-banner">
-    <button onClick={props.onLoadBookmarks}>Load Bookmarks</button>
     <button onClick={props.onExportBookmarks}>Export Bookmarks</button>
     <button onClick={props.onSignOut}>Sign Out</button>
     <span>{`Signed In: ${props.isSignedIn}`}</span>
@@ -31,9 +31,14 @@ jest.mock('@/components/DraggableGrid', () => ({ bookmarkGroups }) => (
 
 // Mock external modules
 jest.mock('aws-amplify/auth');
-jest.mock('@/scripts/useBookmarkManager', () => ({
+jest.mock('@/hooks/useBookmarkManager', () => ({
   loadInitialBookmarks: jest.fn(),
   useBookmarkManager: jest.fn(),
+}));
+jest.mock('@/hooks/useImportBookmarks', () => ({
+  __esModule: true,
+  default: jest.fn(),            // mock default export
+  useImportBookmarks: jest.fn(), // (optional) also mock the named export to the same fn if you need it elsewhere
 }));
 jest.mock('@/scripts/Utilities', () => ({
   getUserStorageKey: jest.fn(),
@@ -62,7 +67,7 @@ const mockBookmarkGroupsWithEmpty = [
   { groupName: EMPTY_GROUP_IDENTIFIER, bookmarks: [] }
 ];
 
-// ✅ Wrap the entire suite in describe.each
+// Wrap the entire suite in describe.each
 describe.each([
   { storageType: StorageType.LOCAL, description: 'local' },
   { storageType: StorageType.REMOTE, description: 'remote' },
@@ -72,6 +77,9 @@ describe.each([
   let mockAddEmptyBookmarkGroup;
   let mockExportBookmarksToJSON;
   let mockImportBookmarksFromJSON;
+  let mockOpenImport;
+  let mockCloseImport;
+  let mockRenderModal;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -86,12 +94,22 @@ describe.each([
       importBookmarksFromJSON: mockImportBookmarksFromJSON,
     });
 
+    mockOpenImport = jest.fn();
+    mockCloseImport = jest.fn();
+    mockRenderModal = jest.fn().mockReturnValue(null); 
+
+    useImportBookmarks.mockReturnValue({
+      openImport: mockOpenImport,
+      closeImport: mockCloseImport,
+      renderModal: mockRenderModal, 
+    });
+
     mockSignOut = jest.fn();
     useBookmarkManager.loadInitialBookmarks.mockResolvedValue(mockBookmarkGroups);
     Utilities.getUserStorageKey.mockReturnValue(`bookmarks_${mockUserId}`);
     fetchAuthSession.mockResolvedValue({ identityId: mockUserId });
 
-    // ✅ Configure mocks based on the current storageType for the test run
+    // Configure mocks based on the current storageType for the test run
     fetchUserAttributes.mockResolvedValue({
       ...mockUserAttributes,
       'custom:storage_type': storageType,
@@ -157,7 +175,20 @@ describe.each([
     });
   });
 
-  // ✅ Conditionally run tests that are only relevant for LOCAL storage
+  it('should import bookmarks via the EmptyBookmarksState button', async () => {
+    render(
+      <AppContextProvider>
+        <NewTabPage user={mockUser} signOut={mockSignOut} />
+      </AppContextProvider>
+    );
+  
+    // The real EmptyBookmarksState renders "Import bookmarks"
+    const importBtn = await screen.findByRole('button', { name: /Import bookmarks/i });
+    fireEvent.click(importBtn);
+    expect(mockOpenImport).toHaveBeenCalledTimes(1);
+  });
+
+  // Conditionally run tests that are only relevant for LOCAL storage
   if (storageType === StorageType.LOCAL) {
     it('should listen for storage changes and reload data accordingly', async () => {
       render(
@@ -206,9 +237,6 @@ describe.each([
     );
 
     await screen.findByTestId('top-banner');
-
-    fireEvent.click(screen.getByText('Load Bookmarks'));
-    expect(mockImportBookmarksFromJSON).toHaveBeenCalledTimes(1);
 
     fireEvent.click(screen.getByText('Export Bookmarks'));
     expect(mockExportBookmarksToJSON).toHaveBeenCalledTimes(1);

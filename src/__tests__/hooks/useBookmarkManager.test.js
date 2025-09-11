@@ -1,6 +1,6 @@
 import React from 'react';
 import { renderHook, act } from '@testing-library/react';
-import { useBookmarkManager } from '@/scripts/useBookmarkManager';
+import { useBookmarkManager } from '@/hooks/useBookmarkManager';
 import { AppContext } from '@/scripts/AppContextProvider';
 import { EMPTY_GROUP_IDENTIFIER, StorageType } from '@/scripts/Constants';
 
@@ -28,7 +28,7 @@ jest.mock('uuid', () => ({
 }));
 
 // Mock the utilities module
-jest.mock('@/scripts/Utilities.js', () => ({
+jest.mock('@/scripts/Utilities', () => ({
   getUserStorageKey: (userId) => `bookmarks-${userId}`,
   refreshOtherMindfulTabs: jest.fn(),
 }));
@@ -47,7 +47,7 @@ jest.mock('@dnd-kit/sortable', () => ({
 let mockStorageSave;
 let mockStorageLoad;
 
-jest.mock('@/scripts/Storage.js', () => ({
+jest.mock('@/scripts/Storage', () => ({
   Storage: jest.fn().mockImplementation(() => {
     return {
       save: mockStorageSave,
@@ -58,7 +58,7 @@ jest.mock('@/scripts/Storage.js', () => ({
 
 // Import after mocks are defined to get a reference to the mock functions
 const { v4: mockV4 } = require('uuid');
-const { refreshOtherMindfulTabs } = require('@/scripts/Utilities.js');
+const { refreshOtherMindfulTabs } = require('@/scripts/Utilities');
 
 
 // --- Test Suite ---

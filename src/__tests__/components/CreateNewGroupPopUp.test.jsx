@@ -4,14 +4,14 @@ import '@testing-library/jest-dom';
 import Modal from 'react-modal';
 
 // Mock the custom hook and context
-import { useBookmarkManager } from '@/scripts/useBookmarkManager';
+import { useBookmarkManager } from '@/hooks/useBookmarkManager';
 import { AppContext } from '@/scripts/AppContextProvider';
 
 // Component to test
 import { CreateNewGroupPopUp } from '@/components/CreateNewGroupPopUp';
 
 // Mocking the custom hook
-jest.mock('@/scripts/useBookmarkManager', () => ({
+jest.mock('@/hooks/useBookmarkManager', () => ({
   useBookmarkManager: jest.fn(),
 }));
 

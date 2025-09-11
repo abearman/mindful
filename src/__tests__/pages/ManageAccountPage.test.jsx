@@ -24,7 +24,7 @@ jest.mock("@/components/ManageAccountComponent", () => {
   };
 });
 
-jest.mock("@/scripts/useBookmarkManager", () => ({
+jest.mock("@/hooks/useBookmarkManager", () => ({
   useBookmarkManager: () => mockHookReturn,
 }));
 
@@ -67,7 +67,6 @@ describe("ManageAccountPage", () => {
     expect(screen.getByTestId("ManageAccountComponent")).toBeInTheDocument();
 
     const topArgs = mockTopBannerSpy.mock.calls.at(-1)[0];
-    expect(typeof topArgs.onLoadBookmarks).toBe("function");
     expect(typeof topArgs.onExportBookmarks).toBe("function");
     expect(typeof topArgs.onStorageTypeChange).toBe("function");
     expect(topArgs.userAttributes).toEqual(ctxValue.userAttributes);

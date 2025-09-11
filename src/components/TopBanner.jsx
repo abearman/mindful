@@ -1,10 +1,20 @@
 import React, { useContext, useState, useEffect, useRef } from 'react';
+
+/* Scripts */
 import { AppContext } from "@/scripts/AppContextProvider";
+import { importChromeBookmarksAsSingleGroup, importOpenTabsAsSingleGroup } from '@/scripts/Importers'; 
+import { DEFAULT_STORAGE_TYPE, StorageType, StorageLabel } from "@/scripts/Constants";
+
+/* Hooks */
+import useImportBookmarks from '@/hooks/useImportBookmarks';
+
+
+/* Components */
 import Tooltip from "@/components/ui/Tooltip";
 import { Badge } from "@/components/ui/badge";
 
+
 const TopBanner = ({
-  onLoadBookmarks,
   onExportBookmarks,
   userAttributes,
   onSignIn,
@@ -12,9 +22,17 @@ const TopBanner = ({
   isSignedIn,
   onStorageTypeChange
 }) => {
-  const { storageType } = useContext(AppContext);
+  const storageType = useContext(AppContext)?.storageType ?? DEFAULT_STORAGE_TYPE;
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const containerRef = useRef(null);
+
+  const { openImport, renderModal } = useImportBookmarks({
+    importChromeBookmarksAsSingleGroup,       // bookmarks → flat
+    importOpenTabsAsSingleGroup,              // open tabs → flat    
+    // importMirrorFolders,
+    // importByDomain,
+    // importByTopic,
+  });
 
   useEffect(() => {
     const onDocClick = (e) => {
@@ -32,9 +50,6 @@ const TopBanner = ({
   }, []);
 
   const handleLogout = () => { onSignOut(); setDropdownOpen(false); };
-  const handleToggleChange = (e) => {
-    onStorageTypeChange(e.target.checked ? 'remote' : 'local');
-  };
 
   return (
     <header className="sticky top-0 z-30 backdrop-blur bg-gray-100 dark:bg-neutral-950">
@@ -56,16 +71,15 @@ const TopBanner = ({
 
         {/* Right: icons + avatar */}
         <nav className="hidden items-right gap-6 md:flex">
-          <Tooltip label="Load bookmarks">
-            <button
-              onClick={onLoadBookmarks}
-              className="cursor-pointer text-neutral-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400
-                         p-2 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60"
-              aria-label="Load bookmarks"
-            >
-              <i className="fas fa-upload fa-lg" />
-            </button>
-          </Tooltip>
+        <Tooltip label="Load bookmarks">
+          <button
+            onClick={openImport}
+            className="cursor-pointer text-neutral-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 p-2 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60"
+            aria-label="Load bookmarks"
+          >
+            <i className="fas fa-upload fa-lg" />
+          </button>
+        </Tooltip>
 
           <Tooltip label="Export bookmarks">
             <button
@@ -107,14 +121,16 @@ const TopBanner = ({
                       Storage type
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className={`text-sm text-neutral-500 dark:text-neutral-400 ${storageType === "local" ? "font-semibold" : "font-normal"}`}>Local</span>
+                      <span className={`text-sm text-neutral-500 dark:text-neutral-400 ${storageType === StorageType.LOCAL ? "font-semibold" : "font-normal"}`}>
+                        {StorageLabel[StorageType.LOCAL]}
+                      </span>
                         <div className="relative inline-flex h-5 w-9 items-center">
                           {/* the peer comes first */}
                           <input
                             id="storageToggle"
                             type="checkbox"
-                            checked={storageType === "remote"}
-                            onChange={(e) => onStorageTypeChange(e.target.checked ? "remote" : "local")}
+                            checked={storageType === StorageType.REMOTE}
+                            onChange={(e) => onStorageTypeChange(e.target.checked ? StorageType.REMOTE : StorageType.LOCAL)}
                             className="peer sr-only"
                           />
 
@@ -133,7 +149,9 @@ const TopBanner = ({
                           />
                         </div>
 
-                      <span className={`text-sm text-neutral-500 dark:text-neutral-400 ${storageType === "remote" ? "font-semibold" : "font-normal"}`}>Remote</span>
+                      <span className={`text-sm text-neutral-500 dark:text-neutral-400 ${storageType === StorageType.REMOTE ? "font-semibold" : "font-normal"}`}>
+                        {StorageLabel[StorageType.REMOTE]}
+                      </span>
                     </div>
                   </div>
 
@@ -170,6 +188,9 @@ const TopBanner = ({
             </Tooltip>
           )}
         </nav>
+
+        {/* The import bookmarks modal, when visible */}
+        {renderModal()}
       </div>
     </header>
   );

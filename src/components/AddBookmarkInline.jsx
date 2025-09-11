@@ -7,7 +7,7 @@ import '@/styles/AddBookmarkInline.css';
 import { URL_PATTERN } from '@/scripts/Constants';
 
 /* Hooks and Utilities */
-import { useBookmarkManager } from '@/scripts/useBookmarkManager';
+import { useBookmarkManager } from '@/hooks/useBookmarkManager';
 import { AppContext } from '@/scripts/AppContextProvider';
 import { constructValidURL } from "@/scripts/Utilities";
 

@@ -15,7 +15,7 @@ import { SortableContext, rectSortingStrategy } from "@dnd-kit/sortable";
 import { BookmarkGroup } from "@/components/BookmarkGroup";
 import { BookmarkItem } from "@/components/BookmarkItem";
 import { AppContext } from "@/scripts/AppContextProvider";
-import { useBookmarkManager } from "@/scripts/useBookmarkManager";
+import { useBookmarkManager } from "@/hooks/useBookmarkManager";
 import { EMPTY_GROUP_IDENTIFIER } from "@/scripts/Constants";
 
 const DraggableGrid = forwardRef(function DraggableGrid(_, ref) {

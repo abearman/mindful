@@ -4,14 +4,14 @@ import '@testing-library/jest-dom';
 
 import { EditableBookmarkGroupHeading } from '@/components/EditableBookmarkGroupHeading';
 import { AppContext } from '@/scripts/AppContextProvider';
-import { useBookmarkManager } from '@/scripts/useBookmarkManager';
+import { useBookmarkManager } from '@/hooks/useBookmarkManager';
 import { EMPTY_GROUP_IDENTIFIER } from "@/scripts/Constants";
 
 // Mock the CSS import
 jest.mock('@/styles/EditableBookmarkGroupHeading.css', () => ({}));
 
 // Mock the custom hook
-jest.mock('@/scripts/useBookmarkManager', () => ({
+jest.mock('@/hooks/useBookmarkManager', () => ({
   useBookmarkManager: jest.fn(),
 }));
 
