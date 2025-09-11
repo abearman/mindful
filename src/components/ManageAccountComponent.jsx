@@ -15,7 +15,7 @@ import 'react-phone-number-input/style.css';
 /* Scripts */
 import { AppContext } from "@/scripts/AppContextProvider";
 import { toE164 } from "@/scripts/Utilities"
-import { StorageType } from "@/scripts/Constants";
+import { StorageType, StorageLabel } from "@/scripts/Constants";
 
 /* Components */
 import { Avatar } from "@/components/ui/Avatar"; 
@@ -261,7 +261,7 @@ function CompactStorageToggle({ value = StorageType.LOCAL, onChange, disabled })
           !isRemote ? "font-bold text-neutral-500 dark:text-neutral-400" : "text-neutral-500 dark:text-neutral-400"
         } hover:text-neutral-900 disabled:opacity-50`}
       >
-        Local
+        {StorageLabel[StorageType.LOCAL]}
       </button>
 
       {/* compact switch */}
@@ -288,7 +288,7 @@ function CompactStorageToggle({ value = StorageType.LOCAL, onChange, disabled })
           isRemote ? "font-bold text-neutral-500 dark:text-neutral-400" : "text-neutral-500 dark:text-neutral-400"
         } hover:text-neutral-900 disabled:opacity-50`}
       >
-        Remote
+        {StorageLabel[StorageType.REMOTE]}
       </button>
     </div>
   );

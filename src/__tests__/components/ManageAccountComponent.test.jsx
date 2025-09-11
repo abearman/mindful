@@ -51,6 +51,7 @@ jest.mock("@/scripts/Utilities", () => ({
 // 6) Constants
 jest.mock("@/scripts/Constants", () => ({
   StorageType: { LOCAL: "local", REMOTE: "remote" },
+  StorageLabel: { local: "Local-Only", remote: "Encrypted Sync" },
 }));
 
 // 7) Amplify Auth fns
@@ -231,7 +232,7 @@ describe("ManageAccountComponent", () => {
     const setStorageType = jest.fn();
     renderWithContext(<ManageAccountComponent />, { ctx: { setStorageType } });
 
-    await userEvent.click(screen.getByRole("button", { name: /remote/i }));
+    await userEvent.click(screen.getByRole("button", { name: /Encrypted Sync/i }));
     await userEvent.click(screen.getByRole("button", { name: /save changes/i }));
 
     await waitFor(() => {
