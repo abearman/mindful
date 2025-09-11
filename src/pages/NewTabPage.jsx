@@ -120,7 +120,6 @@ export function NewTabPage({ user, signIn, signOut }) {
       <EmptyBookmarksState
         onCreateGroup={() => gridRef.current?.startCreateGroup({ prefill: ONBOARDING_NEW_GROUP_PREFILL, select: 'all' })}
         onImport={handleLoadBookmarks}
-        storageTypeLabel={storageType === StorageType.REMOTE ? "Encrypted Sync" : "Local"}
       />
     </div>
   );

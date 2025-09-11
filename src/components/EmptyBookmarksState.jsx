@@ -8,17 +8,16 @@ import { importChromeBookmarksAsSingleGroup, importOpenTabsAsSingleGroup } from 
 import useImportBookmarks from '@/hooks/useImportBookmarks';
 
 /* Constants */
-import { EMPTY_GROUP_IDENTIFIER } from "@/scripts/Constants";
+import { EMPTY_GROUP_IDENTIFIER, StorageType, StorageLabel } from "@/scripts/Constants";
 
 const DISMISS_KEY = "mindful.emptyStateDismissed";
 
 export default function EmptyBookmarksState({
   onCreateGroup,
   onImport, // optional
-  storageTypeLabel = "Local or Encrypted Sync",
   onClose, // optional: parent can listen if desired
 }) {
-  const { bookmarkGroups } = useContext(AppContext);
+  const { bookmarkGroups, storageType } = useContext(AppContext);
 
   const { openImport, renderModal } = useImportBookmarks({
     importChromeBookmarksAsSingleGroup,       // bookmarks → flat
@@ -181,11 +180,13 @@ export default function EmptyBookmarksState({
       </h2>
       <p className="mx-auto mt-3 max-w-prose text-center text-sm sm:text-left text-neutral-600 dark:text-neutral-400">
         Organize your links into groups. Create your first group to get
-        started: add unlimited bookmarks and switch between{" "}
+        started. Add unlimited bookmarks and switch between{" "}
         <span className="font-medium text-neutral-800 dark:text-neutral-200">
-          {storageTypeLabel}
+          {StorageLabel[storageType]}
         </span>
-        .
+        {" "}and{" "} 
+        {storageType === StorageType.LOCAL ? StorageLabel[StorageType.REMOTE] : StorageLabel[StorageType.LOCAL]}
+        {" "}storage modes.
       </p>
 
       {/* Primary actions */}

@@ -13,3 +13,7 @@ export const StorageType = {
   REMOTE: 'remote',
 };
 export const DEFAULT_STORAGE_TYPE = StorageType.LOCAL;
+export const StorageLabel = {
+  [StorageType.LOCAL]: 'Local-Only',
+  [StorageType.REMOTE]: 'Encrypted Sync',
+};
