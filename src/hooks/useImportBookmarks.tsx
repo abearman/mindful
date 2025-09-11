@@ -1,7 +1,12 @@
 import React, { useCallback, useMemo, useState } from 'react';
+
+/* Hooks */
 import ImportBookmarksModal from '@/components/ImportBookmarksModal';
 import { useBookmarkManager } from '@/hooks/useBookmarkManager';
+
+/* Scripts */
 import { createUniqueID } from '@/scripts/Utilities';
+import { EMPTY_GROUP_IDENTIFIER } from "@/scripts/Constants";
 
 export type SmartStrategy = 'folders' | 'domain' | 'topic';
 export type ImportChromeOpts = { mode: 'flat' | 'smart'; smartStrategy?: SmartStrategy };
@@ -28,25 +33,36 @@ export function useImportBookmarks(pipelines?: ImportPipelines) {
   const { updateAndPersistGroups } = useBookmarkManager?.() ?? { updateAndPersistGroups: null };
 
   const appendGroups = useCallback(async (groups: any[]) => {
-    if (typeof updateAndPersistGroups === 'function') {
-      await updateAndPersistGroups((prev: any[]) => [
-        ...prev,
-        ...groups.map(g => ({
+    if (typeof updateAndPersistGroups === "function") {
+      await updateAndPersistGroups((prev: any[]) => {
+        const idx = prev.findIndex(
+          (g) => g.id === EMPTY_GROUP_IDENTIFIER || g.groupName === EMPTY_GROUP_IDENTIFIER
+        );
+  
+        // Normalize new groups (ids, bookmark ids) as you already do…
+        const normalized = groups.map(g => ({
           id: g.id ?? createUniqueID(),
           groupName: g.groupName,
-          bookmarks: (g.bookmarks || []).map((b: any) => ({
+          bookmarks: (g.bookmarks || []).map(b => ({
             id: b.id ?? createUniqueID(),
-            name: b.name || b.url || 'Untitled',
+            name: b.name || b.url || "Untitled",
             url: b.url,
             faviconUrl: b.faviconUrl,
             dateAdded: b.dateAdded,
           })),
-        }))
-      ]);
+        }));
+  
+        if (idx === -1) {
+          // fallback: append to end if EMPTY group not present
+          return [...prev, ...normalized];
+        }
+        // insert before EMPTY group
+        return [...prev.slice(0, idx), ...normalized, ...prev.slice(idx)];
+      });
     } else {
-      console.warn('updateAndPersistGroups not available; wire this to your state updater.');
+      console.warn("updateAndPersistGroups not available; wire this to your state updater.");
     }
-  }, [updateAndPersistGroups]);
+  }, [updateAndPersistGroups]); 
 
   const handleUploadCsv = useCallback(async (file: File) => {
     const text = await file.text();

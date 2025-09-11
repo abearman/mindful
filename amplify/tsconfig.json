@@ -11,8 +11,12 @@
     "paths": {
       "$amplify/*": [
         "../.amplify/generated/*"
-      ]
+      ],
+      "@/*": ["src/*"]
     },
     "types": ["chrome"],
+    "baseUrl": ".",
+    "allowJs": true,
+    "jsx": "react-jsx",
   }
 }

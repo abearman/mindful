@@ -2,9 +2,11 @@ import React, { useContext, useState, useEffect, useRef } from 'react';
 
 /* Scripts */
 import { AppContext } from "@/scripts/AppContextProvider";
+import { importAsSingleGroup } from '@/scripts/Importers'; 
 
 /* Hooks */
 import useImportBookmarks from '@/hooks/useImportBookmarks';
+
 
 /* Components */
 import Tooltip from "@/components/ui/Tooltip";
@@ -25,7 +27,7 @@ const TopBanner = ({
   const containerRef = useRef(null);
 
   const { openImport, renderModal } = useImportBookmarks({
-    // importAsSingleGroup,
+    importAsSingleGroup,
     // importMirrorFolders,
     // importByDomain,
     // importByTopic,

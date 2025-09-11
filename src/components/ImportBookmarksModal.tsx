@@ -175,7 +175,7 @@ export default function ImportBookmarksModal({
                     type="file"
                     accept=".csv,text/csv"
                     onChange={(e) => setCsvFile(e.target.files?.[0] ?? null)}
-                    className="block w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-neutral-100 file:px-4 file:py-2 file:text-neutral-800 hover:file:bg-neutral-200 dark:file:bg-neutral-800 dark:file:text-neutral-100 dark:hover:file:bg-neutral-750/60"
+                    className="cursor-pointer block w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-neutral-100 file:px-4 file:py-2 file:text-neutral-800 hover:file:bg-neutral-200 dark:file:bg-neutral-800 dark:file:text-neutral-100 dark:hover:file:bg-neutral-750/60"
                   />
                   {csvFile && (
                     <p className="mt-2 text-xs text-neutral-500 dark:text-neutral-400">Selected: {csvFile.name}</p>

@@ -300,5 +300,6 @@ export const useBookmarkManager = () => {
     exportBookmarksToJSON,
     importBookmarksFromJSON,
     changeStorageType,
+    updateAndPersistGroups,
   };
 };
