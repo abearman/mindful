@@ -234,16 +234,28 @@ export default function ImportBookmarksModal({
                 >
                   Choose JSON file
                 </label>
-                  <input
-                    id="json-file-input"
-                    type="file"
-                    accept="application/json,.json"
-                    onChange={(e) => setJsonFile(e.target.files?.[0] ?? null)}
-                    className="cursor-pointer block w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-neutral-100 file:px-4 file:py-2 file:text-neutral-800 hover:file:bg-neutral-200 dark:file:bg-neutral-800 dark:file:text-neutral-100 dark:hover:file:bg-neutral-750/60"
-                  />
-                  {jsonFile && (
-                    <p className="mt-2 text-xs text-neutral-500 dark:text-neutral-400">Selected: {jsonFile.name}</p>
-                  )}
+                <input
+                  id="json-file-input"
+                  type="file"
+                  accept="application/json,.json"
+                  onChange={(e) => setJsonFile(e.target.files?.[0] ?? null)}
+                  className="
+                    file:cursor-pointer                      /* affects the button itself */
+                    block w-full text-sm
+                    text-neutral-800 dark:text-neutral-100    
+                    file:mr-3 file:rounded-lg file:border-0
+                    file:bg-neutral-100 file:px-4 file:py-2 file:text-neutral-800
+                    hover:file:bg-neutral-200
+                    dark:file:bg-neutral-800 dark:file:text-neutral-100
+                    dark:hover:file:bg-neutral-700
+                  "
+                />
+
+                {jsonFile && (
+                  <p className="mt-2 text-xs text-neutral-500 dark:text-neutral-400">
+                    Selected: {jsonFile.name}
+                  </p>
+                )}
                 </div>
               </div>
             ) : (
