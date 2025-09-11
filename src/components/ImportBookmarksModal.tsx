@@ -257,7 +257,8 @@ export default function ImportBookmarksModal({
                       onClick={() => setSource('bookmarks')}
                       className={
                         'cursor-pointer px-3 py-1 rounded-md transition ' +
-                        (source === 'bookmarks' ? 'bg-neutral-100 dark:bg-neutral-800' : 'hover:bg-neutral-50 dark:hover:bg-neutral-800/60')
+                        (source === 'bookmarks' ? 'bg-white text-neutral-900 shadow-sm dark:bg-neutral-800 dark:text-neutral-100'
+                        : 'text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-200')
                       }
                     >
                       Bookmarks
@@ -266,7 +267,8 @@ export default function ImportBookmarksModal({
                       onClick={() => setSource('tabs')}
                       className={
                         'cursor-pointer ml-1 px-3 py-1 rounded-md transition ' +
-                        (source === 'tabs' ? 'bg-neutral-100 dark:bg-neutral-800' : 'hover:bg-neutral-50 dark:hover:bg-neutral-800/60')
+                        (source === 'tabs' ? 'bg-white text-neutral-900 shadow-sm dark:bg-neutral-800 dark:text-neutral-100'
+                        : 'text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-200')
                       }
                     >
                       Open Tabs
