@@ -12,3 +12,4 @@ export const StorageType = {
   LOCAL: 'local',
   REMOTE: 'remote',
 };
+export const DEFAULT_STORAGE_TYPE = StorageType.LOCAL;

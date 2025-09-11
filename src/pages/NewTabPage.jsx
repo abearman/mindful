@@ -105,7 +105,6 @@ export function NewTabPage({ user, signIn, signOut }) {
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-neutral-950">
       <TopBanner
-        onLoadBookmarks={handleLoadBookmarks}
         onExportBookmarks={exportBookmarksToJSON}
         userAttributes={userAttributes}
         onSignIn={signIn}

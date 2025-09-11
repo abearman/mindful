@@ -12,7 +12,6 @@ import { AppContext } from "@/scripts/AppContextProvider";
 export default function ManageAccountPage({ user, signIn, signOut }) {
   const { userAttributes } = useContext(AppContext);
   const {
-    importBookmarksFromJSON,
     exportBookmarksToJSON,
     changeStorageType,
   } = useBookmarkManager();
@@ -20,7 +19,6 @@ export default function ManageAccountPage({ user, signIn, signOut }) {
   return (
     <>
       <TopBanner
-        onLoadBookmarks={importBookmarksFromJSON}
         onExportBookmarks={exportBookmarksToJSON}
         userAttributes={userAttributes}
         onSignIn={signIn}

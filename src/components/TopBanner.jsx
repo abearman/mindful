@@ -3,6 +3,7 @@ import React, { useContext, useState, useEffect, useRef } from 'react';
 /* Scripts */
 import { AppContext } from "@/scripts/AppContextProvider";
 import { importChromeBookmarksAsSingleGroup, importOpenTabsAsSingleGroup } from '@/scripts/Importers'; 
+import { DEFAULT_STORAGE_TYPE } from "@/scripts/Constants";
 
 /* Hooks */
 import useImportBookmarks from '@/hooks/useImportBookmarks';
@@ -14,7 +15,6 @@ import { Badge } from "@/components/ui/badge";
 
 
 const TopBanner = ({
-  onLoadBookmarks,
   onExportBookmarks,
   userAttributes,
   onSignIn,
@@ -22,7 +22,7 @@ const TopBanner = ({
   isSignedIn,
   onStorageTypeChange
 }) => {
-  const { storageType } = useContext(AppContext);
+  const storageType = useContext(AppContext)?.storageType ?? DEFAULT_STORAGE_TYPE;
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const containerRef = useRef(null);
 
