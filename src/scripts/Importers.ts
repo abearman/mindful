@@ -1,4 +1,3 @@
-// scripts/importers.ts
 type ChromeBmNode = chrome.bookmarks.BookmarkTreeNode;
 
 type AppBookmark = {
