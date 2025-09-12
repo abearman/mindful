@@ -5,25 +5,25 @@ title: Privacy Policy
 # Privacy Policy for Mindful Bookmarks
 **Effective date:** {{ site.time | date: "%Y-%m-%d" }}
 
-Mindful gives you control over your data. By default, data stays **locally on your device**. You can optionally enable **Cloud Sync** to keep bookmarks in sync across your devices.
+Mindful gives you control over your data. All users sign in with an account. You can choose to keep data **locally on your device** (Local-Only mode) or enable **Encrypted Sync** to keep bookmarks in sync across your devices.
 
 ## Storage Options
-### 1) Local (default)
+### 1) Local-Only (default)
 
 - Bookmark data (URL, title, tags, folder structure, settings) is stored on your device via Chrome’s `chrome.storage` API.
-- No data is sent to our servers in this mode.
+- You must still sign in with an account, but data remains on your device in this mode and is not uploaded to our servers.
 
-### 2) Cloud Sync (opt-in)
+### 2) Encrypted Sync
 
-- If you enable Cloud Sync, we store your bookmark data in our backend so it can sync across your devices.
+- If you enable Encrypted Sync, we store your bookmark data in our backend so it can sync across your devices.
 - Data is encrypted in transit (HTTPS/TLS) and at rest using AWS-managed encryption (e.g., KMS).
 - We do not sell or share your data, and we do not use it for advertising or unrelated purposes.
   
 ## Data We Handle
 
-- **Bookmark data & preferences**: URLs, titles, tags, folder/group structure, and settings you create in the app. Used only to provide bookmarking and (if enabled) syncing.
-- **Account info for Cloud Sync**: Email address, phone number, and full name.
-Authentication is provided by our identity provider (e.g., AWS Cognito via Amplify). We do not store or access your password.
+- **Bookmark data & preferences**: URLs, titles, tags, folder/group structure, and settings you create in the app. Used only to provide bookmarking and syncing.
+- **Account info**: Email address, phone number, and full name.
+  Authentication is provided by our identity provider (e.g., AWS Cognito via Amplify). We do not store or access your password.
 - **Diagnostics (minimal, non-content)**: error codes and operational metadata to maintain reliability. We do not collect page text, keystrokes, mouse movements, or browsing history.
 
 We do **not** collect financial/health data, personal communications, precise location, web history, or other unrelated categories.
@@ -31,16 +31,17 @@ We do **not** collect financial/health data, personal communications, precise lo
 ## How Permissions Are Used
 
 - `storage`: save your bookmarks and settings locally.
-- `tabs`: read the current tab’s URL/title only when you click **"Add bookmark."** No background page reading or content script injection.
-- **Optional site access**: may request access to [https://2rra98zl35.execute-api.us-west-1.amazonaws.com/](https://2rra98zl35.execute-api.us-west-1.amazonaws.com) only when you enable Cloud Sync to save/retrieve your own bookmarks.
+- `tabs`: read the current tab’s URL/title only when you click **"Add bookmark,"** or list open tabs only when you explicitly choose **"Import Open Tabs."** No background page reading or content script injection.
+- `bookmarks`: access the Chrome bookmarks API only when you explicitly choose **"Import from Chrome Bookmarks."** Read-only, never monitored in the background.
+- **Host access**: communicates with Mindful’s backend services (AWS API Gateway, Cognito, S3) to provide login and, if enabled, Encrypted Sync. These requests are limited to our own domains.
 
 ## Your Controls
 
-- **Switch modes** any time in Settings (Local ↔ Cloud Sync).
+- **Choose storage mode** any time in Settings (Local-Only ↔ Encrypted Sync).
 - **Export/Import** bookmarks as JSON from the app.
 - **Delete data**:
-  - Local: remove the extension or clear its storage.
-  - Cloud Sync: use *Settings → Cloud Sync → Delete cloud data*. We delete copies immediately.
+  - Local-Only: remove the extension or clear its storage.
+  - Encrypted Sync: use *Settings → Encrypted Sync → Delete cloud data*. We delete copies immediately.
 
 ## Security
 
@@ -63,7 +64,7 @@ Mindful Bookmarks is not intended for children under 13.
 
 ## Contact
 
-Questions or requests (including data deletion/export)?
+Questions or requests (including data deletion/export)?  
 Email: `amy@mindfulbookmarks.com`
 
 ## Changes to This Policy
