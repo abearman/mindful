@@ -28,7 +28,6 @@ import TopBanner from "@/components/TopBanner";
 import DraggableGrid from '@/components/DraggableGrid';
 import EmptyBookmarksState from '@/components/EmptyBookmarksState';
 
-
 export function NewTabPage({ user, signIn, signOut }) {
   // Consume state from the context
   const {  
@@ -41,6 +40,18 @@ export function NewTabPage({ user, signIn, signOut }) {
   } = useContext(AppContext);
 
   const gridRef = useRef(null);
+
+  // --- NEW: de-dupe bursts from message + storage ---
+  const lastAuthSignalAtRef = useRef(0);
+  const handleAuthSignal = (at = Date.now()) => {
+    if (at <= lastAuthSignalAtRef.current) return; // ignore duplicates
+    lastAuthSignalAtRef.current = at;
+    // Easiest & safest: full reload so all providers/hooks re-init with the new session
+    window.location.reload();
+    // If you prefer a soft refresh, swap the line above for:
+    // - re-check auth + re-run your initial data loads
+    // - e.g., await getCurrentUser(); reloadBookmarks(); etc.
+  };
 
   // Get all actions from the custom bookmarks hook
   const {
@@ -67,11 +78,12 @@ export function NewTabPage({ user, signIn, signOut }) {
         addEmptyBookmarkGroup();
       }
     } else if (bookmarkGroups.length === 0) {
-        // If there are no groups at all, add the initial empty one
-        addEmptyBookmarkGroup();
+      // If there are no groups at all, add the initial empty one
+      addEmptyBookmarkGroup();
     }
   }, [bookmarkGroups, addEmptyBookmarkGroup]); // Runs when bookmarks or loading state change.
 
+  // Listen for LOCAL storage changes to sync bookmarks across tabs (existing logic)
   useEffect(() => {
     // Only attach this listener if we are in LOCAL storage mode.
     // It's irrelevant for remote storage.
@@ -101,6 +113,29 @@ export function NewTabPage({ user, signIn, signOut }) {
       chrome.storage.onChanged.removeListener(handleStorageChange);
     };
   }, [userId, storageType, setBookmarkGroups, isMigrating]); // Re-runs if user or storageType changes
+
+  // --- NEW: Listen for popup auth broadcasts (runtime messages) ---
+  useEffect(() => {
+    const onMsg = (msg) => {
+      if (msg?.type === 'USER_SIGNED_IN' || msg?.type === 'USER_SIGNED_OUT') {
+        handleAuthSignal(msg.at);
+      }
+    };
+    chrome.runtime.onMessage.addListener(onMsg);
+    return () => chrome.runtime.onMessage.removeListener(onMsg);
+  }, []);
+
+  // --- NEW: Listen for auth storage ping (fallback/decoupled path) ---
+  useEffect(() => {
+    const onStorageAuth = (changes, area) => {
+      if (area !== 'local') return;
+      if (changes.authSignalAt?.newValue) {
+        handleAuthSignal(Number(changes.authSignalAt.newValue));
+      }
+    };
+    chrome.storage.onChanged.addListener(onStorageAuth);
+    return () => chrome.storage.onChanged.removeListener(onStorageAuth);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-neutral-950">
