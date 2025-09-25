@@ -49,5 +49,9 @@
       "48": "assets/icon-48.png",
       "128": "assets/icon-128.png"
     }
+  },
+
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' https://cognito-idp.us-west-1.amazonaws.com https://cognito-identity.us-west-1.amazonaws.com https://kT7PGxGVd.auth.us-west-1.amazoncognito.com;"
   }
 }

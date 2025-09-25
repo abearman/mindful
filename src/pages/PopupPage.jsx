@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
-
-// Import Amplify and configure it
+import React from 'react';
 import { Amplify } from 'aws-amplify';
 import config from '/amplify_outputs.json';
-Amplify.configure(config);
+Amplify.configure({ ...config, ssr: false });
 
-// Import Amplify Authenticator
-import { getCurrentUser } from 'aws-amplify/auth';
+// Authenticator UI
+import '@aws-amplify/ui-react/styles.css';
+import { Authenticator } from '@aws-amplify/ui-react';
+import formFields from "@/config/formFields";
 
 /* Hooks and Utilities */
 import { AppContextProvider } from '@/scripts/AppContextProvider';
@@ -15,33 +15,14 @@ import { AppContextProvider } from '@/scripts/AppContextProvider';
 import PopUpComponent from '@/components/PopUpComponent';
 
 export default function PopupPage() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const checkUser = async () => {
-      try {
-        const authenticatedUser = await getCurrentUser();
-        setUser(authenticatedUser);
-      } catch (err) {
-        setUser(null);
-      }
-      setLoading(false);
-    };
-    checkUser();
-  }, []);
-
-  if (loading) {
-    return <div className="loading">Loading...</div>;
-  }
-  
-  // The AppContextProvider handles loading bookmarks from the correct storage source.
-  // PopUpComponent doesn't need to know how or when this happens.
-  return user ? (
-    <AppContextProvider user={user}>
-      <PopUpComponent />
-    </AppContextProvider>
-  ) : (
-    <div className="signed-out-message">Please sign in on the new tab page to add bookmarks.</div>
+  return (
+    // Render the Authenticator right in the popup
+    <Authenticator formFields={formFields}>      
+      {({ user }) => (
+        <AppContextProvider user={user}>
+          <PopUpComponent />
+        </AppContextProvider>
+      )}
+    </Authenticator>
   );
 }
