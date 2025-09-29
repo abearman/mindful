@@ -20,11 +20,15 @@ import formFields from "@/config/formFields";
 import "@/styles/Index.css"; 
 import "@/styles/NewTab.css";
 
+/* Components */
+import LogoComponent from "@/components/LogoComponent";
+
 const container = document.getElementById("root");
 const root = createRoot(container);
 
 root.render(
   <React.StrictMode>
+    <LogoComponent />
     <Authenticator formFields={formFields}>
       {({ signIn, signOut, user }) => (
         <AppContextProvider user={user}>

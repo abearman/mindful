@@ -1,0 +1,116 @@
+.mindful-auth [data-amplify-authenticator] {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  background: transparent;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.mindful-auth .amplify-card,
+.mindful-auth .amplify-view {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.mindful-auth [data-amplify-authenticator] .amplify-fieldset {
+  border: none !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+/* Reduce horizontal padding inside the form */
+.mindful-auth [data-amplify-authenticator] form {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* Optional: also adjust the inner Field spacing so it's tight */
+.mindful-auth .amplify-field {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+/* Tabs bar also adds inline padding—zero it */
+.mindful-auth .amplify-tabs {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+/* Inputs to match your rounded cards */
+.mindful-auth .amplify-input {
+  border-radius: 0.75rem;                    /* rounded-xl */
+  background-color: rgb(255 255 255);        /* white */
+  border: 1px solid rgb(203 213 225);        /* slate-300 */
+  color: rgb(15 23 42);                      /* slate-900 */
+}
+.dark .mindful-auth .amplify-input {
+  background-color: rgb(2 6 23);             /* slate-950 */
+  border-color: rgb(51 65 85);               /* slate-700 */
+  color: rgb(241 245 249);                   /* slate-100 */
+}
+
+/* Primary button shape to match your app */
+.mindful-auth .amplify-button--primary {
+  border-radius: 1rem;                        /* rounded-2xl */
+}
+
+/* Forgot-password (link-style button) -> match blue button */
+.mindful-auth .amplify-button--link,
+.mindful-auth .amplify-button--link .amplify-button__text {
+  color: rgb(37 99 235) !important;  /* blue-600 */
+  text-decoration: none;
+}
+.mindful-auth .amplify-button--link:hover,
+.mindful-auth .amplify-button--link:hover .amplify-button__text {
+  color: rgb(29 78 216) !important;  /* blue-700 */
+  background-color: rgb(219 234 254) !important; /* blue-100 */
+  text-decoration: underline;
+}
+
+/* dark mode */
+.dark .mindful-auth .amplify-button--link,
+.dark .mindful-auth .amplify-button--link .amplify-button__text {
+  color: rgb(96 165 250) !important; /* blue-400 */
+}
+.dark .mindful-auth .amplify-button--link:hover,
+.dark .mindful-auth .amplify-button--link:hover .amplify-button__text {
+  /*color: rgb(59 130 246) !important; /* blue-500 */ 
+  color: rgb(147 197 253) !important;                /* blue-300 text */
+  background-color: rgb(30 58 138 / 0.3) !important; /* blue-900 with opacity */
+}
+
+/* 1) Kill the container/router padding + width limit */
+.mindful-auth [data-amplify-authenticator] [data-amplify-router],
+.mindful-auth [data-amplify-authenticator] [data-amplify-container] {
+  padding: 0 !important;
+  padding-inline: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  margin: 0 !important;
+  max-width: 100% !important;
+  width: 100% !important;
+
+  /* Also zero the Amplify padding vars that drive these styles */
+  --amplify-components-authenticator-padding-inline-start: 0 !important;
+  --amplify-components-authenticator-padding-inline-end: 0 !important;
+  --amplify-components-authenticator-form-padding-inline-start: 0 !important;
+  --amplify-components-authenticator-form-padding-inline-end: 0 !important;
+}
+
+/* 2) Tabs panel adds its own inset—zero it too */
+.mindful-auth .amplify-tabs__panel[role="tabpanel"] {
+  padding: 0 !important;
+}
+
+/* (optional) If buttons still look wider than Create Account */
+.mindful-auth [data-amplify-authenticator] .amplify-button--primary {
+  --amplify-components-button-padding-inline-start: 1rem !important;
+  --amplify-components-button-padding-inline-end: 1rem !important;
+}

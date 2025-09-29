@@ -5,6 +5,7 @@ Amplify.configure({ ...config, ssr: false });
 
 // Import Hub from the correct package for Amplify v6+
 import { Hub } from 'aws-amplify/utils';
+import { Authenticator, ThemeProvider, createTheme } from '@aws-amplify/ui-react';
 
 /* Scripts */
 import formFields from '@/config/formFields';
@@ -12,10 +13,54 @@ import { AppContextProvider } from '@/scripts/AppContextProvider';
 
 /* Components */
 import PopUpComponent from '@/components/PopUpComponent';
+import LogoComponent from '@/components/LogoComponent';
 
 /* CSS styling */
 import '@aws-amplify/ui-react/styles.css';
-import { Authenticator } from '@aws-amplify/ui-react';
+import '@/styles/amplify-auth-tailwind.css'; 
+
+// Tailwind-aligned Amplify theme
+const amplifyTheme = createTheme({
+  name: 'mindful',
+  tokens: {
+    colors: {
+      brand: {
+        primary: {  // buttons, links, active tabs
+          10: { value: '#eff6ff' },   // blue-50
+          20: { value: '#bfdbfe' },   // blue-200
+          40: { value: '#60a5fa' },   // blue-400
+          60: { value: '#2563eb' },   // blue-600
+          80: { value: '#1d4ed8' },   // blue-700
+          90: { value: '#1e3a8a' },   // blue-900
+        },
+      },
+      background: { primary: { value: 'transparent' } }, // let your page bg show through
+      font: { primary: { value: 'inherit' } },           // use your Tailwind font
+    },
+    borderWidths: {
+      small: { value: '0' },
+      medium: { value: '0' },
+      large: { value: '0' },
+    },
+    components: {
+      button: {
+        primary: {
+          backgroundColor: { value: '{colors.brand.primary.60}' }, 
+          _hover: { backgroundColor: { value: '{colors.brand.primary.40}' } },
+        },
+        paddingInlineStart: { value: '1rem' },
+        paddingInlineEnd: { value: '1rem' },
+      },
+    },
+    fieldset: { borderWidth: { value: '0' } },
+    card: { borderWidth: { value: '0' }, boxShadow: { value: 'none' } },
+    radii: { small: '0.5rem', medium: '0.75rem', large: '1rem', xl: '1rem', xxl: '1.5rem' },
+    shadows: { small: { value: 'none' }, medium: { value: 'none' } },
+    //shadows: { small: { value: '0 1px 2px rgba(0,0,0,0.06)' }, medium: { value: '0 4px 16px rgba(0,0,0,0.12)' } },
+  },
+ 
+ });
+
 
 // --- Reload helpers ---
 function reloadActiveTabIfNewTab() {
@@ -90,12 +135,26 @@ export default function PopupPage() {
   }, []);
 
   return (
-    <Authenticator hideSignUp={false} formFields={formFields}>
-      {({ user }) => (
-        <AppContextProvider user={user}>
-          <PopUpComponent />
-        </AppContextProvider>
-      )}
-    </Authenticator>
+    <ThemeProvider theme={amplifyTheme} colorMode="system">
+      <div className="p-4 mindful-auth">
+        <div className="rounded-2xl shadow-md 
+                      bg-white dark:bg-neutral-900">
+          <div className="p-4">
+            <LogoComponent />
+            <Authenticator
+              className="!p-0"
+              hideSignUp={false}
+              formFields={formFields}
+            >
+              {({ user }) => (
+                <AppContextProvider user={user}>
+                  <PopUpComponent />
+                </AppContextProvider>
+              )}
+            </Authenticator>
+          </div>
+        </div>
+      </div>
+    </ThemeProvider>
   );
 }
