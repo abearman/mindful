@@ -5,6 +5,9 @@ import { AppContext } from "@/scripts/AppContextProvider";
 import { constructValidURL } from '@/scripts/Utilities';
 import { useBookmarkManager } from '@/hooks/useBookmarkManager'; 
 
+/* Components */
+import LogoComponent from '@/components/LogoComponent';
+
 /* Constants */
 import { URL_PATTERN, EMPTY_GROUP_IDENTIFIER } from '@/scripts/Constants.js';
 
@@ -87,7 +90,7 @@ export default function PopupComponent() {
                       bg-white dark:bg-neutral-900
                       border-neutral-200/70 dark:border-neutral-800/70">
         <div className="space-y-4">
-          <h1 className="text-xl font-semibold tracking-tight">Mindful</h1>
+          <LogoComponent />
           <form onSubmit={handleSubmit} className="space-y-3">
             <label htmlFor="group-dropdown" 
                    className="text-neutral-700 dark:text-neutral-300">
