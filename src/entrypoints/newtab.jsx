@@ -28,7 +28,6 @@ const root = createRoot(container);
 
 root.render(
   <React.StrictMode>
-    <LogoComponent />
     <Authenticator formFields={formFields}>
       {({ signIn, signOut, user }) => (
         <AppContextProvider user={user}>
