@@ -1,34 +1,48 @@
+// PopupPage.jsx
 import React, { useEffect } from 'react';
 import { Amplify } from 'aws-amplify';
 import config from '/amplify_outputs.json';
 Amplify.configure({ ...config, ssr: false });
 
+// ✅ Import Hub from the correct package for Amplify v6+
+import { Hub } from 'aws-amplify/utils';
+
 import '@aws-amplify/ui-react/styles.css';
 import { Authenticator } from '@aws-amplify/ui-react';
 import formFields from '@/config/formFields';
-
 import { AppContextProvider } from '@/scripts/AppContextProvider';
 import PopUpComponent from '@/components/PopUpComponent';
 
-// --- NEW: reload helpers ---
-function reloadActiveTab() {
-  // Requires "tabs" permission to work reliably.
-  // Reload the tab that’s currently active behind the popup.
+// --- Reload helpers ---
+function reloadActiveTabIfNewTab() {
   try {
+    const extNtp = chrome.runtime.getURL('newtab.html');
     if (chrome.tabs?.query && chrome.tabs?.reload) {
       chrome.tabs.query({ active: true, lastFocusedWindow: true }, (tabs = []) => {
         const tab = tabs?.[0];
-        if (tab?.id) chrome.tabs.reload(tab.id);
+        if (!tab?.id) return;
+
+        const url = tab.url || '';
+        const pending = tab.pendingUrl || '';
+
+        // Chrome overrides show up as chrome://newtab/ (omnibox blank)
+        // Also allow direct loads of the extension page
+        const isOurNtp =
+          url === 'chrome://newtab/' ||
+          pending === 'chrome://newtab/' ||
+          url.startsWith(extNtp);
+
+        if (isOurNtp) chrome.tabs.reload(tab.id);
       });
     }
   } catch {}
 }
 
 function refreshNewTabPagesBestEffort() {
-  // 1) Try reloading the active tab (works even if it’s chrome://newtab)
-  reloadActiveTab();
+  // 1) Active tab (guarded to only reload if it's the New Tab)
+  reloadActiveTabIfNewTab();
 
-  // 2) Best-effort reload any open extension views that look like your new tab page
+  // 2) Any open extension "tab" views that are the new tab page 
   try {
     const newTabUrl = chrome.runtime.getURL('newtab.html');
     const views = (chrome.extension?.getViews?.({ type: 'tab' }) || []);
@@ -40,41 +54,43 @@ function refreshNewTabPagesBestEffort() {
   } catch {}
 }
 
-// --- NEW: bridge that fires whenever `user` flips truthy/falsey ---
-function AuthSignalBridge({ user }) {
-  useEffect(() => {
-    const at = Date.now();
-    console.log("Got to AuthSignalBridge");
+// --- Broadcast utility (used only on real sign-in/out edges) ---
+function broadcastAuthEdge(type /* 'USER_SIGNED_IN' | 'USER_SIGNED_OUT' */) {
+  const at = Date.now();
 
-    // 1) storage ping (reliable even if listeners aren’t ready yet)
-    try { chrome.storage?.local?.set({ authSignalAt: at, authSignal: user ? 'signedIn' : 'signedOut' }); } catch {}
+  // 1) storage ping
+  try {
+    chrome.storage?.local?.set({ authSignalAt: at, authSignal: type === 'USER_SIGNED_IN' ? 'signedIn' : 'signedOut' });
+  } catch {}
 
-    // 2) broadcast (ignore “no receiver” errors)
-    try {
-      chrome.runtime.sendMessage({ type: user ? 'USER_SIGNED_IN' : 'USER_SIGNED_OUT', at }, () => {
-        // Swallow "receiving end does not exist"
-        // eslint-disable-next-line no-unused-expressions
-        chrome.runtime.lastError;
-      });
-    } catch {}
-
-    // 3) proactively reload the page behind the popup
-    refreshNewTabPagesBestEffort();
-  }, [user]);
-
-  return null;
+  // 2) runtime message (ignore no receiver errors)
+  try {
+    chrome.runtime.sendMessage({ type, at }, () => { chrome.runtime.lastError; });
+  } catch {}
 }
 
 export default function PopupPage() {
+  // ✅ Listen only for real Hub auth edges so we don’t fire on popup open
+  useEffect(() => {
+    const unsub = Hub.listen('auth', ({ payload }) => {
+      // Common events: 'signedIn', 'signedOut', 'tokenRefresh', etc.
+      if (payload?.event === 'signedIn') {
+        broadcastAuthEdge('USER_SIGNED_IN');
+        refreshNewTabPagesBestEffort();
+      } else if (payload?.event === 'signedOut') {
+        broadcastAuthEdge('USER_SIGNED_OUT');
+        refreshNewTabPagesBestEffort();
+      }
+    });
+    return () => unsub();
+  }, []);
+
   return (
     <Authenticator formFields={formFields}>
       {({ user }) => (
-        <>
-          <AuthSignalBridge user={user} />
-          <AppContextProvider user={user}>
-            <PopUpComponent />
-          </AppContextProvider>
-        </>
+        <AppContextProvider user={user}>
+          <PopUpComponent />
+        </AppContextProvider>
       )}
     </Authenticator>
   );
