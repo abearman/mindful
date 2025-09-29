@@ -4,9 +4,10 @@
     <meta charset="UTF-8" />
     <title>Mindful</title>
     <style>
-      html, body, #root { width: 360px; min-height: 520px; margin: 0; }
-      /* Let forms scroll if needed */
-      body { overflow: auto; }
+      html, body { margin: 0; padding: 0; }
+      html, body, #root { width: 360px; }
+      /* Cap height; scroll inside when content exceeds */
+      #root { max-height: 520px; overflow: auto; }
     </style>
   </head>
   <body>
@@ -14,14 +15,3 @@
     <script src="/src/entrypoints/popup.jsx" type="module"></script>
   </body>
 </html>
-
-<!-- <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Mindful</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/entrypoints/popup.jsx"></script>
-</html> -->
