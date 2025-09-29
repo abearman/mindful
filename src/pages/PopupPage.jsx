@@ -56,7 +56,6 @@ const amplifyTheme = createTheme({
     card: { borderWidth: { value: '0' }, boxShadow: { value: 'none' } },
     radii: { small: '0.5rem', medium: '0.75rem', large: '1rem', xl: '1rem', xxl: '1.5rem' },
     shadows: { small: { value: 'none' }, medium: { value: 'none' } },
-    //shadows: { small: { value: '0 1px 2px rgba(0,0,0,0.06)' }, medium: { value: '0 4px 16px rgba(0,0,0,0.12)' } },
   },
  
  });

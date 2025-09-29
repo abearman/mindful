@@ -29,12 +29,6 @@
   padding-right: 0 !important;
 }
 
-/* Optional: also adjust the inner Field spacing so it's tight */
-.mindful-auth .amplify-field {
-  margin-left: 0 !important;
-  margin-right: 0 !important;
-}
-
 /* Tabs bar also adds inline padding—zero it */
 .mindful-auth .amplify-tabs {
   padding-left: 0 !important;
@@ -113,4 +107,30 @@
 .mindful-auth [data-amplify-authenticator] .amplify-button--primary {
   --amplify-components-button-padding-inline-start: 1rem !important;
   --amplify-components-button-padding-inline-end: 1rem !important;
+}
+
+/* If there’s still margin at the top of the form itself */
+.mindful-auth [data-amplify-form] {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+/* Reduce vertical spacing inside flex containers */
+.mindful-auth [data-amplify-authenticator-signup] .amplify-flex {
+  gap: 0rem !important;   /* default is usually 1rem (16px) */
+}
+
+/* 1. Kill label → input spacing */
+.mindful-auth [data-amplify-authenticator-signup] .amplify-field .amplify-label {
+  margin-bottom: 0 !important;    /* no gap under label */
+}
+.mindful-auth [data-amplify-authenticator-signup] .amplify-field__control {
+  margin-top: 0 !important;       /* no gap above input */
+}
+
+/* Also adjust the inner Field spacing so it's tight */
+.mindful-auth [data-amplify-authenticator-signup] .amplify-field {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  margin-bottom: 0.5rem !important;   /* default ~1rem */
 }
