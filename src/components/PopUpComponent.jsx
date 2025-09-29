@@ -113,7 +113,7 @@ export default function PopupComponent() {
             {selectedGroup === 'New Group' && (
               <div className="space-y-1">
                 <label htmlFor="new-group-input" 
-                       className="text-neutral:700 dark:text-neutral-300">
+                       className="text-neutral-700 dark:text-neutral-300">
                   New Group Name
                 </label>
                 <input

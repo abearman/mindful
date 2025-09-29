@@ -8,6 +8,16 @@
       html, body, #root { width: 360px; }
       /* Cap height; scroll inside when content exceeds */
       #root { max-height: 520px; overflow: auto; }
+
+      /* Light mode background */
+      @media (prefers-color-scheme: light) {
+        html, body, #root { background: #f5f5f5; } 
+      }
+      
+      /* Dark mode background */
+      @media (prefers-color-scheme: dark) {
+        html, body, #root { background: #0a0a0b; }
+      }
     </style>
   </head>
   <body>
