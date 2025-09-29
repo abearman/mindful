@@ -1,17 +1,21 @@
-// PopupPage.jsx
 import React, { useEffect } from 'react';
 import { Amplify } from 'aws-amplify';
 import config from '/amplify_outputs.json';
 Amplify.configure({ ...config, ssr: false });
 
-// ✅ Import Hub from the correct package for Amplify v6+
+// Import Hub from the correct package for Amplify v6+
 import { Hub } from 'aws-amplify/utils';
 
-import '@aws-amplify/ui-react/styles.css';
-import { Authenticator } from '@aws-amplify/ui-react';
+/* Scripts */
 import formFields from '@/config/formFields';
 import { AppContextProvider } from '@/scripts/AppContextProvider';
+
+/* Components */
 import PopUpComponent from '@/components/PopUpComponent';
+
+/* CSS styling */
+import '@aws-amplify/ui-react/styles.css';
+import { Authenticator } from '@aws-amplify/ui-react';
 
 // --- Reload helpers ---
 function reloadActiveTabIfNewTab() {
@@ -70,7 +74,7 @@ function broadcastAuthEdge(type /* 'USER_SIGNED_IN' | 'USER_SIGNED_OUT' */) {
 }
 
 export default function PopupPage() {
-  // ✅ Listen only for real Hub auth edges so we don’t fire on popup open
+  // Listen only for real Hub auth edges so we don’t fire on popup open
   useEffect(() => {
     const unsub = Hub.listen('auth', ({ payload }) => {
       // Common events: 'signedIn', 'signedOut', 'tokenRefresh', etc.
@@ -86,7 +90,7 @@ export default function PopupPage() {
   }, []);
 
   return (
-    <Authenticator formFields={formFields}>
+    <Authenticator hideSignUp={false} formFields={formFields}>
       {({ user }) => (
         <AppContextProvider user={user}>
           <PopUpComponent />

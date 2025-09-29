@@ -80,42 +80,77 @@ export default function PopupComponent() {
       )), [bookmarkGroups]);
 
   return (
-    <div className="popup">
-      <h1>Mindful</h1>
-      <form id="add-bookmark-form" onSubmit={handleSubmit} aria-label="Add bookmark">
-        <label htmlFor="group-dropdown">Group</label>
-        <select id="group-dropdown" value={selectedGroup} onChange={(e) => setSelectedGroup(e.target.value)}>
-          {groupOptions}
-          <option value="New Group">New Group</option>
-        </select>
-        
-        {selectedGroup === 'New Group' && (
-          <div>
-            <label htmlFor="new-group-input">New Group Name</label>
-            <input
-              type="text"
-              id="new-group-input"
-              value={newGroupInput}
-              onChange={(e) => setNewGroupInput(e.target.value)}
-              required // A new group must have a name
-            />
-          </div>
-        )}
+    <div className="min-w-[360px] max-w-[420px] bg-neutral-950 text-neutral-100 p-4">
+      <div className="rounded-2xl border border-neutral-800/70 shadow-xl
+                  bg-neutral-900/60 backdrop-blur px-5 py-4">
+        <div className="space-y-4">
+          <h1 className="text-xl font-semibold tracking-tight">Mindful</h1>
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <label htmlFor="group-dropdown" className="text-sm text-neutral-300">Group</label>
+            <select
+              id="group-dropdown"
+              className="w-full rounded-2xl border border-neutral-800 bg-neutral-900/70
+                        px-3 py-2 text-neutral-100 outline-none
+                        focus:border-sky-400 focus:ring-1 focus:ring-sky-400"
+              value={selectedGroup}
+              onChange={(e) => setSelectedGroup(e.target.value)}
+            >
+              {groupOptions}
+              <option value="New Group">New Group</option>
+            </select>
 
-        <label htmlFor="bookmark-name">Name</label>
-        <input type="text" id="bookmark-name" value={name} onChange={(e) => setName(e.target.value)} required />
+            {selectedGroup === 'New Group' && (
+              <div className="space-y-1">
+                <label htmlFor="new-group-input" className="text-sm text-neutral-300">New Group Name</label>
+                <input
+                  id="new-group-input"
+                  className="w-full rounded-2xl border border-neutral-800 bg-neutral-900/70
+                            px-3 py-2 text-neutral-100 outline-none
+                            focus:border-sky-400 focus:ring-1 focus:ring-sky-400"
+                  value={newGroupInput}
+                  onChange={(e) => setNewGroupInput(e.target.value)}
+                  required
+                />
+              </div>
+            )}
 
-        <label htmlFor="bookmark-url">URL</label>
-        <input
-          type="text"
-          id="bookmark-url"
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          pattern={URL_PATTERN}
-          required
-        />
-        <button type="submit" className="add-bookmark-button">Add Bookmark</button>
-      </form>
+            <div className="space-y-1">
+              <label htmlFor="bookmark-name" className="text-sm text-neutral-300">Name</label>
+              <input
+                id="bookmark-name"
+                className="w-full rounded-2xl border border-neutral-800 bg-neutral-900/70
+                          px-3 py-2 text-neutral-100 outline-none
+                          focus:border-sky-400 focus:ring-1 focus:ring-sky-400"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label htmlFor="bookmark-url" className="text-sm text-neutral-300">URL</label>
+              <input
+                id="bookmark-url"
+                pattern={URL_PATTERN}
+                className="w-full rounded-2xl border border-neutral-800 bg-neutral-900/70
+                          px-3 py-2 text-neutral-100 outline-none
+                          focus:border-sky-400 focus:ring-1 focus:ring-sky-400"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="w-full rounded-2xl bg-sky-500 px-4 py-2 font-medium text-white
+                        hover:bg-sky-400 active:bg-sky-600 transition"
+            >
+              Add Bookmark
+            </button>
+          </form>
+        </div>
+      </div>
     </div>
   );
 }
