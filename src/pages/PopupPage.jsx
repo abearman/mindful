@@ -3,46 +3,78 @@ import { Amplify } from 'aws-amplify';
 import config from '/amplify_outputs.json';
 Amplify.configure({ ...config, ssr: false });
 
-// Authenticator UI
 import '@aws-amplify/ui-react/styles.css';
 import { Authenticator } from '@aws-amplify/ui-react';
 import formFields from '@/config/formFields';
 
-// Amplify Hub (v6 import path)
-import { Hub } from 'aws-amplify/utils';
-
 import { AppContextProvider } from '@/scripts/AppContextProvider';
 import PopUpComponent from '@/components/PopUpComponent';
 
-export default function PopupPage() {
+// --- NEW: reload helpers ---
+function reloadActiveTab() {
+  // Requires "tabs" permission to work reliably.
+  // Reload the tab that’s currently active behind the popup.
+  try {
+    if (chrome.tabs?.query && chrome.tabs?.reload) {
+      chrome.tabs.query({ active: true, lastFocusedWindow: true }, (tabs = []) => {
+        const tab = tabs?.[0];
+        if (tab?.id) chrome.tabs.reload(tab.id);
+      });
+    }
+  } catch {}
+}
+
+function refreshNewTabPagesBestEffort() {
+  // 1) Try reloading the active tab (works even if it’s chrome://newtab)
+  reloadActiveTab();
+
+  // 2) Best-effort reload any open extension views that look like your new tab page
+  try {
+    const newTabUrl = chrome.runtime.getURL('newtab.html');
+    const views = (chrome.extension?.getViews?.({ type: 'tab' }) || []);
+    for (const v of views) {
+      try {
+        if (v?.location?.href?.startsWith?.(newTabUrl)) v.location.reload();
+      } catch {}
+    }
+  } catch {}
+}
+
+// --- NEW: bridge that fires whenever `user` flips truthy/falsey ---
+function AuthSignalBridge({ user }) {
   useEffect(() => {
-    const listener = (capsule) => {
-      const event = capsule?.payload?.event;
-      const now = Date.now();
+    const at = Date.now();
+    console.log("Got to AuthSignalBridge");
 
-      if (event === 'signedIn') {
-        // Broadcast to all extension contexts
-        try { chrome.runtime.sendMessage({ type: 'USER_SIGNED_IN', at: now }); } catch {}
-        // Storage change fallback (so pages can listen to storage events)
-        try { chrome.storage?.local?.set({ authSignal: 'signedIn', authSignalAt: now }); } catch {}
-      }
+    // 1) storage ping (reliable even if listeners aren’t ready yet)
+    try { chrome.storage?.local?.set({ authSignalAt: at, authSignal: user ? 'signedIn' : 'signedOut' }); } catch {}
 
-      if (event === 'signedOut') {
-        try { chrome.runtime.sendMessage({ type: 'USER_SIGNED_OUT', at: now }); } catch {}
-        try { chrome.storage?.local?.set({ authSignal: 'signedOut', authSignalAt: now }); } catch {}
-      }
-    };
+    // 2) broadcast (ignore “no receiver” errors)
+    try {
+      chrome.runtime.sendMessage({ type: user ? 'USER_SIGNED_IN' : 'USER_SIGNED_OUT', at }, () => {
+        // Swallow "receiving end does not exist"
+        // eslint-disable-next-line no-unused-expressions
+        chrome.runtime.lastError;
+      });
+    } catch {}
 
-    Hub.listen('auth', listener);
-    return () => Hub.remove('auth', listener);
-  }, []);
+    // 3) proactively reload the page behind the popup
+    refreshNewTabPagesBestEffort();
+  }, [user]);
 
+  return null;
+}
+
+export default function PopupPage() {
   return (
     <Authenticator formFields={formFields}>
       {({ user }) => (
-        <AppContextProvider user={user}>
-          <PopUpComponent />
-        </AppContextProvider>
+        <>
+          <AuthSignalBridge user={user} />
+          <AppContextProvider user={user}>
+            <PopUpComponent />
+          </AppContextProvider>
+        </>
       )}
     </Authenticator>
   );
