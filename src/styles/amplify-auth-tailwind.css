@@ -1,83 +1,68 @@
+@import "tailwindcss";
+
+/* Base Authenticator container */
 .mindful-auth [data-amplify-authenticator] {
-  padding-left: 0 !important;
-  padding-right: 0 !important;
-  margin-left: 0 !important;
-  margin-right: 0 !important;
-  background: transparent;
-  border: none !important;
-  box-shadow: none !important;
+  @apply px-0 mx-0 bg-transparent border-none shadow-none;
 }
 
+/* Cards & views */
 .mindful-auth .amplify-card,
 .mindful-auth .amplify-view {
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
+  @apply bg-transparent border-none shadow-none;
 }
 
+/* Fieldsets */
 .mindful-auth [data-amplify-authenticator] .amplify-fieldset {
-  border: none !important;
-  padding-left: 0 !important;
-  padding-right: 0 !important;
-  margin-left: 0 !important;
-  margin-right: 0 !important;
+  @apply px-0 mx-0 border-none;
 }
 
+/* Form inside authenticator */
 /* Reduce horizontal padding inside the form */
 .mindful-auth [data-amplify-authenticator] form {
-  padding-left: 0 !important;
-  padding-right: 0 !important;
+  @apply px-0;
 }
 
-/* Tabs bar also adds inline padding—zero it */
+/* Tabs bar */
+/* Tabs bar also adds inline padding -- zero it */
 .mindful-auth .amplify-tabs {
-  padding-left: 0 !important;
-  padding-right: 0 !important;
-  margin-left: 0 !important;
-  margin-right: 0 !important;
+  @apply px-0 mx-0;
 }
 
-/* Inputs to match your rounded cards */
+/* Tabs (Sign in / Create Account) */
+.mindful-auth .amplify-tabs__item {
+  @apply text-neutral-700 dark:text-neutral-300 font-semibold
+         hover:text-neutral-900 dark:hover:text-neutral-100; 
+}
+.mindful-auth .amplify-tabs__item[aria-selected="true"] {
+  @apply text-blue-600 dark:text-blue-500;
+}
+
+/* Form labels */
+.mindful-auth .amplify-label {
+  @apply text-neutral-700 dark:text-neutral-300;
+}
+
+/* Inputs to match the rounded cards */
 .mindful-auth .amplify-input {
-  border-radius: 0.75rem;                    /* rounded-xl */
-  background-color: rgb(255 255 255);        /* white */
-  border: 1px solid rgb(203 213 225);        /* slate-300 */
-  color: rgb(15 23 42);                      /* slate-900 */
-}
-.dark .mindful-auth .amplify-input {
-  background-color: rgb(2 6 23);             /* slate-950 */
-  border-color: rgb(51 65 85);               /* slate-700 */
-  color: rgb(241 245 249);                   /* slate-100 */
+  @apply rounded-xl border 
+       bg-white dark:bg-neutral-950
+       border-neutral-300 dark:border-neutral-700 
+       text-neutral-900 dark:text-neutral-100;
 }
 
-/* Primary button shape to match your app */
+/* Primary submit button */
 .mindful-auth .amplify-button--primary {
-  border-radius: 1rem;                        /* rounded-2xl */
+  @apply rounded-2xl
+         bg-blue-600 hover:bg-blue-500
+         text-white font-normal;
 }
 
-/* Forgot-password (link-style button) -> match blue button */
+/* Forgot-password (link-style button) */
 .mindful-auth .amplify-button--link,
 .mindful-auth .amplify-button--link .amplify-button__text {
-  color: rgb(37 99 235) !important;  /* blue-600 */
-  text-decoration: none;
-}
-.mindful-auth .amplify-button--link:hover,
-.mindful-auth .amplify-button--link:hover .amplify-button__text {
-  color: rgb(29 78 216) !important;  /* blue-700 */
-  background-color: rgb(219 234 254) !important; /* blue-100 */
-  text-decoration: underline;
-}
-
-/* dark mode */
-.dark .mindful-auth .amplify-button--link,
-.dark .mindful-auth .amplify-button--link .amplify-button__text {
-  color: rgb(96 165 250) !important; /* blue-400 */
-}
-.dark .mindful-auth .amplify-button--link:hover,
-.dark .mindful-auth .amplify-button--link:hover .amplify-button__text {
-  /*color: rgb(59 130 246) !important; /* blue-500 */ 
-  color: rgb(147 197 253) !important;                /* blue-300 text */
-  background-color: rgb(30 58 138 / 0.3) !important; /* blue-900 with opacity */
+  @apply bg-transparent hover:bg-transparent 
+         text-blue-600 dark:text-blue-500 
+         no-underline hover:underline; 
 }
 
 /* 1) Kill the container/router padding + width limit */
@@ -103,7 +88,7 @@
   padding: 0 !important;
 }
 
-/* (optional) If buttons still look wider than Create Account */
+/* optional If buttons still look wider than Create Account */
 .mindful-auth [data-amplify-authenticator] .amplify-button--primary {
   --amplify-components-button-padding-inline-start: 1rem !important;
   --amplify-components-button-padding-inline-end: 1rem !important;
