@@ -18,6 +18,7 @@ const formFields = {
     },
     phone_number: {
       label: "Phone Number",
+      labelHidden: true,
       placeholder: "Enter your phone number",
       isRequired: true,
       order: 4,

@@ -51,6 +51,19 @@
        focus:border-blue-400 focus:ring-1 focus:ring-blue-400;
 }
 
+/* Phone Input */
+/* Make the phone field flush with the label */
+.mindful-auth .PhoneInput {            /* wrapper */
+  @apply ml-0 pl-0 w-full;
+}
+.mindful-auth .PhoneInputCountry {     /* flag button wrapper */
+  @apply ml-0 pl-0;
+}
+/* Some builds add a couple px of left spacing to the icon – nudge it left */
+.mindful-auth .PhoneInputCountryIcon {
+  @apply translate-x-[2px];           /* try -1px or -2px to match exactly */
+}
+
 /* Override the "show password" button styling */
 .mindful-auth .amplify-field-group__outer-end .amplify-field-group__control {
   @apply bg-white dark:bg-neutral-950

@@ -14,6 +14,7 @@ import { AppContextProvider } from '@/scripts/AppContextProvider';
 /* Components */
 import PopUpComponent from '@/components/PopUpComponent';
 import LogoComponent from '@/components/LogoComponent';
+import SignUpFormFields from "@/components/auth/SignUpFormFields";
 
 /* CSS styling */
 import '@aws-amplify/ui-react/styles.css';
@@ -143,6 +144,11 @@ export default function PopupPage() {
             <Authenticator
               className="!p-0"
               hideSignUp={false}
+              components={{
+                SignUp: {
+                  FormFields: SignUpFormFields,
+                },
+              }}
               formFields={formFields}
             >
               {({ user }) => (
