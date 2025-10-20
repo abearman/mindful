@@ -47,14 +47,16 @@
   @apply rounded-xl  
        bg-white dark:bg-neutral-950
        border border-neutral-300 dark:border-neutral-700 
-       text-neutral-900 dark:text-neutral-100;
+       text-neutral-900 dark:text-neutral-100
+       focus:border-blue-400 focus:ring-1 focus:ring-blue-400;
 }
 
-/* Override the "show password" button background */
+/* Override the "show password" button styling */
 .mindful-auth .amplify-field-group__outer-end .amplify-field-group__control {
   @apply bg-white dark:bg-neutral-950
          border border-neutral-300 dark:border-neutral-700 
-         hover:bg-blue-50 dark:hover:bg-blue-950;
+         hover:bg-blue-50 dark:hover:bg-blue-950
+         focus:border-blue-400 focus:ring-1 focus:ring-blue-400;
 }
 /* Change show-password eyeball icon color */
 .mindful-auth .amplify-field-group__outer-end .amplify-icon {
