@@ -134,3 +134,28 @@
   margin-right: 0 !important;
   margin-bottom: 0.5rem !important;   /* default ~1rem */
 }
+
+/* 0) Nuke the Authenticator's built-in min-heights via tokens */
+.mindful-auth {
+  --amplify-components-authenticator-min-height: 0 !important;
+  --amplify-components-authenticator-router-min-height: 0 !important;
+  --amplify-components-authenticator-container-min-height: 0 !important;
+  --amplify-components-tabs-panel-min-height: 0 !important;
+}
+
+/* 1) Make router/container/panel shrink to fit */
+.mindful-auth [data-amplify-authenticator] [data-amplify-router],
+.mindful-auth [data-amplify-authenticator] [data-amplify-container],
+.mindful-auth .amplify-tabs__panel[role="tabpanel"] {
+  min-height: 0 !important;
+  height: auto !important;
+  min-block-size: 0 !important;
+  block-size: auto !important;
+}
+
+/* 2) Some builds set min-height on generic View/Card too */
+.mindful-auth .amplify-view,
+.mindful-auth .amplify-card {
+  min-height: 0 !important;
+  height: auto !important;
+}

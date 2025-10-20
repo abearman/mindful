@@ -135,7 +135,7 @@ export default function PopupPage() {
 
   return (
     <ThemeProvider theme={amplifyTheme} colorMode="system">
-      <div className="p-4 mindful-auth">
+      <div className="p-4 mindful-auth max-h-[520px] overflow-auto">
         <div className="rounded-2xl shadow-md 
                       bg-white dark:bg-neutral-900">
           <div className="p-4">
