@@ -44,10 +44,21 @@
 
 /* Inputs to match the rounded cards */
 .mindful-auth .amplify-input {
-  @apply rounded-xl border 
+  @apply rounded-xl  
        bg-white dark:bg-neutral-950
-       border-neutral-300 dark:border-neutral-700 
+       border border-neutral-300 dark:border-neutral-700 
        text-neutral-900 dark:text-neutral-100;
+}
+
+/* Override the "show password" button background */
+.mindful-auth .amplify-field-group__outer-end .amplify-field-group__control {
+  @apply bg-white dark:bg-neutral-950
+         border border-neutral-300 dark:border-neutral-700 
+         hover:bg-blue-50 dark:hover:bg-blue-950;
+}
+/* Change show-password eyeball icon color */
+.mindful-auth .amplify-field-group__outer-end .amplify-icon {
+  @apply text-neutral-500 dark:text-neutral-300;
 }
 
 /* Primary submit button */
@@ -65,7 +76,8 @@
          no-underline hover:underline; 
 }
 
-/* 1) Kill the container/router padding + width limit */
+/* ============ Margin and padding adjustments ============ */
+/* Kill the container/router padding + width limit */
 .mindful-auth [data-amplify-authenticator] [data-amplify-router],
 .mindful-auth [data-amplify-authenticator] [data-amplify-container] {
   padding: 0 !important;
@@ -83,7 +95,7 @@
   --amplify-components-authenticator-form-padding-inline-end: 0 !important;
 }
 
-/* 2) Tabs panel adds its own inset—zero it too */
+/* Tabs panel adds its own inset -- zero it too */
 .mindful-auth .amplify-tabs__panel[role="tabpanel"] {
   padding: 0 !important;
 }
@@ -105,7 +117,7 @@
   gap: 0rem !important;   /* default is usually 1rem (16px) */
 }
 
-/* 1. Kill label → input spacing */
+/* Kill label → input spacing */
 .mindful-auth [data-amplify-authenticator-signup] .amplify-field .amplify-label {
   margin-bottom: 0 !important;    /* no gap under label */
 }
@@ -120,7 +132,7 @@
   margin-bottom: 0.5rem !important;   /* default ~1rem */
 }
 
-/* 0) Nuke the Authenticator's built-in min-heights via tokens */
+/* Nuke the Authenticator's built-in min-heights via tokens */
 .mindful-auth {
   --amplify-components-authenticator-min-height: 0 !important;
   --amplify-components-authenticator-router-min-height: 0 !important;
@@ -128,7 +140,7 @@
   --amplify-components-tabs-panel-min-height: 0 !important;
 }
 
-/* 1) Make router/container/panel shrink to fit */
+/* Make router/container/panel shrink to fit */
 .mindful-auth [data-amplify-authenticator] [data-amplify-router],
 .mindful-auth [data-amplify-authenticator] [data-amplify-container],
 .mindful-auth .amplify-tabs__panel[role="tabpanel"] {
@@ -138,9 +150,10 @@
   block-size: auto !important;
 }
 
-/* 2) Some builds set min-height on generic View/Card too */
+/* Some builds set min-height on generic View/Card too */
 .mindful-auth .amplify-view,
 .mindful-auth .amplify-card {
   min-height: 0 !important;
   height: auto !important;
 }
+/* ========================================== */
