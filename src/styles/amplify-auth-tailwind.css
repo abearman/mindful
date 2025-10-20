@@ -76,6 +76,10 @@
   @apply text-neutral-500 dark:text-neutral-300;
 }
 
+.mindful-auth .amplify-field__error-message {
+  white-space: pre-line; /* keeps line breaks in the password error text */
+}
+
 /* Primary submit button */
 .mindful-auth .amplify-button--primary {
   @apply rounded-2xl

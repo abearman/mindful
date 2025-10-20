@@ -83,7 +83,23 @@ export default function SignUpFormFields() {
         defaultValue={password.defaultValue}
         onChange={password.onChange}
         hasError={!!password.error}
-        errorMessage={password.error}
+        errorMessage={
+          Array.isArray(password.error)
+            ? password.error.map((msg, i) => (
+                <p key={i} className="text-red-500 text-xs">
+                  {String(msg).trim()}
+                </p>
+              ))
+            : typeof password.error === "string"
+            ? password.error
+                .split(/(?=Password must|(?<=\.)\s+)/) // split nicely if concatenated
+                .map((msg, i) => (
+                  <p key={i} className="text-red-500 text-xs">
+                    {msg.trim()}
+                  </p>
+                ))
+            : password.error /* fallback if Amplify sends JSX */
+        }
       />
 
       <PasswordField
