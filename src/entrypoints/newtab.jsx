@@ -4,7 +4,7 @@ import { createRoot } from "react-dom/client";
 /* Configure Amplify */
 import { Amplify } from 'aws-amplify';
 import config from '/amplify_outputs.json';
-Amplify.configure(config);
+Amplify.configure({ ...config, ssr: false });
 
 /* Amplify auth */
 import { Authenticator, ThemeProvider } from '@aws-amplify/ui-react';
@@ -35,14 +35,54 @@ import SignUpFormFields from "@/components/auth/SignUpFormFields";
 const container = document.getElementById("root");
 const root = createRoot(container);
 
-root.render(
-  <React.StrictMode>
+
+/* =========================
+   Hash route parser
+   ========================= */
+function parseAuthFromHash() {
+  const hash = window.location.hash || ""; // e.g. "#auth=signUp"
+  console.log('[parseAuthFromHash] hash:', hash);
+  const m = /(?:^|[?#&])auth=([^&]+)/.exec(hash);
+  const val = m ? decodeURIComponent(m[1]) : undefined;
+  const route = val === "signUp" || val === "confirmSignUp" ? val : undefined;
+  return route;
+}
+
+function NewTabRoot() {
+  // Compute initialState before first render (Amplify reads it once)
+  const initialFromHash = React.useMemo(() => parseAuthFromHash(), []);
+
+  React.useEffect(() => {
+    console.log('[NewTabRoot] reading pendingVerifyEmail…');
+    chrome.storage?.local?.get(["pendingVerifyEmail"], (res) => {
+      const err = chrome.runtime?.lastError;
+      if (err) console.warn('[NewTabRoot] storage.get error:', err);
+      console.log('[NewTabRoot] storage.get result:', res);
+
+      const v = typeof res?.pendingVerifyEmail === "string" ? res.pendingVerifyEmail : '';
+      if (v) {
+        console.log('[NewTabRoot] setConfirmEmail:', v);
+        setConfirmEmail(v);
+        // optional: clear after using to avoid stale reuse
+        chrome.storage.local.remove('pendingVerifyEmail', () => {
+          const rmErr = chrome.runtime?.lastError;
+          if (rmErr) console.warn('[NewTabRoot] storage.remove error:', rmErr);
+          else console.log('[NewTabRoot] pendingVerifyEmail removed');
+        });
+      } else {
+        console.log('[NewTabRoot] no pendingVerifyEmail found');
+      }
+    });
+  }, []);
+
+  return (
     <ThemeProvider theme={amplifyTheme} colorMode="system">
       <div className="newtab-root mindful-auth">
         <Authenticator 
           hideSignUp={false}
+          initialState={initialFromHash}
           components={{ 
-            Header: LogoComponent,
+            Header: LogoComponent,  // Logo shows only on auth screens
             SignUp: { FormFields: SignUpFormFields } 
           }}
           formFields={formFields}
@@ -55,5 +95,12 @@ root.render(
         </Authenticator>
       </div>
     </ThemeProvider> 
+  );
+}
+
+
+root.render(
+  <React.StrictMode>
+    <NewTabRoot />
   </React.StrictMode>
 );

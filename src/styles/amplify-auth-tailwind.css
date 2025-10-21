@@ -115,12 +115,14 @@
          text-white font-normal;
 }
 
-/* Forgot-password (link-style button) */
+/* Link-style button (Forgot Password, Create Account) */
 .mindful-auth .amplify-button--link,
 .mindful-auth .amplify-button--link .amplify-button__text {
   @apply bg-transparent hover:bg-transparent 
          text-blue-600 dark:text-blue-500 
-         no-underline hover:underline; 
+         no-underline hover:underline
+         font-semibold
+         cursor-pointer; 
 }
 
 /* ============ Margin and padding adjustments ============ */

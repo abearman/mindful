@@ -6,6 +6,7 @@ Amplify.configure({ ...config, ssr: false });
 // Import Hub from the correct package for Amplify v6+
 import { Hub } from 'aws-amplify/utils';
 import { Authenticator, ThemeProvider } from '@aws-amplify/ui-react';
+import { useAuthenticator } from '@aws-amplify/ui-react'; 
 
 /* Scripts */
 import { AppContextProvider } from '@/scripts/AppContextProvider';
@@ -24,6 +25,29 @@ import { amplifyTheme } from '@/theme/amplifyTheme';
 import formFields from "@/config/formFields";
 import SignUpFormFields from "@/components/auth/SignUpFormFields";
 
+
+// Function to open a new tab for Create Account (for ease of email verification)
+async function openAuthTab(route /* 'signUp' | 'confirmSignUp' */ = 'signUp', extras = {}) {
+  const url = chrome.runtime.getURL(`newtab.html#auth=${route}`);
+  chrome.tabs.create({ url }, () => {
+    const err = chrome.runtime.lastError;
+    if (err) console.warn('[openAuthTab] tabs.create error:', err);
+    window.close();
+  });
+}
+
+// Watch Amplify route in popup to auto-handoff on confirm
+function PopupRouteWatcher() {
+  const { route, signUp } = useAuthenticator((ctx) => [ctx.route, ctx.signUp]);
+
+  React.useEffect(() => {
+    if (route === 'confirmSignUp') {
+      openAuthTab('confirmSignUp');
+    }
+  }, [route]);
+
+  return null;
+}
 
 // --- Reload helpers ---
 function reloadActiveTabIfNewTab() {
@@ -81,6 +105,21 @@ function broadcastAuthEdge(type /* 'USER_SIGNED_IN' | 'USER_SIGNED_OUT' */) {
   } catch {}
 }
 
+// Footer component that shows on the Sign In screen
+function SignInFooter() {
+  return (
+    <div className="mt-3 text-center">
+      <button
+        type="button"
+        className="amplify-button--link"
+        onClick={() => openAuthTab('signUp')}
+      >
+        Create account
+      </button>
+    </div>
+  );
+}
+
 export default function PopupPage() {
   // Listen only for real Hub auth edges so we don’t fire on popup open
   useEffect(() => {
@@ -104,13 +143,31 @@ export default function PopupPage() {
         <LogoComponent />
         <Authenticator
           className="!p-0"
-          hideSignUp={false}
-          components={{ SignUp: { FormFields: SignUpFormFields } }}
+          hideSignUp={true}  // Hide Create Account in the popup in order to open a new tab, for easier email verification                   
           formFields={formFields}
+          components={{
+            SignIn: { Footer: SignInFooter },
+          }}
         >
           {({ user }) => (
             <AppContextProvider user={user}>
+              {/* Offer a create-account link */}
+              {!user && (
+                <div className="mt-3">
+                  <button
+                    className="text-sm text-blue-600 hover:underline"
+                    onClick={() => openAuthTab('signUp')}
+                    type="button"
+                  >
+                    Create account (opens full page)
+                  </button>
+                </div>
+              )}
+
               <PopUpComponent />
+
+              {/* Silently watch for confirm step and auto-handoff */}
+              <PopupRouteWatcher />
             </AppContextProvider>
           )}
         </Authenticator>
