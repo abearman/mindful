@@ -46,6 +46,11 @@ export default function SignUpFormFields() {
           defaultCountry="US"
           value={phoneE164}
           onChange={(val) => setPhoneE164((val ?? '').replace(/\s+/g, ''))}
+          // Remove browser auto-selection
+          onFocus={(e) => {
+            const input = e.target as HTMLInputElement; 
+            input.setSelectionRange(input.value.length, input.value.length);
+          }}
           countryCallingCodeEditable={false}
           numberInputProps={{
             className: 'amplify-input',
