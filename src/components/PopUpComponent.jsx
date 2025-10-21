@@ -81,7 +81,11 @@ export default function PopupComponent() {
 
   return (
     <div className="space-y-4">
-      <form onSubmit={handleSubmit} className="space-y-3">
+      <form 
+        onSubmit={handleSubmit} 
+        className="space-y-3"
+        aria-label="Add Bookmark"
+      >
         <label htmlFor="group-dropdown" 
                 className="text-neutral-700 dark:text-neutral-300">
           Group
