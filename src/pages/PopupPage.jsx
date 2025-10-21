@@ -26,7 +26,7 @@ import formFields from "@/config/formFields";
 import SignUpFormFields from "@/components/auth/SignUpFormFields";
 
 
-// Function to open a new tab for Create Account (for ease of email verification)
+// Function to open a new tab for Create Account or Verify Account (to avoid infinite email loop + popup closing)
 async function openAuthTab(route /* 'signUp' | 'confirmSignUp' */ = 'signUp', extras = {}) {
   const url = chrome.runtime.getURL(`newtab.html#auth=${route}`);
   chrome.tabs.create({ url }, () => {
@@ -38,17 +38,21 @@ async function openAuthTab(route /* 'signUp' | 'confirmSignUp' */ = 'signUp', ex
 
 // Watch Amplify route in popup to auto-handoff on confirm
 function PopupRouteWatcher() {
-  const { route, signUp } = useAuthenticator((ctx) => [ctx.route, ctx.signUp]);
+  const { route } = useAuthenticator((ctx) => [ctx.route]);
 
   React.useEffect(() => {
-    if (route === 'confirmSignUp') {
+    const isVerify =
+      route === 'confirmSignUp' ||
+      route === 'verifyUser' ||
+      route === 'confirmVerifyUser';
+
+    if (isVerify) {
       openAuthTab('confirmSignUp');
     }
   }, [route]);
 
   return null;
 }
-
 // --- Reload helpers ---
 function reloadActiveTabIfNewTab() {
   try {

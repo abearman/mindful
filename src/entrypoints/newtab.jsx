@@ -41,11 +41,9 @@ const root = createRoot(container);
    ========================= */
 function parseAuthFromHash() {
   const hash = window.location.hash || ""; // e.g. "#auth=signUp"
-  console.log('[parseAuthFromHash] hash:', hash);
   const m = /(?:^|[?#&])auth=([^&]+)/.exec(hash);
   const val = m ? decodeURIComponent(m[1]) : undefined;
-  const route = val === "signUp" || val === "confirmSignUp" ? val : undefined;
-  return route;
+  return val === "signUp" || val === "confirmSignUp" ? val : undefined;
 }
 
 function NewTabRoot() {
