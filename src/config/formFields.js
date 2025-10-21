@@ -4,13 +4,13 @@ const formFields = {
     given_name: {
       label: "First Name",
       placeholder: "Enter your first name",
-      isRequired: true,
+      required: true,
       order: 1,
     },
     family_name: {
       label: "Last Name",
       placeholder: "Enter your last name",
-      isRequired: true,
+      required: true,
       order: 2,
     },
     email: {
@@ -18,9 +18,8 @@ const formFields = {
     },
     phone_number: {
       label: "Phone Number",
-      labelHidden: true,
       placeholder: "Enter your phone number",
-      isRequired: true,
+      required: true,
       order: 4,
     },
     password: {
