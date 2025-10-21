@@ -61,6 +61,14 @@
   @apply text-neutral-700 dark:text-neutral-300 text-base;
 }
 
+/* Headings and paragraphs (email verification notice) */
+.mindful-auth .amplify-heading {
+  @apply text-neutral-700 dark:text-neutral-300;
+}
+.mindful-auth .amplify-text {
+  @apply text-neutral-700 dark:text-neutral-300;
+}
+
 /* Inputs to match the rounded cards */
 .mindful-auth .amplify-input {
   @apply rounded-xl  
