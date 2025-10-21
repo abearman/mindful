@@ -15,6 +15,7 @@ import { AppContextProvider } from '@/scripts/AppContextProvider';
 import PopUpComponent from '@/components/PopUpComponent';
 import LogoComponent from '@/components/LogoComponent';
 import SignUpFormFields from "@/components/auth/SignUpFormFields";
+import PopupAutosize from "@/components/PopupAutosize";
 
 /* CSS styling */
 import '@aws-amplify/ui-react/styles.css';
@@ -136,19 +137,15 @@ export default function PopupPage() {
 
   return (
     <ThemeProvider theme={amplifyTheme} colorMode="system">
-      <div className="p-4 mindful-auth max-h-[520px] overflow-auto">
-        <div className="rounded-2xl shadow-md 
-                      bg-white dark:bg-neutral-900">
+      <div className="popup-root mindful-auth p-4">   {/* <- observed node */}
+        <PopupAutosize selector=".popup-root" maxH={600} />
+        <div className="rounded-2xl shadow-md bg-white dark:bg-neutral-900">
           <div className="p-4">
             <LogoComponent />
             <Authenticator
               className="!p-0"
               hideSignUp={false}
-              components={{
-                SignUp: {
-                  FormFields: SignUpFormFields,
-                },
-              }}
+              components={{ SignUp: { FormFields: SignUpFormFields } }}
               formFields={formFields}
             >
               {({ user }) => (
@@ -162,4 +159,5 @@ export default function PopupPage() {
       </div>
     </ThemeProvider>
   );
+
 }
