@@ -67,7 +67,8 @@
        bg-white dark:bg-neutral-950
        border border-neutral-300 dark:border-neutral-700 
        text-neutral-900 dark:text-neutral-100
-       focus:border-blue-400 focus:ring-1 focus:ring-blue-400;
+       focus:border-blue-400 focus:ring-1 focus:ring-blue-400
+       px-3;
 }
 
 /* Phone Input */
