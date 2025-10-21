@@ -5,6 +5,25 @@
   @apply px-0 mx-0 bg-transparent border-none shadow-none;
 }
 
+/* Give the auth form a card on auth screens only */
+.mindful-auth [data-amplify-authenticator] [data-amplify-container] {
+  @apply rounded-xl shadow-[0_8px_28px_rgba(0,0,0,0.12)] 
+         bg-white dark:bg-neutral-900
+         p-4 max-w-[28rem] mx-auto;
+}
+
+/* Optional max width to keep the nice default width feel */
+.mindful-auth [data-amplify-authenticator] [data-amplify-container] {
+  max-width: 28rem; /* 24–28rem works well */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Router */
+.mindful-auth [data-amplify-authenticator] [data-amplify-router] {
+  @apply shadow-none;
+}
+
 /* Cards & views */
 .mindful-auth .amplify-card,
 .mindful-auth .amplify-view {
@@ -39,7 +58,7 @@
 
 /* Form labels */
 .mindful-auth .amplify-label {
-  @apply text-neutral-700 dark:text-neutral-300;
+  @apply text-neutral-700 dark:text-neutral-300 text-base;
 }
 
 /* Inputs to match the rounded cards */
@@ -96,16 +115,16 @@
 }
 
 /* ============ Margin and padding adjustments ============ */
-/* Kill the container/router padding + width limit */
-.mindful-auth [data-amplify-authenticator] [data-amplify-router],
-.mindful-auth [data-amplify-authenticator] [data-amplify-container] {
-  padding: 0 !important;
-  padding-inline: 0 !important;
-  padding-left: 0 !important;
-  padding-right: 0 !important;
-  margin: 0 !important;
-  max-width: 100% !important;
-  width: 100% !important;
+/* Kill the container/router padding + width limit just for Popup */
+.mindful-auth:not(.newtab-root) [data-amplify-authenticator] [data-amplify-router],
+.mindful-auth:not(.newtab-root) [data-amplify-authenticator] [data-amplify-container] {
+  padding: 0; 
+  padding-inline: 0;
+  padding-left: 10;
+  padding-right: 10;
+  margin: 0;
+  max-width: 100%;
+  width: 100%;
 
   /* Also zero the Amplify padding vars that drive these styles */
   --amplify-components-authenticator-padding-inline-start: 0 !important;
