@@ -41,6 +41,7 @@ export default function PopupAutosize({
     apply();
 
     // resize observer for dynamic changes (tab switch, validation text, etc.)
+    if (typeof ResizeObserver !== 'function') return;
     ro.current = new ResizeObserver(() => requestAnimationFrame(apply));
     ro.current.observe(target);
 
