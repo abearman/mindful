@@ -1,11 +1,21 @@
 import React, { createContext, useState, useEffect, useCallback } from 'react';
-import { StorageType, DEFAULT_STORAGE_TYPE } from '@/scripts/Constants.js';
-import { loadInitialBookmarks } from '@/hooks/useBookmarkManager.js';
 import {
   fetchAuthSession,
   fetchUserAttributes,
   updateUserAttribute,
 } from 'aws-amplify/auth';
+
+/* Scripts */
+import { StorageType, DEFAULT_STORAGE_TYPE } from '@/scripts/Constants.js';
+import { loadInitialBookmarks } from '@/hooks/useBookmarkManager.js';
+
+/* Caching: synchronous snapshot for first-paint + session cache for reopens */
+import {
+  readBookmarkCacheSync,           // localStorage (sync)
+  writeBookmarkCacheSync,          // localStorage (sync)
+  readBookmarkCacheSession,        // chrome.storage.session (async)
+  writeBookmarkCacheSession,       // chrome.storage.session (async)
+} from '@/scripts/bookmarkCache';
 
 export const AppContext = createContext();
 
@@ -13,25 +23,18 @@ export function AppContextProvider({ user, children }) {
   // ----- state -----
   const [userAttributes, setUserAttributes] = useState(null);
 
-  // Critical: render ASAP with a tiny groups index
-  const [groupsIndex, setGroupsIndex] = useState([]);         // [{id, groupName}]
-  const [bookmarkGroups, setBookmarkGroups] = useState([]);   // FULL objects, hydrated later
+  // Seed immediately from a synchronous snapshot (pre-user, pre-mode) to avoid flicker.
+  // We’ll refine once we know userId/storageType.
+  const seed = readBookmarkCacheSync(undefined, undefined) || { data: [] };
+  const [bookmarkGroups, setBookmarkGroups] = useState(seed.data || []);
+  const [groupsIndex, setGroupsIndex] = useState([]); // [{ id, groupName }]
+  const [hasHydrated, setHasHydrated] = useState(!!(seed.data?.length));
 
   const [userId, setUserId] = useState(null);
   const [storageType, setStorageType] = useState(null);
 
-  const [isLoading, setIsLoading] = useState(true);            // only for the very first paint
+  const [isLoading, setIsLoading] = useState(true);   // only for the very first paint
   const [isMigrating, setIsMigrating] = useState(false);
-  const [hasHydrated, setHasHydrated] = useState(false);
-
-  // Use localSTorage to seed the initial state of the PopUp before the first paint
-  const LAST_GROUP_KEY = 'mindful:lastSelectedGroup';
-  const getStoredGroup = () => {
-    try { return localStorage.getItem(LAST_GROUP_KEY) || ''; } catch { return ''; }
-  };
-  const setStoredGroup = (v) => {
-    try { localStorage.setItem(LAST_GROUP_KEY, v || ''); } catch {}
-  };
 
   const deepEqual = (a, b) => {
     try { return JSON.stringify(a) === JSON.stringify(b); } catch { return false; }
@@ -41,31 +44,29 @@ export function AppContextProvider({ user, children }) {
   async function readGroupsIndexFast() {
     // 1) try memory cache (persists while SW alive)
     try {
-      const { groupsIndex } = await chrome.storage.session.get(['groupsIndex']);
+      const { groupsIndex } = await chrome?.storage?.session?.get?.(['groupsIndex']) ?? {};
       if (Array.isArray(groupsIndex) && groupsIndex.length) return groupsIndex;
     } catch {}
 
     // 2) try a small persistent key
     try {
-      const { groupsIndex: persisted } = await chrome.storage.local.get(['groupsIndex']);
+      const { groupsIndex: persisted } = await chrome?.storage?.local?.get?.(['groupsIndex']) ?? {};
       if (Array.isArray(persisted)) {
-        // refresh session cache for next popup open
-        chrome.storage.session.set({ groupsIndex: persisted }).catch(() => {});
+        try { await chrome?.storage?.session?.set?.({ groupsIndex: persisted }); } catch {}
         return persisted;
       }
     } catch {}
 
     // 3) last-ditch: derive a tiny index from the full blob if it exists
     try {
-      const { bookmarkGroups: full } = await chrome.storage.local.get(['bookmarkGroups']);
+      const { bookmarkGroups: full } = await chrome?.storage?.local?.get?.(['bookmarkGroups']) ?? {};
       if (Array.isArray(full) && full.length) {
         const idx = full.map(g => ({ id: g.id, groupName: g.groupName }));
-        chrome.storage.session.set({ groupsIndex: idx }).catch(() => {});
+        try { await chrome?.storage?.session?.set?.({ groupsIndex: idx }); } catch {}
         return idx;
       }
     } catch {}
 
-    // empty state
     return [];
   }
 
@@ -74,7 +75,7 @@ export function AppContextProvider({ user, children }) {
     let cancelled = false;
 
     (async () => {
-      // If the popup is opened while signed out, default to LOCAL immediately
+      // If opened while signed out, default to LOCAL immediately
       if (!user) {
         if (!cancelled) {
           setUserId(null);
@@ -93,20 +94,15 @@ export function AppContextProvider({ user, children }) {
 
         const storedType = attributes?.['custom:storage_type'];
         const effectiveType = storedType || DEFAULT_STORAGE_TYPE;
-
         if (!cancelled) setStorageType(effectiveType);
 
         // If the custom attribute wasn’t set, set it asynchronously (don’t block UI)
         if (!storedType) {
           updateUserAttribute({
-            userAttribute: {
-              attributeKey: 'custom:storage_type',
-              value: StorageType.LOCAL,
-            },
+            userAttribute: { attributeKey: 'custom:storage_type', value: StorageType.LOCAL },
           }).catch(() => {});
         }
       } catch (err) {
-        // Fail closed: LOCAL keeps popup snappy even if auth check falters
         console.warn('Auth bootstrap failed, falling back to LOCAL:', err);
         if (!cancelled) {
           setUserId(null);
@@ -118,45 +114,69 @@ export function AppContextProvider({ user, children }) {
     return () => { cancelled = true; };
   }, [user]);
 
-  // ----- phase 1: render ASAP with groups index -----
+  // ----- phase 1a: refine first paint from *sync* cache when user/mode become known -----
+  useEffect(() => {
+    // As soon as we know the real key (userId + storageType), try a *synchronous* read.
+    if (!storageType) return;
+    const cached = readBookmarkCacheSync(userId, storageType);
+    if (cached?.data && !deepEqual(bookmarkGroups, cached.data)) {
+      setBookmarkGroups(cached.data);
+      setHasHydrated(true); // we’ve shown meaningful content
+    }
+  }, [userId, storageType]); // sync, no flicker
+
+  // ----- phase 1b: render ASAP with groups index (async but cheap) -----
   useEffect(() => {
     let cancelled = false;
 
     (async () => {
       setIsLoading(true);
+
+      // Optionally: read session cache (async) — won’t affect first paint, but helps warm state.
+      try {
+        const cached = await readBookmarkCacheSession(userId, storageType);
+        if (!cancelled && cached?.data?.length) {
+          setBookmarkGroups(prev => (deepEqual(prev, cached.data) ? prev : cached.data));
+          setHasHydrated(true);
+        }
+      } catch {}
+
       const idx = await readGroupsIndexFast();
       if (!cancelled) {
         setGroupsIndex(idx);
-        setIsLoading(false); // UI can render now (dropdown etc.)
+        setIsLoading(false); // UI can render now
       }
     })();
 
     return () => { cancelled = true; };
-  }, []); // once per popup open
+  }, [userId, storageType]);
 
   // ----- phase 2: hydrate full groups in background once mode is known -----
   useEffect(() => {
     if (isMigrating) return;
-    if (!storageType) return;                 // wait until phase 0 decided
-    // Require userId for both modes, matches tests’ expectations
-    if (!userId || !storageType) return; 
+    if (!userId || !storageType) return; // require userId in both modes to match tests/contract
 
     let cancelled = false;
 
     (async () => {
       try {
         // Don’t block paint; schedule on idle/tick
-        const kickoff = () => loadInitialBookmarks(userId, storageType)
-          .then(full => {
-            if (cancelled) return;
-            setBookmarkGroups(prev => (deepEqual(prev, full) ? prev : full));
+        const kickoff = () =>
+          loadInitialBookmarks(userId, storageType)
+            .then(full => {
+              if (cancelled) return;
+              setBookmarkGroups(prev => (deepEqual(prev, full) ? prev : full));
 
-            // Persist/refresh the tiny index for next popup open
-            const idx = (full || []).map(g => ({ id: g.id, groupName: g.groupName }));
-            try { chrome?.storage?.local?.set?.({ groupsIndex: idx }); } catch {}
-            try { chrome?.storage?.session?.set?.({ groupsIndex: idx }); } catch {} 
-          })
-          .finally(() => { if (!cancelled) setHasHydrated(true); });
+              // Persist/refresh the tiny index for quick future loads
+              const idx = (full || []).map(g => ({ id: g.id, groupName: g.groupName }));
+              try { chrome?.storage?.local?.set?.({ groupsIndex: idx }); } catch {}
+              try { chrome?.storage?.session?.set?.({ groupsIndex: idx }); } catch {}
+
+              // Warm both caches for instant next paint
+              writeBookmarkCacheSync(userId, storageType, full);
+              writeBookmarkCacheSession(userId, storageType, full).catch(() => {});
+            })
+            .finally(() => { if (!cancelled) setHasHydrated(true); });
 
         if ('requestIdleCallback' in window) {
           const id = requestIdleCallback(() => kickoff());
@@ -182,19 +202,26 @@ export function AppContextProvider({ user, children }) {
       try {
         const fresh = await loadInitialBookmarks(userId, storageType);
         setBookmarkGroups(prev => (deepEqual(prev, fresh) ? prev : fresh));
+
         const idx = (fresh || []).map(g => ({ id: g.id, groupName: g.groupName }));
-        chrome.storage.local.set({ groupsIndex: idx }).catch(() => {});
-        chrome.storage.session.set({ groupsIndex: idx }).catch(() => {});
+        try { chrome?.storage?.local?.set?.({ groupsIndex: idx }); } catch {}
+        try { chrome?.storage?.session?.set?.({ groupsIndex: idx }); } catch {}
+
+        // Keep caches hot
+        writeBookmarkCacheSync(userId, storageType, fresh);
+        writeBookmarkCacheSession(userId, storageType, fresh).catch(() => {});
       } catch (e) {
         console.error('Reload after update failed:', e);
       }
     };
 
+    // Runtime messages (e.g., popup saved/imported)
     const runtimeHandler = (msg) => {
       if (msg?.type === 'MINDFUL_BOOKMARKS_UPDATED') reload();
     };
-    try { chrome?.runtime?.onMessage?.addListener(runtimeHandler); } catch {}
+    try { chrome?.runtime?.onMessage?.addListener?.(runtimeHandler); } catch {}
 
+    // BroadcastChannel fanout
     let bc;
     try {
       bc = new BroadcastChannel('mindful');
@@ -203,12 +230,13 @@ export function AppContextProvider({ user, children }) {
       };
     } catch {}
 
+    // Visibility regain (tab refocus) — best-effort refresh
     const onVis = () => { if (document.visibilityState === 'visible') reload(); };
     document.addEventListener('visibilitychange', onVis);
 
     return () => {
-      try { chrome?.runtime?.onMessage?.removeListener(runtimeHandler); } catch {}
-      try { bc?.close(); } catch {}
+      try { chrome?.runtime?.onMessage?.removeListener?.(runtimeHandler); } catch {}
+      try { bc?.close?.(); } catch {}
       document.removeEventListener('visibilitychange', onVis);
     };
   }, [userId, storageType, isMigrating]);
@@ -232,9 +260,8 @@ export function AppContextProvider({ user, children }) {
   }
 
   const contextValue = {
-    // what PopUpComponent needs first
-    groupsIndex,                    // fast list for dropdown
-    // full data (arrives shortly after)
+    // for popup & new tab
+    groupsIndex,
     bookmarkGroups, setBookmarkGroups,
 
     userId,
@@ -244,6 +271,7 @@ export function AppContextProvider({ user, children }) {
     isLoading,
     isMigrating, setIsMigrating,
     userAttributes, setUserAttributes,
+    hasHydrated,
   };
 
   return (
