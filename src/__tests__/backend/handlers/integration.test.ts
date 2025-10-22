@@ -32,6 +32,11 @@ describe("Bookmarks handlers", () => {
   beforeEach(() => {
     s3Mock.reset();
     kmsMock.reset();
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    (console.error as jest.Mock).mockRestore();
   });
 
   test("saveBookmarks writes V2 payload with encKey + legacy key", async () => {
