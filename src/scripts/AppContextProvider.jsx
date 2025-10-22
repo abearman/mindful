@@ -15,7 +15,7 @@ import {
   writeBookmarkCacheSync,          // localStorage (sync)
   readBookmarkCacheSession,        // chrome.storage.session (async)
   writeBookmarkCacheSession,       // chrome.storage.session (async)
-} from '@/scripts/bookmarkCache';
+} from '@/scripts/BookmarkCache';
 
 export const AppContext = createContext();
 
