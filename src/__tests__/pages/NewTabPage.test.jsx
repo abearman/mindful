@@ -51,6 +51,14 @@ global.chrome = {
       addListener: jest.fn(),
       removeListener: jest.fn(),
     },
+    local: {
+      get: jest.fn().mockResolvedValue({}),
+      set: jest.fn().mockResolvedValue(undefined),
+    },
+    session: {
+      get: jest.fn().mockResolvedValue({}),
+      set: jest.fn().mockResolvedValue(undefined),
+    },
   },
   runtime: {
     onMessage: {
@@ -131,7 +139,7 @@ describe.each([
 
   it('should load bookmarks and user attributes when a user is present', async () => {
     render(
-      <AppContextProvider>
+      <AppContextProvider user={mockUser}>
         <NewTabPage user={mockUser} signOut={mockSignOut} />
       </AppContextProvider>
     );
@@ -155,7 +163,7 @@ describe.each([
     fetchUserAttributes.mockRejectedValue(new Error('No user is signed in.'));
 
     render(
-      <AppContextProvider>
+      <AppContextProvider user={null}>
         <NewTabPage user={null} />
       </AppContextProvider>
     );
@@ -171,7 +179,7 @@ describe.each([
   it('should add an empty bookmark group if one does not exist after loading', async () => {
     useBookmarkManager.loadInitialBookmarks.mockResolvedValue(mockBookmarkGroups);
     render(
-        <AppContextProvider>
+        <AppContextProvider user={mockUser}>
             <NewTabPage user={mockUser} />
         </AppContextProvider>
     );
@@ -183,7 +191,7 @@ describe.each([
 
   it('should import bookmarks via the EmptyBookmarksState button', async () => {
     render(
-      <AppContextProvider>
+      <AppContextProvider user={mockUser}>
         <NewTabPage user={mockUser} signOut={mockSignOut} />
       </AppContextProvider>
     );
@@ -198,7 +206,7 @@ describe.each([
   if (storageType === StorageType.LOCAL) {
     it('should listen for storage changes and reload data accordingly', async () => {
       render(
-        <AppContextProvider>
+        <AppContextProvider user={mockUser}>
           <NewTabPage user={mockUser} />
         </AppContextProvider>
       );
@@ -223,7 +231,7 @@ describe.each([
 
     it('should clean up the storage listener on unmount', async () => {
       const { unmount } = render(
-        <AppContextProvider>
+        <AppContextProvider user={mockUser}>
           <NewTabPage user={mockUser} />
         </AppContextProvider>
       );
@@ -237,7 +245,7 @@ describe.each([
 
   it('should handle interactions from the TopBanner component', async () => {
     render(
-      <AppContextProvider>
+      <AppContextProvider user={mockUser}>
         <NewTabPage user={mockUser} signOut={mockSignOut} />
       </AppContextProvider>
     );
