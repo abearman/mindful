@@ -1,116 +1,227 @@
-import React, { createContext, useState, useEffect, useCallback, useRef } from 'react';
+import React, { createContext, useState, useEffect, useCallback } from 'react';
+import {
+  fetchAuthSession,
+  fetchUserAttributes,
+  updateUserAttribute,
+} from 'aws-amplify/auth';
+
+/* Scripts */
 import { StorageType, DEFAULT_STORAGE_TYPE } from '@/scripts/Constants.js';
-import { loadInitialBookmarks } from "@/hooks/useBookmarkManager.js";
-import { fetchAuthSession, fetchUserAttributes, updateUserAttribute } from 'aws-amplify/auth';
+import { loadInitialBookmarks } from '@/hooks/useBookmarkManager.js';
+
+/* Caching: synchronous snapshot for first-paint + session cache for reopens */
+import {
+  readBookmarkCacheSync,           // localStorage (sync)
+  writeBookmarkCacheSync,          // localStorage (sync)
+  readBookmarkCacheSession,        // chrome.storage.session (async)
+  writeBookmarkCacheSession,       // chrome.storage.session (async)
+} from '@/scripts/BookmarkCache';
 
 export const AppContext = createContext();
 
-export function AppContextProvider({ children }) {
+export function AppContextProvider({ user, children }) {
+  // ----- state -----
   const [userAttributes, setUserAttributes] = useState(null);
-  const [bookmarkGroups, setBookmarkGroups] = useState([]);
+
+  // Seed immediately from a synchronous snapshot (pre-user, pre-mode) to avoid flicker.
+  // We’ll refine once we know userId/storageType.
+  const seed = readBookmarkCacheSync(undefined, undefined) || { data: [] };
+  const [bookmarkGroups, setBookmarkGroups] = useState(seed.data || []);
+  const [groupsIndex, setGroupsIndex] = useState([]); // [{ id, groupName }]
+  const [hasHydrated, setHasHydrated] = useState(!!(seed.data?.length));
+
   const [userId, setUserId] = useState(null);
   const [storageType, setStorageType] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isMigrating, setIsMigrating] = useState(false); // prevent race conditions
 
-  // NEW: track whether we've completed the very first hydration.
-  const [hasHydrated, setHasHydrated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);   // only for the very first paint
+  const [isMigrating, setIsMigrating] = useState(false);
 
-  // tiny deep-equal to avoid replacing identical data
   const deepEqual = (a, b) => {
     try { return JSON.stringify(a) === JSON.stringify(b); } catch { return false; }
   };
 
-  // Effect for fetching the user's identity and storage preference
+  // ----- helpers: tiny / fast index -----
+  async function readGroupsIndexFast() {
+    // 1) try memory cache (persists while SW alive)
+    try {
+      const { groupsIndex } = await chrome?.storage?.session?.get?.(['groupsIndex']) ?? {};
+      if (Array.isArray(groupsIndex) && groupsIndex.length) return groupsIndex;
+    } catch {}
+
+    // 2) try a small persistent key
+    try {
+      const { groupsIndex: persisted } = await chrome?.storage?.local?.get?.(['groupsIndex']) ?? {};
+      if (Array.isArray(persisted)) {
+        try { await chrome?.storage?.session?.set?.({ groupsIndex: persisted }); } catch {}
+        return persisted;
+      }
+    } catch {}
+
+    // 3) last-ditch: derive a tiny index from the full blob if it exists
+    try {
+      const { bookmarkGroups: full } = await chrome?.storage?.local?.get?.(['bookmarkGroups']) ?? {};
+      if (Array.isArray(full) && full.length) {
+        const idx = full.map(g => ({ id: g.id, groupName: g.groupName }));
+        try { await chrome?.storage?.session?.set?.({ groupsIndex: idx }); } catch {}
+        return idx;
+      }
+    } catch {}
+
+    return [];
+  }
+
+  // ----- phase 0: decide mode quickly (no blocking on Amplify for LOCAL) -----
   useEffect(() => {
-    const fetchInitialData = async () => {
-      setIsLoading(true);
+    let cancelled = false;
+
+    (async () => {
+      // If opened while signed out, default to LOCAL immediately
+      if (!user) {
+        if (!cancelled) {
+          setUserId(null);
+          setStorageType(StorageType.LOCAL);
+        }
+        return;
+      }
+
+      // Signed-in: we *may* use REMOTE, but keep this fast.
       try {
         const { identityId } = await fetchAuthSession();
-        if (!identityId) throw new Error("Could not retrieve user's identityId.");
-        setUserId(identityId);
+        if (!cancelled) setUserId(identityId || null);
 
         const attributes = await fetchUserAttributes();
-        setUserAttributes(attributes);
+        if (!cancelled) setUserAttributes(attributes);
 
-        const storedType = attributes['custom:storage_type'];
-        if (storedType) {
-          setStorageType(storedType);
-        } else {
-          setStorageType(DEFAULT_STORAGE_TYPE);  
-          await updateUserAttribute({
-            userAttribute: {
-              attributeKey: 'custom:storage_type',
-              value: StorageType.LOCAL,
-            },
-          });
+        const storedType = attributes?.['custom:storage_type'];
+        const effectiveType = storedType || DEFAULT_STORAGE_TYPE;
+        if (!cancelled) setStorageType(effectiveType);
+
+        // If the custom attribute wasn’t set, set it asynchronously (don’t block UI)
+        if (!storedType) {
+          updateUserAttribute({
+            userAttribute: { attributeKey: 'custom:storage_type', value: StorageType.LOCAL },
+          }).catch(() => {});
         }
-      } catch (error) {
-        console.error("Error fetching initial user data:", error);
-        setUserId(null);
-        setUserAttributes(null);
-        setBookmarkGroups([]);
-        setStorageType(StorageType.LOCAL);
+      } catch (err) {
+        console.warn('Auth bootstrap failed, falling back to LOCAL:', err);
+        if (!cancelled) {
+          setUserId(null);
+          setStorageType(StorageType.LOCAL);
+        }
       }
-    };
+    })();
 
-    fetchInitialData();
-  }, []);
+    return () => { cancelled = true; };
+  }, [user]);
 
-  // Effect for loading bookmarks when userId or storageType changes
+  // ----- phase 1a: refine first paint from *sync* cache when user/mode become known -----
   useEffect(() => {
-    if (isMigrating) {
-      console.log("Migration in progress, skipping bookmark load.");
-      return;
+    // As soon as we know the real key (userId + storageType), try a *synchronous* read.
+    if (!storageType) return;
+    const cached = readBookmarkCacheSync(userId, storageType);
+    if (cached?.data && !deepEqual(bookmarkGroups, cached.data)) {
+      setBookmarkGroups(cached.data);
+      setHasHydrated(true); // we’ve shown meaningful content
     }
-    if (!userId || !storageType) {
-      if (!storageType) return;
-      setIsLoading(false);
-      return;
-    }
+  }, [userId, storageType]); // sync, no flicker
 
-    const loadData = async () => {
+  // ----- phase 1b: render ASAP with groups index (async but cheap) -----
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
       setIsLoading(true);
-      try {
-        const initialBookmarks = await loadInitialBookmarks(userId, storageType);
-        // Avoid UI churn if nothing actually changed
-        setBookmarkGroups(prev => (deepEqual(prev, initialBookmarks) ? prev : initialBookmarks));
-      } catch (error) {
-        console.error("Error loading bookmarks:", error);
-        setBookmarkGroups([]);
-      } finally {
-        setIsLoading(false);
-        // NEW: after the first completed load attempt, mark hydrated so we don't blank the UI later
-        setHasHydrated(true);
-      }
-    };
 
-    loadData();
+      // Optionally: read session cache (async) — won’t affect first paint, but helps warm state.
+      try {
+        const cached = await readBookmarkCacheSession(userId, storageType);
+        if (!cancelled && cached?.data?.length) {
+          setBookmarkGroups(prev => (deepEqual(prev, cached.data) ? prev : cached.data));
+          setHasHydrated(true);
+        }
+      } catch {}
+
+      const idx = await readGroupsIndexFast();
+      if (!cancelled) {
+        setGroupsIndex(idx);
+        setIsLoading(false); // UI can render now
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [userId, storageType]);
+
+  // ----- phase 2: hydrate full groups in background once mode is known -----
+  useEffect(() => {
+    if (isMigrating) return;
+    if (!userId || !storageType) return; // require userId in both modes to match tests/contract
+
+    let cancelled = false;
+
+    (async () => {
+      try {
+        // Don’t block paint; schedule on idle/tick
+        const kickoff = () =>
+          loadInitialBookmarks(userId, storageType)
+            .then(full => {
+              if (cancelled) return;
+              setBookmarkGroups(prev => (deepEqual(prev, full) ? prev : full));
+
+              // Persist/refresh the tiny index for quick future loads
+              const idx = (full || []).map(g => ({ id: g.id, groupName: g.groupName }));
+              try { chrome?.storage?.local?.set?.({ groupsIndex: idx }); } catch {}
+              try { chrome?.storage?.session?.set?.({ groupsIndex: idx }); } catch {}
+
+              // Warm both caches for instant next paint
+              writeBookmarkCacheSync(userId, storageType, full);
+              writeBookmarkCacheSession(userId, storageType, full).catch(() => {});
+            })
+            .finally(() => { if (!cancelled) setHasHydrated(true); });
+
+        if ('requestIdleCallback' in window) {
+          const id = requestIdleCallback(() => kickoff());
+          return () => cancelIdleCallback(id);
+        } else {
+          const t = setTimeout(() => kickoff(), 0);
+          return () => clearTimeout(t);
+        }
+      } catch (e) {
+        console.error('Error hydrating bookmarks:', e);
+        if (!cancelled) setBookmarkGroups([]);
+      }
+    })();
+
+    return () => { cancelled = true; };
   }, [userId, storageType, isMigrating]);
 
-  // Effect: listen for bookmark update broadcasts and reload
+  // ----- background reloads (don’t flip isLoading) -----
   useEffect(() => {
-    if (!userId || !storageType || isMigrating) return;
+    if (isMigrating) return;
 
     const reload = async () => {
       try {
-        // IMPORTANT: do not flip isLoading here; just refresh data in place to prevent "full page refresh" feel
         const fresh = await loadInitialBookmarks(userId, storageType);
         setBookmarkGroups(prev => (deepEqual(prev, fresh) ? prev : fresh));
+
+        const idx = (fresh || []).map(g => ({ id: g.id, groupName: g.groupName }));
+        try { chrome?.storage?.local?.set?.({ groupsIndex: idx }); } catch {}
+        try { chrome?.storage?.session?.set?.({ groupsIndex: idx }); } catch {}
+
+        // Keep caches hot
+        writeBookmarkCacheSync(userId, storageType, fresh);
+        writeBookmarkCacheSession(userId, storageType, fresh).catch(() => {});
       } catch (e) {
-        console.error("Reload after update failed:", e);
+        console.error('Reload after update failed:', e);
       }
     };
 
-    // 1) Extension runtime messages
+    // Runtime messages (e.g., popup saved/imported)
     const runtimeHandler = (msg) => {
       if (msg?.type === 'MINDFUL_BOOKMARKS_UPDATED') reload();
     };
-    try {
-      chrome?.runtime?.onMessage?.addListener(runtimeHandler);
-    } catch {}
+    try { chrome?.runtime?.onMessage?.addListener?.(runtimeHandler); } catch {}
 
-    // 2) BroadcastChannel
+    // BroadcastChannel fanout
     let bc;
     try {
       bc = new BroadcastChannel('mindful');
@@ -119,53 +230,48 @@ export function AppContextProvider({ children }) {
       };
     } catch {}
 
-    // 3) Visibility change (catch stale state after backgrounding)
-    const onVis = () => {
-      if (document.visibilityState === 'visible') reload();
-    };
+    // Visibility regain (tab refocus) — best-effort refresh
+    const onVis = () => { if (document.visibilityState === 'visible') reload(); };
     document.addEventListener('visibilitychange', onVis);
 
     return () => {
-      try { chrome?.runtime?.onMessage?.removeListener(runtimeHandler); } catch {}
-      try { bc?.close(); } catch {}
+      try { chrome?.runtime?.onMessage?.removeListener?.(runtimeHandler); } catch {}
+      try { bc?.close?.(); } catch {}
       document.removeEventListener('visibilitychange', onVis);
     };
   }, [userId, storageType, isMigrating]);
 
-  // Handler for updating the storage type preference
+  // ----- storage type changes -----
   const handleStorageTypeChange = useCallback(async (newStorageType) => {
-    // This is an explicit user action: we *can* show loading once here (keeps first-load logic consistent)
     setStorageType(newStorageType);
-    if (userId) {
-      try {
-        await updateUserAttribute({
-          userAttribute: {
-            attributeKey: 'custom:storage_type',
-            value: newStorageType,
-          },
-        });
-      } catch (error) {
-        console.error("Error updating storage type preference:", error);
-      }
+    if (user) {
+      updateUserAttribute({
+        userAttribute: {
+          attributeKey: 'custom:storage_type',
+          value: newStorageType,
+        },
+      }).catch(err => console.error('Error updating storage type preference:', err));
     }
-  }, [userId]);
+  }, [user]);
 
-  // Only show the full-screen Loading *before first hydration*.
-  if (isLoading && !bookmarkGroups.length && !hasHydrated) {
-    return <div>Loading...</div>;
+  // ----- render gate: only block first paint if we truly have nothing -----
+  if (isLoading && !groupsIndex.length && !hasHydrated) {
+    return <div>Loading…</div>;
   }
 
   const contextValue = {
-    bookmarkGroups,
-    setBookmarkGroups,
+    // for popup & new tab
+    groupsIndex,
+    bookmarkGroups, setBookmarkGroups,
+
     userId,
     storageType,
     setStorageType: handleStorageTypeChange,
+
     isLoading,
-    isMigrating,
-    setIsMigrating,
-    userAttributes,
-    setUserAttributes,
+    isMigrating, setIsMigrating,
+    userAttributes, setUserAttributes,
+    hasHydrated,
   };
 
   return (

@@ -67,21 +67,18 @@ export function NewTabPage({ user, signIn, signOut }) {
   };
 
   // Effect to ensure an empty group for adding new bookmarks always exists.
+  const { hasHydrated } = useContext(AppContext);
   useEffect(() => {
-    if (!bookmarkGroups) return; // Wait for loading to finish
-
-    if (bookmarkGroups.length > 0) {
-      const hasEmptyGroup = bookmarkGroups.some(
-        (group) => group.groupName === EMPTY_GROUP_IDENTIFIER
-      );
-      if (!hasEmptyGroup) {
-        addEmptyBookmarkGroup();
-      }
-    } else if (bookmarkGroups.length === 0) {
-      // If there are no groups at all, add the initial empty one
+    // Avoid adding an empty group before we know if cache / real data exist
+    if (!hasHydrated) return;
+    if (!bookmarkGroups) return;
+    if (bookmarkGroups.length === 0) {
       addEmptyBookmarkGroup();
+      return;
     }
-  }, [bookmarkGroups, addEmptyBookmarkGroup]); // Runs when bookmarks or loading state change.
+    const hasEmpty = bookmarkGroups.some(g => g.groupName === EMPTY_GROUP_IDENTIFIER);
+    if (!hasEmpty) addEmptyBookmarkGroup();
+  }, [hasHydrated, bookmarkGroups, addEmptyBookmarkGroup]);
 
   // Listen for LOCAL storage changes to sync bookmarks across tabs (existing logic)
   useEffect(() => {
