@@ -1,0 +1,183 @@
+@import "tailwindcss";
+
+/* Base Authenticator container */
+.mindful-auth [data-amplify-authenticator] {
+  @apply px-0 mx-0 bg-transparent border-none shadow-none;
+}
+
+/* Give the auth form a card on auth screens only */
+.mindful-auth [data-amplify-authenticator] [data-amplify-container] {
+  @apply rounded-xl shadow-[0_8px_28px_rgba(0,0,0,0.12)] 
+         bg-white dark:bg-neutral-900
+         p-4 max-w-[28rem] mx-auto;
+}
+
+/* Optional max width to keep the nice default width feel */
+.mindful-auth [data-amplify-authenticator] [data-amplify-container] {
+  max-width: 28rem; /* 24–28rem works well */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Router */
+.mindful-auth [data-amplify-authenticator] [data-amplify-router] {
+  @apply shadow-none;
+}
+
+/* Cards & views */
+.mindful-auth .amplify-card,
+.mindful-auth .amplify-view {
+  @apply bg-transparent border-none shadow-none;
+}
+
+/* Fieldsets */
+.mindful-auth [data-amplify-authenticator] .amplify-fieldset {
+  @apply px-0 mx-0 border-none;
+}
+
+/* Form inside authenticator */
+/* Reduce horizontal padding inside the form */
+.mindful-auth [data-amplify-authenticator] form {
+  @apply px-0;
+}
+
+/* Tabs bar */
+/* Tabs bar also adds inline padding -- zero it */
+.mindful-auth .amplify-tabs {
+  @apply px-0 mx-0;
+}
+
+/* Tabs (Sign in / Create Account) */
+.mindful-auth .amplify-tabs__item {
+  @apply text-neutral-700 dark:text-neutral-300 font-semibold
+         hover:text-neutral-900 dark:hover:text-neutral-100; 
+}
+.mindful-auth .amplify-tabs__item[aria-selected="true"] {
+  @apply text-blue-600 dark:text-blue-500;
+}
+
+/* Form labels */
+.mindful-auth .amplify-label {
+  @apply text-neutral-700 dark:text-neutral-300 text-base;
+}
+
+/* Headings and paragraphs (email verification notice) */
+.mindful-auth .amplify-heading {
+  @apply text-neutral-700 dark:text-neutral-300;
+}
+.mindful-auth .amplify-text {
+  @apply text-neutral-700 dark:text-neutral-300;
+}
+
+/* Inputs to match the rounded cards */
+.mindful-auth .amplify-input {
+  @apply rounded-xl  
+       bg-white dark:bg-neutral-950
+       border border-neutral-300 dark:border-neutral-700 
+       text-neutral-900 dark:text-neutral-100
+       focus:border-blue-400 focus:ring-1 focus:ring-blue-400
+       text-base px-3;
+}
+
+/* Phone Input */
+/* Make the phone field flush with the label */
+.mindful-auth .PhoneInput {            /* wrapper */
+  @apply ml-0 pl-0 w-full;
+}
+.mindful-auth .PhoneInputCountry {     /* flag button wrapper */
+  @apply ml-0 pl-0;
+}
+/* Some builds add a couple px of left spacing to the icon – nudge it left */
+.mindful-auth .PhoneInputCountryIcon {
+  @apply translate-x-[2px];           /* try -1px or -2px to match exactly */
+}
+
+/* Override the "show password" button styling */
+.mindful-auth .amplify-field-group__outer-end .amplify-field-group__control {
+  @apply bg-white dark:bg-neutral-950
+         border border-neutral-300 dark:border-neutral-700 
+         hover:bg-blue-50 dark:hover:bg-blue-950
+         focus:border-blue-400 focus:ring-1 focus:ring-blue-400;
+}
+/* Change show-password eyeball icon color */
+.mindful-auth .amplify-field-group__outer-end .amplify-icon {
+  @apply text-neutral-500 dark:text-neutral-300;
+}
+
+.mindful-auth .amplify-field__error-message {
+  white-space: pre-line; /* keeps line breaks in the password error text */
+}
+
+/* Primary submit button */
+.mindful-auth .amplify-button--primary {
+  @apply rounded-2xl
+         bg-blue-600 hover:bg-blue-500
+         text-white font-normal;
+}
+
+/* Link-style button (Forgot Password, Create Account) */
+.mindful-auth .amplify-button--link,
+.mindful-auth .amplify-button--link .amplify-button__text {
+  @apply bg-transparent hover:bg-transparent 
+         text-blue-600 dark:text-blue-500 
+         no-underline hover:underline
+         font-semibold
+         cursor-pointer; 
+}
+
+/* ============ Margin and padding adjustments ============ */
+/* Kill the container/router padding + width limit just for Popup */
+.mindful-auth:not(.newtab-root) [data-amplify-authenticator] [data-amplify-router],
+.mindful-auth:not(.newtab-root) [data-amplify-authenticator] [data-amplify-container] {
+  padding: 0; 
+  padding-inline: 0;
+  padding-left: 10;
+  padding-right: 10;
+  margin: 0;
+  max-width: 100%;
+  width: 100%;
+
+  /* Also zero the Amplify padding vars that drive these styles */
+  --amplify-components-authenticator-padding-inline-start: 0 !important;
+  --amplify-components-authenticator-padding-inline-end: 0 !important;
+  --amplify-components-authenticator-form-padding-inline-start: 0 !important;
+  --amplify-components-authenticator-form-padding-inline-end: 0 !important;
+}
+
+/* Tabs panel adds its own inset -- zero it too */
+.mindful-auth .amplify-tabs__panel[role="tabpanel"] {
+  padding: 0 !important;
+}
+
+/* optional If buttons still look wider than Create Account */
+.mindful-auth [data-amplify-authenticator] .amplify-button--primary {
+  --amplify-components-button-padding-inline-start: 1rem !important;
+  --amplify-components-button-padding-inline-end: 1rem !important;
+}
+
+/* If there’s still margin at the top of the form itself */
+.mindful-auth [data-amplify-form] {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+/* Reduce vertical spacing inside flex containers */
+.mindful-auth [data-amplify-authenticator-signup] .amplify-flex {
+  gap: 0rem !important;   /* default is usually 1rem (16px) */
+}
+
+/* Kill label → input spacing */
+.mindful-auth [data-amplify-authenticator-signup] .amplify-field .amplify-label {
+  margin-bottom: 0 !important;    /* no gap under label */
+}
+.mindful-auth [data-amplify-authenticator-signup] .amplify-field__control {
+  margin-top: 0 !important;       /* no gap above input */
+}
+
+/* Also adjust the inner Field spacing so it's tight */
+.mindful-auth [data-amplify-authenticator-signup] .amplify-field {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  margin-bottom: 0.5rem !important;   /* default ~1rem */
+}
+/* ========================================== */

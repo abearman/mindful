@@ -5,7 +5,7 @@ import { createRoot } from 'react-dom/client';
 import PopupPage from '@/pages/PopupPage'; 
 
 /* CSS styles */
-import "@/styles/PopUp.css";
+import "@/styles/Index.css";
 
 const container = document.getElementById('root');
 const root = createRoot(container);

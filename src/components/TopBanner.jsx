@@ -10,6 +10,7 @@ import useImportBookmarks from '@/hooks/useImportBookmarks';
 
 
 /* Components */
+import LogoComponent from '@/components/LogoComponent';
 import Tooltip from "@/components/ui/Tooltip";
 import { Badge } from "@/components/ui/badge";
 
@@ -55,19 +56,7 @@ const TopBanner = ({
     <header className="sticky top-0 z-30 backdrop-blur bg-gray-100 dark:bg-neutral-950">
       <div className="flex w-full items-center justify-between px-[20px] py-4">
         {/* Left: logo */}
-        <div
-          className="flex items-center gap-2 cursor-pointer"
-          onClick={() => {
-            const url = chrome?.runtime?.getURL
-              ? chrome.runtime.getURL("newtab.html")
-              : "newtab.html";
-            window.location.href = url;
-          }}
-        >
-          <img src="/assets/icon-no-bg-128.png" className="w-[30px] h-[30px] object-cover" />
-          <span className="text-neutral-900 dark:text-white text-lg font-semibold tracking-tight">Mindful</span>
-          <Badge variant="secondary" className="ml-2">Bookmarks</Badge>
-        </div>
+        <LogoComponent />
 
         {/* Right: icons + avatar */}
         <nav className="hidden items-right gap-6 md:flex">
