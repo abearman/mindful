@@ -41,7 +41,7 @@ export function NewTabPage({ user, signIn, signOut }) {
 
   const gridRef = useRef(null);
 
-  // --- NEW: de-dupe bursts from message + storage ---
+  // --- De-dupe bursts from message + storage ---
   const lastAuthSignalAtRef = useRef(0);
   const handleAuthSignal = (at = Date.now()) => {
     if (at <= lastAuthSignalAtRef.current) return; // ignore duplicates
@@ -114,27 +114,46 @@ export function NewTabPage({ user, signIn, signOut }) {
     };
   }, [userId, storageType, setBookmarkGroups, isMigrating]); // Re-runs if user or storageType changes
 
-  // --- NEW: Listen for popup auth broadcasts (runtime messages) ---
+  // --- Listen for popup auth broadcasts (runtime messages) ---
   useEffect(() => {
     const onMsg = (msg) => {
       if (msg?.type === 'USER_SIGNED_IN' || msg?.type === 'USER_SIGNED_OUT') {
         handleAuthSignal(msg.at);
       }
     };
-    chrome.runtime.onMessage.addListener(onMsg);
-    return () => chrome.runtime.onMessage.removeListener(onMsg);
+    const runtime = typeof chrome !== 'undefined' ? chrome.runtime : undefined;
+    if (runtime?.onMessage?.addListener && runtime?.onMessage?.removeListener) {
+      runtime.onMessage.addListener(onMsg);
+      return () => runtime.onMessage.removeListener(onMsg);
+    }
+    // In non-extension envs (tests), do nothing.
+    return () => {};
   }, []);
 
-  // --- NEW: Listen for auth storage ping (fallback/decoupled path) ---
+  // --- Listen for auth storage ping (fallback/decoupled path) ---
   useEffect(() => {
+    // Only use this fallback if runtime messaging isn't available.
+    const hasRuntimeMessaging =
+      !!chrome?.runtime?.onMessage?.addListener &&
+      !!chrome?.runtime?.onMessage?.removeListener;
+    if (hasRuntimeMessaging) {
+      // Runtime path exists; skip the storage fallback to avoid double listeners.
+      return () => {};
+    }
+    
+    const storageEvents = chrome?.storage?.onChanged;
+    if (!storageEvents?.addListener || !storageEvents?.removeListener) {
+      return () => {};
+    }
+    
     const onStorageAuth = (changes, area) => {
       if (area !== 'local') return;
       if (changes.authSignalAt?.newValue) {
         handleAuthSignal(Number(changes.authSignalAt.newValue));
       }
     };
-    chrome.storage.onChanged.addListener(onStorageAuth);
-    return () => chrome.storage.onChanged.removeListener(onStorageAuth);
+    storageEvents.addListener(onStorageAuth);
+    return () => storageEvents.removeListener(onStorageAuth);
   }, []);
 
   return (

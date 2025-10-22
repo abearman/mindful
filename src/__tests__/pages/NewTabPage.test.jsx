@@ -52,6 +52,12 @@ global.chrome = {
       removeListener: jest.fn(),
     },
   },
+  runtime: {
+    onMessage: {
+      addListener: jest.fn(),
+      removeListener: jest.fn(),
+    },
+  },
 };
 
 // --- Test Data ---
