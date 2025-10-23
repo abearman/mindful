@@ -34,7 +34,8 @@
   ],
 
   "host_permissions": [
-    "https://2rra98zl35.execute-api.us-west-1.amazonaws.com/*"
+    "https://2rra98zl35.execute-api.us-west-1.amazonaws.com/*",
+    "https://app.posthog.com/*"
   ],
 
   "optional_host_permissions": [
@@ -52,6 +53,6 @@
   },
 
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' https://cognito-idp.us-west-1.amazonaws.com https://cognito-identity.us-west-1.amazonaws.com https://kT7PGxGVd.auth.us-west-1.amazoncognito.com https://2rra98zl35.execute-api.us-west-1.amazonaws.com"
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' https://cognito-idp.us-west-1.amazonaws.com https://cognito-identity.us-west-1.amazonaws.com https://kT7PGxGVd.auth.us-west-1.amazoncognito.com https://2rra98zl35.execute-api.us-west-1.amazonaws.com https://app.posthog.com;"
   }
 }

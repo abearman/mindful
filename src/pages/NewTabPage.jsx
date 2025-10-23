@@ -28,6 +28,10 @@ import TopBanner from "@/components/TopBanner";
 import DraggableGrid from '@/components/DraggableGrid';
 import EmptyBookmarksState from '@/components/EmptyBookmarksState';
 
+/* Analytics */
+import AnalyticsProvider from "@/analytics/AnalyticsProvider";
+
+
 export function NewTabPage({ user, signIn, signOut }) {
   // Consume state from the context
   const {  
@@ -154,24 +158,26 @@ export function NewTabPage({ user, signIn, signOut }) {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-neutral-950">
-      <TopBanner
-        onExportBookmarks={exportBookmarksToJSON}
-        userAttributes={userAttributes}
-        onSignIn={signIn}
-        onSignOut={signOut}
-        isSignedIn={!!user}
-        onStorageTypeChange={changeStorageType}
-      />
-      <DraggableGrid
-        ref={gridRef}
-        user={user}
-        bookmarkGroups={bookmarkGroups}
-      />
-      <EmptyBookmarksState
-        onCreateGroup={() => gridRef.current?.startCreateGroup({ prefill: ONBOARDING_NEW_GROUP_PREFILL, select: 'all' })}
-        onImport={handleLoadBookmarks}
-      />
-    </div>
+    <AnalyticsProvider>
+      <div className="min-h-screen bg-gray-100 dark:bg-neutral-950">
+        <TopBanner
+          onExportBookmarks={exportBookmarksToJSON}
+          userAttributes={userAttributes}
+          onSignIn={signIn}
+          onSignOut={signOut}
+          isSignedIn={!!user}
+          onStorageTypeChange={changeStorageType}
+        />
+        <DraggableGrid
+          ref={gridRef}
+          user={user}
+          bookmarkGroups={bookmarkGroups}
+        />
+        <EmptyBookmarksState
+          onCreateGroup={() => gridRef.current?.startCreateGroup({ prefill: ONBOARDING_NEW_GROUP_PREFILL, select: 'all' })}
+          onImport={handleLoadBookmarks}
+        />
+      </div>
+    </AnalyticsProvider>
   );
 }

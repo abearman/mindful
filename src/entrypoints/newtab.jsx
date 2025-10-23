@@ -51,11 +51,9 @@ function NewTabRoot() {
   const initialFromHash = React.useMemo(() => parseAuthFromHash(), []);
 
   React.useEffect(() => {
-    console.log('[NewTabRoot] reading pendingVerifyEmail…');
     chrome.storage?.local?.get(["pendingVerifyEmail"], (res) => {
       const err = chrome.runtime?.lastError;
       if (err) console.warn('[NewTabRoot] storage.get error:', err);
-      console.log('[NewTabRoot] storage.get result:', res);
 
       const v = typeof res?.pendingVerifyEmail === "string" ? res.pendingVerifyEmail : '';
       if (v) {
@@ -67,8 +65,6 @@ function NewTabRoot() {
           if (rmErr) console.warn('[NewTabRoot] storage.remove error:', rmErr);
           else console.log('[NewTabRoot] pendingVerifyEmail removed');
         });
-      } else {
-        console.log('[NewTabRoot] no pendingVerifyEmail found');
       }
     });
   }, []);

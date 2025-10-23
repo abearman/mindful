@@ -182,6 +182,7 @@ function CreateNewBookmark(props) {
   async function handleSubmit(e) {
     e.preventDefault();
     const urlWithProtocol = constructValidURL(bookmarkUrl);
+    console.log("In handleSubmit");
     await addNamedBookmark(bookmarkName, urlWithProtocol, groupName);
 
     setBookmarkName('');

@@ -22,8 +22,10 @@ import '@/styles/amplify-auth-tailwind.css';
 
 /* Shared theme + props */
 import { amplifyTheme } from '@/theme/amplifyTheme';
-import formFields from "@/config/formFields";
-import SignUpFormFields from "@/components/auth/SignUpFormFields";
+import formFields from "@/config/formFields"
+
+/* Analytics */
+import AnalyticsProvider from "@/analytics/AnalyticsProvider";
 
 
 // Function to open a new tab for Create Account or Verify Account (to avoid infinite email loop + popup closing)
@@ -141,42 +143,44 @@ export default function PopupPage() {
   }, []);
 
   return (
-    <ThemeProvider theme={amplifyTheme} colorMode="system">
-      <div className="popup-root mindful-auth p-4">
-        <PopupAutosize selector=".popup-root" maxH={600} />
-        <LogoComponent />
-        <Authenticator
-          className="!p-0"
-          hideSignUp={true}  // Hide Create Account in the popup in order to open a new tab, for easier email verification                   
-          formFields={formFields}
-          components={{
-            SignIn: { Footer: SignInFooter },
-          }}
-        >
-          {({ user }) => (
-            <AppContextProvider user={user}>
-              {/* Offer a create-account link */}
-              {!user && (
-                <div className="mt-3">
-                  <button
-                    className="text-sm text-blue-600 hover:underline"
-                    onClick={() => openAuthTab('signUp')}
-                    type="button"
-                  >
-                    Create account (opens full page)
-                  </button>
-                </div>
-              )}
+    <AnalyticsProvider>
+      <ThemeProvider theme={amplifyTheme} colorMode="system">
+        <div className="popup-root mindful-auth p-4">
+          <PopupAutosize selector=".popup-root" maxH={600} />
+          <LogoComponent />
+          <Authenticator
+            className="!p-0"
+            hideSignUp={true}  // Hide Create Account in the popup in order to open a new tab, for easier email verification                   
+            formFields={formFields}
+            components={{
+              SignIn: { Footer: SignInFooter },
+            }}
+          >
+            {({ user }) => (
+              <AppContextProvider user={user}>
+                {/* Offer a create-account link */}
+                {!user && (
+                  <div className="mt-3">
+                    <button
+                      className="text-sm text-blue-600 hover:underline"
+                      onClick={() => openAuthTab('signUp')}
+                      type="button"
+                    >
+                      Create account (opens full page)
+                    </button>
+                  </div>
+                )}
 
-              <PopUpComponent />
+                <PopUpComponent />
 
-              {/* Silently watch for confirm step and auto-handoff */}
-              <PopupRouteWatcher />
-            </AppContextProvider>
-          )}
-        </Authenticator>
-      </div>
-    </ThemeProvider>
+                {/* Silently watch for confirm step and auto-handoff */}
+                <PopupRouteWatcher />
+              </AppContextProvider>
+            )}
+          </Authenticator>
+        </div>
+      </ThemeProvider>
+    </AnalyticsProvider>
   );
 
 }
