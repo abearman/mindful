@@ -7,9 +7,6 @@ import { refreshOtherMindfulTabs } from '@/scripts/Utilities';
 import { Storage } from '@/scripts/Storage';
 import amplify_outputs from '/amplify_outputs.json';
 
-/* Analytics */
-import { useAnalytics } from "@/analytics/AnalyticsProvider";
-
 
 const API_HOST_PATTERN = `https://${new URL(amplify_outputs.custom.API.bookmarks.endpoint).host}/*`;
 
@@ -204,8 +201,6 @@ export const useBookmarkManager = () => {
 
   const addNamedBookmark = async (bookmarkName, url, groupName) => {
     await updateAndPersistGroups(prevGroups => {
-      console.log("Added named bookmark");
-      capture("bookmark_added", { surface: "unknown" });
       const newBookmark = { name: bookmarkName, url: url, id: uuidv4() };
       const updatedGroups = JSON.parse(JSON.stringify(prevGroups));
       const groupIndex = updatedGroups.findIndex(g => g.groupName === groupName);

@@ -43,6 +43,10 @@ jest.mock('@/hooks/useImportBookmarks', () => ({
 jest.mock('@/scripts/Utilities', () => ({
   getUserStorageKey: jest.fn(),
 }));
+jest.mock('@/analytics/AnalyticsProvider', () => ({
+  __esModule: true,
+  default: ({ children }) => <>{children}</>,
+}));
 
 // Mock the Chrome browser API
 global.chrome = {

@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwind from '@tailwindcss/vite'
 import { resolve } from 'path';
+import { fileURLToPath, URL } from 'node:url'
 
 
 export default defineConfig({
@@ -12,7 +13,7 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '@': resolve(__dirname, 'src'),   // <-- this line makes "@/..." work
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
   build: {

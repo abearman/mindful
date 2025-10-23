@@ -3,17 +3,12 @@ import { phCapture, phIdentify, phReset } from "@/analytics/phLite";
 import { useAuthenticator } from "@aws-amplify/ui-react";
 import { fetchAuthSession } from "aws-amplify/auth";
 
-// ---- config ----
-const PH_KEY  = import.meta.env.VITE_POSTHOG_KEY as string;
-const PH_HOST = (import.meta.env.VITE_POSTHOG_HOST as string) || "https://app.posthog.com";
-const HEARTBEAT_MS = 60_000; // 1/min
-const OPT_OUT_KEY = "mindful_ph_opt_out";   // localStorage boolean
-const SURFACE = (globalThis as any).__surface || "popup"; // you already set this per surface
+const HEARTBEAT_MS = 60_000;
+const OPT_OUT_KEY = "mindful_ph_opt_out";
+const SURFACE = (globalThis as any).__surface || "popup";
 const STORAGE_TYPE = (globalThis as any).__storageType || undefined;
 
-// ---- types / context ----
 type CaptureProps = Record<string, any>;
-
 type AnalyticsCtx = {
   capture: (event: string, props?: CaptureProps) => void;
   optOut: boolean;
@@ -29,52 +24,60 @@ export function useAnalytics() {
   return ctx;
 }
 
-// ---- helper: init/load/reset ----
-function initPostHogOnce() {
-  // Nothing to init for the PostHog Lite client
+// If you still want to honor PostHog Core SDK opt-out when it exists, make it optional:
+function tryPosthogOptOut() {
+  try {
+    const ph = (globalThis as any).posthog;
+    if (ph?.opt_out_capturing) ph.opt_out_capturing();
+  } catch {}
+}
+function tryPosthogOptIn() {
+  try {
+    const ph = (globalThis as any).posthog;
+    if (ph?.opt_in_capturing) ph.opt_in_capturing();
+  } catch {}
 }
 
-
-function resetPostHog() {
-  phReset();
-}
-
-// ---- provider ----
 export default function AnalyticsProvider({ children }: { children: React.ReactNode }) {
-  // read auth state from Amplify
   const { route } = useAuthenticator((ctx) => [ctx.route]);
   const [userId, setUserId] = useState<string | null>(null);
 
-  // opt-out state
+  // Safer initializer for localStorage reads
   const [optOut, setOptOutState] = useState<boolean>(() => {
-    return localStorage.getItem(OPT_OUT_KEY) === "true";
+    try {
+      return globalThis?.localStorage?.getItem(OPT_OUT_KEY) === "true";
+    } catch {
+      return false;
+    }
   });
 
   const setOptOut = useCallback((v: boolean) => {
     setOptOutState(v);
-    localStorage.setItem(OPT_OUT_KEY, String(v));
+    try {
+      globalThis?.localStorage?.setItem(OPT_OUT_KEY, String(v));
+    } catch {}
+    // Only attempt PostHog core SDK toggles if it exists; phLite doesn’t need this
     if (v) {
-      posthog.opt_out_capturing();
+      tryPosthogOptOut();
     } else {
-      posthog.opt_in_capturing();
+      tryPosthogOptIn();
     }
   }, []);
 
-  // init PH once
+  // No-op for phLite; keep in case you later swap implementations
   useEffect(() => {
-    initPostHogOnce();
-    // apply persisted opt-out immediately
-    if (optOut) posthog.opt_out_capturing();
-  }, []); // eslint-disable-line
+    if (optOut) tryPosthogOptOut();
+    // never let analytics init block rendering
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // identify on sign-in; reset on sign-out
+  // Identify / reset based on auth route
   useEffect(() => {
     let mounted = true;
 
     async function wireIdentity() {
       if (route !== "authenticated") {
         setUserId(null);
-        resetPostHog();
+        phReset(); // safe no-op in your lite client
         return;
       }
       try {
@@ -88,7 +91,7 @@ export default function AnalyticsProvider({ children }: { children: React.ReactN
         }
         if (mounted) setUserId(sub);
       } catch {
-        // swallow; analytics should never break UX
+        // swallow; analytics must never break UX/tests
       }
     }
 
@@ -96,7 +99,7 @@ export default function AnalyticsProvider({ children }: { children: React.ReactN
     return () => { mounted = false; };
   }, [route, optOut]);
 
-  // heartbeat while focused (<=1/min)
+  // Heartbeat (skip in tests to reduce flake)
   const hbRef = useRef<number | null>(null);
   const sendHeartbeat = useCallback(() => {
     if (optOut || !userId) return;
@@ -104,6 +107,12 @@ export default function AnalyticsProvider({ children }: { children: React.ReactN
   }, [optOut, userId]);
 
   useEffect(() => {
+    // Don’t wire timers in tests or non-window environments
+    const isTest = typeof process !== "undefined" && process.env?.NODE_ENV === "test";
+    if (isTest || typeof window === "undefined" || typeof document === "undefined") {
+      return;
+    }
+
     function onFocus() {
       sendHeartbeat();
       if (hbRef.current) window.clearInterval(hbRef.current);
@@ -115,10 +124,11 @@ export default function AnalyticsProvider({ children }: { children: React.ReactN
         hbRef.current = null;
       }
     }
+
     window.addEventListener("focus", onFocus);
     window.addEventListener("blur", onBlur);
-    // start if already focused
     if (document.hasFocus()) onFocus();
+
     return () => {
       window.removeEventListener("focus", onFocus);
       window.removeEventListener("blur", onBlur);
@@ -126,7 +136,6 @@ export default function AnalyticsProvider({ children }: { children: React.ReactN
     };
   }, [sendHeartbeat]);
 
-  // simple capture wrapper
   const capture = useCallback((event: string, props: CaptureProps = {}) => {
     if (optOut) return;
     phCapture(event, props);
@@ -139,9 +148,5 @@ export default function AnalyticsProvider({ children }: { children: React.ReactN
     userId,
   }), [capture, optOut, setOptOut, userId]);
 
-  return (
-    <AnalyticsContext.Provider value={value}>
-      {children}
-    </AnalyticsContext.Provider>
-  );
+  return <AnalyticsContext.Provider value={value}>{children}</AnalyticsContext.Provider>;
 }

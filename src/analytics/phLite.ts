@@ -1,14 +1,13 @@
 // Minimal PostHog client for Chrome MV3 (no remote scripts, no flags)
 // Sends only what you call via /batch. No autocapture/replay.
+import { PH_KEY, PH_HOST } from '@/env';
+
 
 type Event = {
   event: string;
   properties: Record<string, any>;
   timestamp?: string; // ISO
 };
-
-const PH_KEY  = import.meta.env.VITE_POSTHOG_KEY as string;
-const PH_HOST = (import.meta.env.VITE_POSTHOG_HOST as string) || "https://app.posthog.com"; // keep this host
 
 let distinctId: string | null = null;
 let queue: Event[] = [];

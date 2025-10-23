@@ -13,9 +13,6 @@ import AnalyticsProvider from "@/analytics/AnalyticsProvider";
 
 
 export default function ManageAccountPage({ user, signIn, signOut }) {
-  // Initialize PostHog analytics
-  useEffect(() => { initPostHog(); }, []);
-
   const { userAttributes } = useContext(AppContext);
   const {
     exportBookmarksToJSON,
@@ -24,15 +21,17 @@ export default function ManageAccountPage({ user, signIn, signOut }) {
 
   return (
     <AnalyticsProvider>
-      <TopBanner
-        onExportBookmarks={exportBookmarksToJSON}
-        userAttributes={userAttributes}
-        onSignIn={signIn}
-        onSignOut={signOut}
-        isSignedIn={!!user}
-        onStorageTypeChange={changeStorageType}
-      />
-      <ManageAccountComponent user={user} signIn={signIn} signOut={signOut} />
+      <>
+        <TopBanner
+          onExportBookmarks={exportBookmarksToJSON}
+          userAttributes={userAttributes ?? {}}
+          onSignIn={signIn}
+          onSignOut={signOut}
+          isSignedIn={!!user}
+          onStorageTypeChange={changeStorageType}
+        />
+        <ManageAccountComponent user={user} signIn={signIn} signOut={signOut} />
+      </>
     </AnalyticsProvider>
   );
 }

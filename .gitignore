@@ -15,3 +15,9 @@ amplify_outputs.*.json
 
 
 .env
+.env.local
+
+*.swo
+*.swp
+
+.vscode
