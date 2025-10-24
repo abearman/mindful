@@ -58,7 +58,7 @@ jest.mock('aws-amplify/utils', () => ({
 }));
 
 // Mock Amplify UI <Authenticator>, <ThemeProvider>, and useAuthenticator
-// already in src/__tests__/pages/PopUpPage.test.js
+// Mock Amplify UI <Authenticator>, <ThemeProvider>, and useAuthenticator
 jest.mock('@aws-amplify/ui-react', () => {
   const React = require('react');
   const { getCurrentUser } = require('aws-amplify/auth');
@@ -83,11 +83,18 @@ jest.mock('@aws-amplify/ui-react', () => {
     return typeof children === 'function' ? children({ user }) : children;
   };
 
+  Authenticator.Provider = ({ children }) => <>{children}</>;
+
   const useAuthenticator = () => ({ route: 'signIn' });
-  const createTheme = (obj = {}) => obj; 
+  const createTheme = (obj = {}) => obj;
 
   return { ThemeProvider, Authenticator, useAuthenticator, createTheme };
 });
+
+jest.mock('@/analytics/AnalyticsProvider', () => ({
+  __esModule: true,
+  default: ({ children }) => <>{children}</>,
+}));
 
 
 // --------------------

@@ -33,6 +33,11 @@ jest.mock("@/scripts/AppContextProvider", () => {
   return { AppContext: React.createContext({}) };
 });
 
+jest.mock("@/analytics/AnalyticsProvider", () => ({
+  __esModule: true,
+  default: ({ children }) => <>{children}</>,
+}));
+
 // ----- Under test (import after mocks) -----
 import ManageAccountPage from "@/pages/ManageAccountPage";
 import { AppContext } from "@/scripts/AppContextProvider"

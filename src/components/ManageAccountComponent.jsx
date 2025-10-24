@@ -33,21 +33,21 @@ export default function ManageAccountComponent({ user, signIn, signOut }) {
   const [verifyCode, setVerifyCode] = useState("");
 
   const given_name = useMemo(() => {
-    return userAttributes.given_name || "";
+    return userAttributes?.given_name || "";
   }, [userAttributes]);
 
   const family_name = useMemo(() => {
-    return userAttributes.family_name || "";
+    return userAttributes?.family_name || "";
   }, [userAttributes]);
 
   const initials = useMemo(() => {
-    const a = (userAttributes.given_name || "Y")[0];
-    const b = (userAttributes.family_name || "N")[0];
+    const a = (userAttributes?.given_name || "Y")[0];
+    const b = (userAttributes?.family_name || "N")[0];
     return `${a}${b}`.toUpperCase();
   }, [userAttributes]);
 
-  const email = userAttributes.email || "yourname@gmail.com";
-  const phone = userAttributes.phone_number || "Your phone number";
+  const email = userAttributes?.email || "yourname@gmail.com";
+  const phone = userAttributes?.phone_number || "+15555555555";
 
   const [form, setForm] = useState({
     given_name,

@@ -12,7 +12,6 @@ import useImportBookmarks from '@/hooks/useImportBookmarks';
 /* Components */
 import LogoComponent from '@/components/LogoComponent';
 import Tooltip from "@/components/ui/Tooltip";
-import { Badge } from "@/components/ui/badge";
 
 
 const TopBanner = ({
@@ -51,6 +50,9 @@ const TopBanner = ({
   }, []);
 
   const handleLogout = () => { onSignOut(); setDropdownOpen(false); };
+  const initials =
+    (userAttributes?.given_name?.[0] ?? "") +
+    (userAttributes?.family_name?.[0] ?? "");
 
   return (
     <header className="sticky top-0 z-30 backdrop-blur bg-gray-100 dark:bg-neutral-950">
@@ -93,7 +95,7 @@ const TopBanner = ({
                   aria-label="Manage account"
                 >
                   <div className="h-9 w-9 rounded-full bg-gray-200 grid place-items-center text-gray-700 font-bold text-l">
-                    {(userAttributes.given_name?.[0] || "") + (userAttributes.family_name?.[0] || "")}
+                    {initials || ""}
                   </div>
                 </button>
               </Tooltip>

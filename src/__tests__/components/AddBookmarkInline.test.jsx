@@ -11,6 +11,17 @@ import { constructValidURL } from '@/scripts/Utilities';
 jest.mock('@/hooks/useBookmarkManager');
 jest.mock('@/scripts/Utilities');
 
+jest.mock('@/analytics/AnalyticsProvider', () => {
+  const React = require('react');
+  const stub = { capture: jest.fn(), optOut: false, setOptOut: jest.fn(), userId: 'test' };
+  return {
+    // component is a no-op wrapper so anything that imports it won’t blow up
+    AnalyticsProvider: ({ children }) => <>{children}</>,
+    // hook returns a stable stub
+    useAnalytics: () => stub,
+  };
+});
+
 // Mock the AppContext
 const mockContext = {
   bookmarkGroups: [{ groupName: 'Test Group', bookmarks: [] }],

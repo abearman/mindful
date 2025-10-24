@@ -7,6 +7,7 @@ import { refreshOtherMindfulTabs } from '@/scripts/Utilities';
 import { Storage } from '@/scripts/Storage';
 import amplify_outputs from '/amplify_outputs.json';
 
+
 const API_HOST_PATTERN = `https://${new URL(amplify_outputs.custom.API.bookmarks.endpoint).host}/*`;
 
 export async function loadInitialBookmarks(userId, storageType) {
@@ -136,6 +137,7 @@ export const useBookmarkManager = () => {
   const addNamedBookmarkGroup = async (groupName) => {
     await updateAndPersistGroups(prevGroups => {
       console.log("Calling addNamedBookmarkGroup");
+      
       const newGroup = {
           groupName: groupName,
           bookmarks: [],

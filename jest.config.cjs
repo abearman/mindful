@@ -4,11 +4,14 @@ module.exports = {
     {
       displayName: 'frontend',
       testEnvironment: 'jsdom',
-      setupFilesAfterEnv: ['<rootDir>/src/setupTests.js'],
+      setupFilesAfterEnv: ['<rootDir>/src/__tests__/setupTests.js'],
+      setupFiles: ['<rootDir>/src/__tests__/setupEnv.js'],
       moduleNameMapper: {
+        '^@/env$': '<rootDir>/src/__tests__/mocks/env.mock.ts',
         '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
         '^@/(.*)$': '<rootDir>/src/$1',
         '^~/(.*)$': '<rootDir>/$1',
+        '\\.(png|jpg|jpeg|gif|svg)$': '<rootDir>/src/__tests__/mocks/fileMock.js',
       },
       transform: {
         '^.+\\.[jt]sx?$': 'babel-jest',

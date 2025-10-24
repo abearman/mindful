@@ -11,6 +11,10 @@ import { useBookmarkManager } from '@/hooks/useBookmarkManager';
 import { AppContext } from '@/scripts/AppContextProvider';
 import { constructValidURL } from "@/scripts/Utilities";
 
+/* Analytics */
+import { useAnalytics } from "@/analytics/AnalyticsProvider";
+
+
 function AddBookmarkInline(props) {
   const {
     groupIndex,
@@ -71,6 +75,8 @@ function AddLinkButton({ onClick }) {
 }
 
 function CreateNewBookmark(props) {
+  const { capture } = useAnalytics();
+
   const {
     groupName,
     setLinkBeingEdited,
@@ -182,6 +188,7 @@ function CreateNewBookmark(props) {
   async function handleSubmit(e) {
     e.preventDefault();
     const urlWithProtocol = constructValidURL(bookmarkUrl);
+    capture("bookmark_added", { surface: "newtab" });
     await addNamedBookmark(bookmarkName, urlWithProtocol, groupName);
 
     setBookmarkName('');
